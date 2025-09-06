@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { UserRole } from '@/lib/constants';
 import {
   LayoutDashboard,
@@ -19,6 +20,7 @@ import { useState } from 'react';
 
 export const Sidebar = () => {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,43 +28,43 @@ export const Sidebar = () => {
 
   const navigation = [
     {
-      name: 'Dashboard',
+      key: 'nav.dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
       roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
     },
     {
-      name: 'Novo Chamado',
+      key: 'nav.newTicket',
       href: '/tickets/new',
       icon: PlusCircle,
       roles: [UserRole.RECEPCAO]
     },
     {
-      name: 'Chamados',
+      key: 'nav.tickets',
       href: '/tickets',
       icon: Ticket,
       roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
     },
     {
-      name: 'Meus Chamados',
+      key: 'nav.myTickets',
       href: '/my-tickets',
       icon: ClipboardList,
       roles: [UserRole.TECNICO]
     },
     {
-      name: 'Usuários',
+      key: 'nav.users',
       href: '/users',
       icon: Users,
       roles: [UserRole.ADMIN]
     },
     {
-      name: 'Hotéis',
+      key: 'nav.hotels',
       href: '/hotels',
       icon: Building,
       roles: [UserRole.ADMIN]
     },
     {
-      name: 'Configurações',
+      key: 'nav.settings',
       href: '/settings',
       icon: Settings,
       roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
@@ -107,7 +109,7 @@ export const Sidebar = () => {
               const isActive = location.pathname === item.href;
               return (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   to={item.href}
                   onClick={() => setIsOpen(false)}
                   className={cn(
@@ -128,7 +130,7 @@ export const Sidebar = () => {
                       isActive ? "text-white" : "text-gray-600 dark:text-gray-400"
                     )} />
                   </div>
-                  <span className="font-medium">{item.name}</span>
+                  <span className="font-medium">{t(item.key)}</span>
                   {isActive && (
                     <div className="ml-auto w-1 h-6 bg-white/50 rounded-full animate-pulse" />
                   )}
@@ -146,7 +148,7 @@ export const Sidebar = () => {
               <div className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 mr-3">
                 <LogOut className="h-4 w-4" />
               </div>
-              <span className="font-medium">Sair</span>
+              <span className="font-medium">{t('nav.logout')}</span>
             </Button>
           </div>
         </div>
