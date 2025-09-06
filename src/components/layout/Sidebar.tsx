@@ -87,19 +87,22 @@ export const Sidebar = () => {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed md:static inset-y-0 left-0 z-40 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out",
+        "fixed md:static inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-200 ease-in-out shadow-xl",
         isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         <div className="flex h-full flex-col">
-          <div className="flex h-20 items-center justify-center border-b border-border bg-gradient-header p-3">
-            <img 
-              src="/lovable-uploads/1c8b51fa-6da8-40e9-96b5-46bdcfbfc056.png" 
-              alt="MAJ TECH" 
-              className="h-16 w-auto object-contain"
-            />
+          <div className="flex h-24 items-center justify-center bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-gray-600 rounded-lg blur-lg opacity-25 group-hover:opacity-40 transition-opacity"></div>
+              <img 
+                src="/lovable-uploads/d37296f0-6138-4abe-80bc-5e3af6f143ca.png" 
+                alt="MAJ TECH" 
+                className="h-20 w-auto object-contain relative z-10 drop-shadow-lg"
+              />
+            </div>
           </div>
 
-          <nav className="flex-1 space-y-1 p-4">
+          <nav className="flex-1 space-y-2 p-6 overflow-y-auto">
             {filteredNavigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
@@ -108,27 +111,42 @@ export const Sidebar = () => {
                   to={item.href}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 group",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      ? "bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-lg scale-[1.02]"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 hover:shadow-md hover:scale-[1.01]"
                   )}
                 >
-                  <item.icon className="h-4 w-4" />
-                  {item.name}
+                  <div className={cn(
+                    "p-2 rounded-lg transition-colors",
+                    isActive 
+                      ? "bg-white/20" 
+                      : "bg-gray-200 dark:bg-gray-700 group-hover:bg-gray-300 dark:group-hover:bg-gray-600"
+                  )}>
+                    <item.icon className={cn(
+                      "h-4 w-4",
+                      isActive ? "text-white" : "text-gray-600 dark:text-gray-400"
+                    )} />
+                  </div>
+                  <span className="font-medium">{item.name}</span>
+                  {isActive && (
+                    <div className="ml-auto w-1 h-6 bg-white/50 rounded-full animate-pulse" />
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="border-t border-border p-4">
+          <div className="border-t border-gray-200 dark:border-gray-800 p-4">
             <Button
               variant="ghost"
-              className="w-full justify-start text-muted-foreground hover:text-destructive"
+              className="w-full justify-start text-gray-600 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 rounded-xl transition-all duration-200"
               onClick={logout}
             >
-              <LogOut className="mr-3 h-4 w-4" />
-              Sair
+              <div className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 mr-3">
+                <LogOut className="h-4 w-4" />
+              </div>
+              <span className="font-medium">Sair</span>
             </Button>
           </div>
         </div>
