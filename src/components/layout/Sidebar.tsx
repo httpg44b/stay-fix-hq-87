@@ -91,11 +91,11 @@ export const Sidebar = () => {
         isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center justify-center border-b border-border bg-gradient-header p-2">
+          <div className="flex h-20 items-center justify-center border-b border-border bg-gradient-header p-3">
             <img 
               src="/lovable-uploads/1c8b51fa-6da8-40e9-96b5-46bdcfbfc056.png" 
               alt="MAJ TECH" 
-              className="h-12 w-auto"
+              className="h-16 w-auto object-contain"
             />
           </div>
 
