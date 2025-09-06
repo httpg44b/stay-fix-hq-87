@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wrench, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
@@ -32,13 +32,15 @@ export default function Login() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-full bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Wrench className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img 
+              src="/lovable-uploads/1c8b51fa-6da8-40e9-96b5-46bdcfbfc056.png" 
+              alt="MAJ TECH Logo" 
+              className="h-24 w-auto"
+            />
           </div>
-          <CardTitle className="text-2xl font-display">HotelFix</CardTitle>
+          <CardTitle className="text-2xl font-display">MAJ TECH</CardTitle>
           <CardDescription>
-            Sistema de Gestão de Manutenção Hoteleira
+            Sistema de Gestão de Manutenção
           </CardDescription>
         </CardHeader>
         <CardContent>
