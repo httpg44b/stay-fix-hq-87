@@ -16,6 +16,7 @@ import { Users } from "./pages/admin/Users";
 import { InitialSetup } from "./pages/InitialSetup";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword";
+import { SupabaseSetup } from "./pages/SupabaseSetup";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/setup" element={<InitialSetup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/supabase-setup" element={<SupabaseSetup />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             <Route path="/dashboard" element={

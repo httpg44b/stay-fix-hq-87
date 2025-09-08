@@ -16,28 +16,29 @@ export function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [passwordReset, setPasswordReset] = useState(false);
-  const [isValidToken, setIsValidToken] = useState(false);
+  const [isValidToken, setIsValidToken] = useState(true); // Start as true to avoid flash
 
   useEffect(() => {
-    // Check if we have a valid recovery session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setIsValidToken(true);
-      } else {
-        // Check URL for recovery token
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const type = hashParams.get('type');
-        
-        if (accessToken && type === 'recovery') {
-          setIsValidToken(true);
-        }
-      }
-    });
+    // Check if we have a recovery token in the URL
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    
+    // Also check search params (sometimes Supabase uses query params)
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get('token') || hashParams.get('access_token');
+    const tokenType = searchParams.get('type') || type;
+    
+    if (tokenType === 'recovery' || token) {
+      setIsValidToken(true);
+    }
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth event:', event);
+      if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
+        setIsValidToken(true);
+      }
+      if (event === 'SIGNED_IN' && session) {
         setIsValidToken(true);
       }
     });
