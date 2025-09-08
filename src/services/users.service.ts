@@ -10,6 +10,12 @@ export interface User {
   locale: string;
   is_active: boolean;
   created_at: string;
+  // Legacy fields for compatibility
+  name: string;
+  hotels: any[];
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreateUserInput {
@@ -29,6 +35,18 @@ export interface UpdateUserInput {
 }
 
 class UsersService {
+  private mapUserData(data: any): User {
+    return {
+      ...data,
+      // Map new fields to legacy fields for compatibility
+      name: data.display_name,
+      hotels: [], // Will be populated when we implement hotels
+      active: data.is_active,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.created_at)
+    };
+  }
+
   /**
    * Get all users (Admin only)
    */
@@ -39,7 +57,7 @@ class UsersService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data as User[];
+    return data.map(user => this.mapUserData(user));
   }
 
   /**
@@ -53,7 +71,7 @@ class UsersService {
       .single();
 
     if (error) throw error;
-    return data as User;
+    return this.mapUserData(data);
   }
 
   /**
@@ -67,7 +85,7 @@ class UsersService {
       .single();
 
     if (error) throw error;
-    return data as User;
+    return this.mapUserData(data);
   }
 
   /**
@@ -101,7 +119,7 @@ class UsersService {
       .single();
 
     if (error) throw error;
-    return data as User;
+    return this.mapUserData(data);
   }
 
   /**
@@ -116,7 +134,7 @@ class UsersService {
       .single();
 
     if (error) throw error;
-    return data as User;
+    return this.mapUserData(data);
   }
 
   /**
@@ -142,7 +160,7 @@ class UsersService {
       .order('display_name');
 
     if (error) throw error;
-    return data as User[];
+    return data.map(user => this.mapUserData(user));
   }
 
   /**
@@ -157,7 +175,7 @@ class UsersService {
       .order('display_name');
 
     if (error) throw error;
-    return data as User[];
+    return data.map(user => this.mapUserData(user));
   }
 
   /**
@@ -165,7 +183,7 @@ class UsersService {
    */
   async toggleActive(id: string) {
     const user = await this.getById(id);
-    return this.update(id, { is_active: !user.is_active });
+    return this.update(id, { is_active: !user.active });
   }
 }
 
