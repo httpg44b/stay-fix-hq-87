@@ -131,9 +131,10 @@ class UsersService {
       .update(input)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error('Usuário não encontrado');
     return this.mapUserData(data);
   }
 
