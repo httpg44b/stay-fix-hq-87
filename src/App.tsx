@@ -14,6 +14,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { Users } from "./pages/admin/Users";
 import { InitialSetup } from "./pages/InitialSetup";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { ResetPassword } from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/setup" element={<InitialSetup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             <Route path="/dashboard" element={

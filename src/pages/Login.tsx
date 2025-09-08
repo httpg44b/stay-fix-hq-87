@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -70,14 +70,12 @@ export default function Login() {
               />
             </div>
             <div className="flex items-center justify-end">
-              <Button
-                type="button"
-                variant="link"
-                className="px-0"
-                onClick={() => {/* Implement forgot password */}}
+              <Link
+                to="/forgot-password"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 Esqueci a senha
-              </Button>
+              </Link>
             </div>
             <Button 
               type="submit" 
