@@ -83,6 +83,10 @@ export type Database = {
         Args: { new_auth_id: string }
         Returns: Json
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       setup_auth_for_admin: {
         Args: Record<PropertyKey, never>
         Returns: Json
