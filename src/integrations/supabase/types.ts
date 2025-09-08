@@ -49,7 +49,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_user_as_admin: {
+        Args: {
+          p_display_name: string
+          p_email: string
+          p_is_active?: boolean
+          p_locale?: string
+          p_password: string
+          p_role: string
+        }
+        Returns: Json
+      }
+      create_user_profile: {
+        Args: {
+          p_display_name: string
+          p_email: string
+          p_is_active?: boolean
+          p_locale?: string
+          p_role: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
