@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usersService, type User, type CreateUserInput, type UpdateUserInput, type UserRole } from '@/services/users.service';
 import { Plus, Pencil, Trash2, Search, UserCheck, UserX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -436,5 +437,13 @@ export function Users() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export function UsersPage() {
+  return (
+    <AppLayout>
+      <Users />
+    </AppLayout>
   );
 }

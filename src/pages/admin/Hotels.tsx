@@ -12,6 +12,7 @@ import { hotelsService, type Hotel, type CreateHotelInput, type UpdateHotelInput
 import { Plus, Pencil, Trash2, Search, Building2, MapPin, Phone, Mail, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export function Hotels() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -419,5 +420,13 @@ export function Hotels() {
         </DialogContent>
       </Dialog>
     </Card>
+  );
+}
+
+export function HotelsPage() {
+  return (
+    <AppLayout>
+      <Hotels />
+    </AppLayout>
   );
 }

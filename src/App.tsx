@@ -12,8 +12,8 @@ import NewTicket from "./pages/tickets/NewTicket";
 import MyTickets from "./pages/tickets/MyTickets";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import { Users } from "./pages/admin/Users";
-import { Hotels } from "./pages/admin/Hotels";
+import { UsersPage } from "./pages/admin/Users";
+import { HotelsPage } from "./pages/admin/Hotels";
 import { InitialSetup } from "./pages/InitialSetup";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword";
@@ -68,13 +68,13 @@ const App = () => (
             
             <Route path="/admin/users" element={
               <ProtectedRoute>
-                <Users />
+                <UsersPage />
               </ProtectedRoute>
             } />
             
             <Route path="/admin/hotels" element={
               <ProtectedRoute>
-                <Hotels />
+                <HotelsPage />
               </ProtectedRoute>
             } />
             
