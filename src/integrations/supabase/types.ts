@@ -49,6 +49,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_admin_user_directly: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       create_initial_admin: {
         Args: Record<PropertyKey, never>
         Returns: undefined
