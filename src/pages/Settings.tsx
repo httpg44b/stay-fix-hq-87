@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/components/ui/use-toast';
 import { User, Lock, Globe, Palette, Sun, Moon, Monitor } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -21,24 +22,77 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handlePasswordChange = () => {
-    if (newPassword !== confirmPassword) {
+const handlePasswordChange = async () => {
+    try {
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        toast({
+          title: "Erro",
+          description: "Preencha todos os campos",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        toast({
+          title: "Erro",
+          description: "As senhas não coincidem",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        toast({
+          title: "Erro",
+          description: "A nova senha deve ter pelo menos 6 caracteres",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!user?.email) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível identificar o e-mail do usuário",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verifica a senha atual (reauth)
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+
+      if (signInError) {
+        toast({
+          title: "Senha atual incorreta",
+          description: "Verifique sua senha atual e tente novamente",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+
       toast({
-        title: "Erro",
-        description: "As senhas não coincidem",
+        title: "Sucesso",
+        description: "Senha alterada com sucesso",
+      });
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      toast({
+        title: "Erro ao alterar senha",
+        description: error?.message || "Tente novamente mais tarde",
         variant: "destructive",
       });
-      return;
     }
-
-    toast({
-      title: "Sucesso",
-      description: "Senha alterada com sucesso",
-    });
-    
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
   };
 
   const handleLanguageChange = (value: string) => {
