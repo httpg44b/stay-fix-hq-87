@@ -79,6 +79,14 @@ export type Database = {
         }
         Returns: Json
       }
+      fix_admin_user_id: {
+        Args: { new_auth_id: string }
+        Returns: Json
+      }
+      setup_auth_for_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
