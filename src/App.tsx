@@ -13,6 +13,7 @@ import MyTickets from "./pages/tickets/MyTickets";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { Users } from "./pages/admin/Users";
+import { InitialSetup } from "./pages/InitialSetup";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/setup" element={<InitialSetup />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             <Route path="/dashboard" element={
