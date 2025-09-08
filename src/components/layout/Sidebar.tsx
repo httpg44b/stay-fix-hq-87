@@ -7,6 +7,7 @@ import {
   Ticket,
   Users,
   Building,
+  Building2,
   Settings,
   LogOut,
   Menu,
@@ -59,8 +60,8 @@ export const Sidebar = () => {
     },
     {
       key: 'nav.hotels',
-      href: '/hotels',
-      icon: Building,
+      href: '/admin/hotels',
+      icon: Building2,
       roles: [UserRole.ADMIN]
     },
     {
