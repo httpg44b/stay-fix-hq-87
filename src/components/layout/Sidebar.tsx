@@ -53,7 +53,7 @@ export const Sidebar = () => {
     },
     {
       key: 'nav.users',
-      href: '/users',
+      href: '/admin/users',
       icon: Users,
       roles: [UserRole.ADMIN]
     },

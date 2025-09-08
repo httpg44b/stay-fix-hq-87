@@ -12,6 +12,7 @@ import NewTicket from "./pages/tickets/NewTicket";
 import MyTickets from "./pages/tickets/MyTickets";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import { Users } from "./pages/admin/Users";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,12 @@ const App = () => (
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/users" element={
+              <ProtectedRoute>
+                <Users />
               </ProtectedRoute>
             } />
             
