@@ -50,6 +50,118 @@ export type Database = {
         }
         Relationships: []
       }
+      rooms: {
+        Row: {
+          created_at: string
+          hotel_id: string
+          id: string
+          number: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hotel_id: string
+          id?: string
+          number: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hotel_id?: string
+          id?: string
+          number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          assignee_id: string | null
+          category: string | null
+          closed_at: string | null
+          created_at: string
+          creator_id: string | null
+          description: string | null
+          hotel_id: string
+          id: string
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          room_id: string | null
+          room_number: string | null
+          status: Database["public"]["Enums"]["ticket_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          category?: string | null
+          closed_at?: string | null
+          created_at?: string
+          creator_id?: string | null
+          description?: string | null
+          hotel_id: string
+          id?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          room_id?: string | null
+          room_number?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_id?: string | null
+          category?: string | null
+          closed_at?: string | null
+          created_at?: string
+          creator_id?: string | null
+          description?: string | null
+          hotel_id?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          room_id?: string | null
+          room_number?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_hotels: {
         Row: {
           created_at: string
@@ -165,7 +277,13 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      ticket_priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
+      ticket_status:
+        | "NEW"
+        | "IN_PROGRESS"
+        | "WAITING_PARTS"
+        | "COMPLETED"
+        | "CANCELLED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -292,6 +410,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ticket_priority: ["LOW", "MEDIUM", "HIGH", "URGENT"],
+      ticket_status: [
+        "NEW",
+        "IN_PROGRESS",
+        "WAITING_PARTS",
+        "COMPLETED",
+        "CANCELLED",
+      ],
+    },
   },
 } as const
