@@ -1,36 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { mockTickets } from '@/lib/mock-data';
 import { UserRole, TicketStatus } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, CheckCircle, AlertTriangle, Eye } from 'lucide-react';
+import { Clock, CheckCircle, AlertTriangle, Eye, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { categoryLabels } from '@/lib/constants';
+import { ticketsService } from '@/services/tickets.service';
+import { hotelsService } from '@/services/hotels.service';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MyTickets() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('active');
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   if (!user || user.role !== UserRole.TECNICO) {
     navigate('/dashboard');
     return null;
   }
 
-  // Unassigned tickets from user's hotels
-  const unassignedTickets = mockTickets.filter(
-    t => !t.technicianId && 
-    t.status === TicketStatus.NEW &&
-    user.hotels.some(h => h.id === t.hotelId)
+  useEffect(() => {
+    loadTickets();
+  }, [user]);
+
+  const loadTickets = async () => {
+    try {
+      setLoading(true);
+      const data = await ticketsService.getAll();
+      setTickets(data);
+    } catch (error: any) {
+      console.error('Error loading tickets:', error);
+      toast({
+        title: 'Erro ao carregar chamados',
+        description: error.message || 'Ocorreu um erro ao carregar os chamados.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Unassigned tickets
+  const unassignedTickets = tickets.filter(
+    t => !t.assignee_id && 
+    t.status === TicketStatus.NEW
   );
 
   // My assigned tickets
-  const myTickets = mockTickets.filter(t => t.technicianId === user.id);
+  const myTickets = tickets.filter(t => t.assignee_id === user.id);
   const activeTickets = myTickets.filter(
     t => t.status !== TicketStatus.COMPLETED && t.status !== TicketStatus.CANCELLED
   );
@@ -38,15 +63,36 @@ export default function MyTickets() {
     t => t.status === TicketStatus.COMPLETED || t.status === TicketStatus.CANCELLED
   );
 
-  const handleAssignTicket = (ticketId: string) => {
-    // In a real app, this would make an API call
-    console.log('Assigning ticket:', ticketId);
-    navigate(`/tickets/${ticketId}`);
+  const handleAssignTicket = async (ticketId: string) => {
+    try {
+      await ticketsService.update(ticketId, {
+        assignee_id: user.id,
+        status: TicketStatus.IN_PROGRESS
+      });
+      toast({
+        title: 'Chamado atribuído',
+        description: 'O chamado foi atribuído a você com sucesso.',
+      });
+      loadTickets();
+    } catch (error: any) {
+      console.error('Error assigning ticket:', error);
+      toast({
+        title: 'Erro ao atribuir chamado',
+        description: error.message || 'Ocorreu um erro ao atribuir o chamado.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
     <AppLayout>
       <div className="space-y-6">
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">
             Meus Chamados
@@ -143,9 +189,8 @@ export default function MyTickets() {
                             <PriorityBadge priority={ticket.priority} />
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Quarto {ticket.roomNumber}</span>
-                            <span>{ticket.hotel?.name}</span>
-                            <span>{categoryLabels[ticket.category]}</span>
+                            <span>Quarto {ticket.room_number}</span>
+                            <span>{categoryLabels[ticket.category as keyof typeof categoryLabels]}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -200,9 +245,8 @@ export default function MyTickets() {
                             <PriorityBadge priority={ticket.priority} />
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Quarto {ticket.roomNumber}</span>
-                            <span>{ticket.hotel?.name}</span>
-                            <span>{categoryLabels[ticket.category]}</span>
+                            <span>Quarto {ticket.room_number}</span>
+                            <span>{categoryLabels[ticket.category as keyof typeof categoryLabels]}</span>
                           </div>
                         </div>
                         <Button variant="ghost" size="sm">
@@ -243,10 +287,9 @@ export default function MyTickets() {
                             <StatusBadge status={ticket.status} />
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Quarto {ticket.roomNumber}</span>
-                            <span>{ticket.hotel?.name}</span>
+                            <span>Quarto {ticket.room_number}</span>
                             <span>
-                              Concluído em {new Date(ticket.updatedAt).toLocaleDateString('pt-BR')}
+                              Concluído em {new Date(ticket.updated_at).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
                         </div>
@@ -261,6 +304,8 @@ export default function MyTickets() {
             </Card>
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
     </AppLayout>
   );

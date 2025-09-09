@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { mockTickets } from '@/lib/mock-data';
 import { UserRole, TicketStatus, TicketPriority } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
@@ -24,45 +23,77 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Filter, Plus, Eye, Download } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Download, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { statusLabels, priorityLabels } from '@/lib/constants';
+import { ticketsService } from '@/services/tickets.service';
+import { hotelsService } from '@/services/hotels.service';
+import { useToast } from '@/hooks/use-toast';
 
 export default function TicketList() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [hotelFilter, setHotelFilter] = useState<string>('all');
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   if (!user) return null;
 
-  // Filter tickets based on user role
-  const getBaseTickets = () => {
-    if (user.role === UserRole.ADMIN) {
-      return mockTickets;
-    } else if (user.role === UserRole.TECNICO) {
-      return mockTickets.filter(t => 
-        user.hotels.some(h => h.id === t.hotelId)
-      );
-    } else if (user.role === UserRole.RECEPCAO) {
-      return mockTickets.filter(t => 
-        user.hotels.some(h => h.id === t.hotelId)
-      );
+  useEffect(() => {
+    loadData();
+  }, [user]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load tickets based on user role
+      let ticketData: any[] = [];
+      if (user.role === UserRole.ADMIN) {
+        // Admin can see all tickets
+        ticketData = await ticketsService.getAll();
+      } else {
+        // Other users see only their created tickets (enforced by RLS)
+        ticketData = await ticketsService.getMyTickets(user.id);
+      }
+      
+      setTickets(ticketData);
+
+      // Load hotels for filter
+      if (user.role === UserRole.ADMIN) {
+        const hotelData = await hotelsService.getAll();
+        setHotels(hotelData);
+      } else {
+        const userHotels = await hotelsService.getUserHotels(user.id);
+        setHotels(userHotels.map((uh: any) => uh.hotels));
+      }
+    } catch (error: any) {
+      console.error('Error loading data:', error);
+      toast({
+        title: 'Erro ao carregar dados',
+        description: error.message || 'Ocorreu um erro ao carregar os chamados.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
-    return [];
   };
 
   // Apply filters
-  const filteredTickets = getBaseTickets().filter(ticket => {
-    const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.roomNumber.includes(searchTerm) ||
-                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredTickets = tickets.filter(ticket => {
+    const matchesSearch = 
+      (ticket.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (ticket.room_number?.includes(searchTerm) || false) ||
+      (ticket.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
-    const matchesHotel = hotelFilter === 'all' || ticket.hotelId === hotelFilter;
+    const matchesHotel = hotelFilter === 'all' || ticket.hotel_id === hotelFilter;
 
     return matchesSearch && matchesStatus && matchesPriority && matchesHotel;
   });
@@ -72,11 +103,15 @@ export default function TicketList() {
     console.log('Exporting to CSV...');
   };
 
-  const hotels = [...new Set(getBaseTickets().map(t => t.hotel))].filter(Boolean);
-
   return (
     <AppLayout>
       <div className="space-y-6">
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold text-foreground">
@@ -168,9 +203,9 @@ export default function TicketList() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos</SelectItem>
-                      {hotels.map((hotel) => (
-                        <SelectItem key={hotel!.id} value={hotel!.id}>
-                          {hotel!.name}
+                      {hotels.map((hotel: any) => (
+                        <SelectItem key={hotel.id} value={hotel.id}>
+                          {hotel.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -205,41 +240,46 @@ export default function TicketList() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTickets.map((ticket) => (
-                    <TableRow key={ticket.id}>
-                      <TableCell className="font-medium">
-                        {ticket.roomNumber}
-                      </TableCell>
-                      <TableCell>{ticket.title}</TableCell>
-                      <TableCell>{ticket.hotel?.name}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={ticket.status} />
-                      </TableCell>
-                      <TableCell>
-                        <PriorityBadge priority={ticket.priority} />
-                      </TableCell>
-                      <TableCell>
-                        {ticket.technician?.name || '-'}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  filteredTickets.map((ticket: any) => {
+                    const hotelName = hotels.find(h => h.id === ticket.hotel_id)?.name || '-';
+                    return (
+                      <TableRow key={ticket.id}>
+                        <TableCell className="font-medium">
+                          {ticket.room_number}
+                        </TableCell>
+                        <TableCell>{ticket.title}</TableCell>
+                        <TableCell>{hotelName}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={ticket.status} />
+                        </TableCell>
+                        <TableCell>
+                          <PriorityBadge priority={ticket.priority} />
+                        </TableCell>
+                        <TableCell>
+                          {ticket.assignee_id || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/tickets/${ticket.id}`)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
+        </>
+        )}
       </div>
     </AppLayout>
   );
