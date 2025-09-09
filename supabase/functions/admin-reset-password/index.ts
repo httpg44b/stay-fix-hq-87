@@ -31,20 +31,13 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    // Extract current user ID from the verified JWT
+    // Validate current user via JWT and Supabase Auth
     const token = authHeader.replace('Bearer ', '');
-    let currentUserId: string | null = null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1] || ''));
-      currentUserId = payload?.sub ?? null;
-    } catch (_) {
-      // If parsing fails, treat as unauthenticated
-      currentUserId = null;
-    }
-
-    if (!currentUserId) {
+    const { data: userData, error: userErr } = await supabaseClient.auth.getUser(token);
+    if (userErr || !userData?.user) {
       throw new Error('Not authenticated');
     }
+    const currentUserId = userData.user.id;
 
     const { data: adminCheck, error: adminErr } = await supabaseClient
       .from('users')
