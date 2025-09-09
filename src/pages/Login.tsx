@@ -40,7 +40,7 @@ export default function Login() {
           </div>
           <CardTitle className="text-2xl font-display">MAJ TECH</CardTitle>
           <CardDescription>
-            Sistema de Gestão de Manutenção
+            Système de Gestion de Maintenance
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -50,7 +50,7 @@ export default function Login() {
               <Input
                 id="email"
                 type="email"
-                placeholder="seu@email.com"
+                placeholder="votre@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -58,7 +58,7 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <Label htmlFor="password">Mot de passe</Label>
               <Input
                 id="password"
                 type="password"
@@ -74,7 +74,7 @@ export default function Login() {
                 to="/forgot-password"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                Esqueci a senha
+                Mot de passe oublié
               </Link>
             </div>
             <Button 
@@ -85,33 +85,13 @@ export default function Login() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Entrando...
+                  Connexion...
                 </>
               ) : (
-                'Entrar'
+                'Se connecter'
               )}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-2">
-              <strong>Contas de demonstração:</strong>
-            </p>
-            <div className="space-y-1 text-sm">
-              <p>
-                <span className="font-medium">Admin:</span> admin@hotelfix.com
-              </p>
-              <p>
-                <span className="font-medium">Técnico:</span> carlos@hotelfix.com
-              </p>
-              <p>
-                <span className="font-medium">Recepção:</span> maria@hotel1.com
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Use qualquer senha para entrar
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
