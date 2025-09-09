@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { UserRole, TicketCategory, TicketPriority } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import { hotelsService } from '@/services/hotels.service';
 
 export default function NewTicket() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,8 +65,8 @@ export default function NewTicket() {
     
     if (!userHotelId) {
       toast({
-        title: 'Erro',
-        description: 'Você precisa estar vinculado a um hotel para criar chamados.',
+        title: t('errors.error'),
+        description: t('errors.needHotelLink'),
         variant: 'destructive',
       });
       return;
@@ -84,16 +86,16 @@ export default function NewTicket() {
       });
 
       toast({
-        title: 'Chamado criado com sucesso',
-        description: `Chamado para o quarto ${formData.roomNumber} foi criado.`,
+        title: t('ticket.createdSuccess'),
+        description: `${t('ticket.createdForRoom')} ${formData.roomNumber} ${t('ticket.wasCreated')}.`,
       });
       
       navigate('/tickets');
     } catch (error: any) {
       console.error('Error creating ticket:', error);
       toast({
-        title: 'Erro ao criar chamado',
-        description: error.message || 'Ocorreu um erro ao criar o chamado.',
+        title: t('errors.creatingTicket'),
+        description: error.message || t('errors.creatingTicketDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -126,29 +128,29 @@ export default function NewTicket() {
           </Button>
           <div>
             <h1 className="text-3xl font-display font-bold text-foreground">
-              Novo Chamado
+              {t('tickets.newTicket')}
             </h1>
             <p className="text-muted-foreground">
-              Crie um novo chamado de manutenção
+              {t('ticket.createNewMaintenance')}
             </p>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Informações do Chamado</CardTitle>
+            <CardTitle>{t('ticket.ticketInfo')}</CardTitle>
             <CardDescription>
-              Preencha os detalhes do problema que precisa ser resolvido
+              {t('ticket.fillDetails')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="roomNumber">Número do Quarto/Área*</Label>
+                  <Label htmlFor="roomNumber">{t('ticket.roomAreaNumber')}*</Label>
                   <Input
                     id="roomNumber"
-                    placeholder="Ex: 201, Recepção, Piscina"
+                    placeholder={t('ticket.roomAreaPlaceholder')}
                     value={formData.roomNumber}
                     onChange={(e) => setFormData(prev => ({ ...prev, roomNumber: e.target.value }))}
                     required
@@ -157,7 +159,7 @@ export default function NewTicket() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category">Categoria*</Label>
+                  <Label htmlFor="category">{t('ticket.category')}*</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as TicketCategory }))}
@@ -169,7 +171,7 @@ export default function NewTicket() {
                     <SelectContent>
                       {Object.entries(categoryLabels).map(([value, label]) => (
                         <SelectItem key={value} value={value}>
-                          {label}
+                          {t(`category.${value.toLowerCase()}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -177,7 +179,7 @@ export default function NewTicket() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Prioridade*</Label>
+                  <Label htmlFor="priority">{t('ticket.priority')}*</Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value as TicketPriority }))}
@@ -189,7 +191,7 @@ export default function NewTicket() {
                     <SelectContent>
                       {Object.entries(priorityLabels).map(([value, label]) => (
                         <SelectItem key={value} value={value}>
-                          {label}
+                          {t(`priority.${value.toLowerCase()}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -197,10 +199,10 @@ export default function NewTicket() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="title">Título*</Label>
+                  <Label htmlFor="title">{t('ticket.title')}*</Label>
                   <Input
                     id="title"
-                    placeholder="Breve descrição do problema"
+                    placeholder={t('ticket.titlePlaceholder')}
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     required
@@ -210,10 +212,10 @@ export default function NewTicket() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição Detalhada*</Label>
+                <Label htmlFor="description">{t('ticket.detailedDescription')}*</Label>
                 <Textarea
                   id="description"
-                  placeholder="Descreva o problema com o máximo de detalhes possível..."
+                  placeholder={t('ticket.descriptionPlaceholder')}
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   required
@@ -223,7 +225,7 @@ export default function NewTicket() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="images">Fotos (opcional)</Label>
+                <Label htmlFor="images">{t('ticket.photos')} ({t('common.optional')})</Label>
                 <div className="flex items-center gap-4">
                   <Button
                     type="button"
@@ -232,7 +234,7 @@ export default function NewTicket() {
                     onClick={() => document.getElementById('image-upload')?.click()}
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Adicionar Fotos
+                    {t('ticket.addPhotos')}
                   </Button>
                   <input
                     id="image-upload"
@@ -245,7 +247,7 @@ export default function NewTicket() {
                   />
                   {formData.images.length > 0 && (
                     <span className="text-sm text-muted-foreground">
-                      {formData.images.length} foto(s) adicionada(s)
+                      {formData.images.length} {t('ticket.photosAdded')}
                     </span>
                   )}
                 </div>
@@ -284,10 +286,10 @@ export default function NewTicket() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Criando...
+                      {t('common.creating')}
                     </>
                   ) : (
-                    'Abrir Chamado'
+                    t('ticket.openTicket')
                   )}
                 </Button>
                 <Button
@@ -296,7 +298,7 @@ export default function NewTicket() {
                   onClick={() => navigate('/tickets')}
                   disabled={isSubmitting}
                 >
-                  Cancelar
+                  {t('common.cancel')}
                 </Button>
               </div>
             </form>

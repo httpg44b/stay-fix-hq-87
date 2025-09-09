@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +33,7 @@ import { hotelsService } from '@/services/hotels.service';
 import { storageService } from '@/services/storage.service';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR, fr } from 'date-fns/locale';
 import { TechnicianName } from '@/components/TechnicianName';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -46,6 +47,7 @@ interface TicketModalProps {
 
 export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModalProps) {
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const [ticket, setTicket] = useState<any>(null);
   const [hotel, setHotel] = useState<any>(null);
@@ -99,8 +101,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     } catch (error: any) {
       console.error('Error loading ticket:', error);
       toast({
-        title: 'Erro ao carregar chamado',
-        description: error.message || 'Ocorreu um erro ao carregar o chamado.',
+        title: t('errors.loadingTicket'),
+        description: error.message || t('errors.loadingTicketDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -119,8 +121,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       for (const file of Array.from(files)) {
         if (file.size > 5 * 1024 * 1024) {
           toast({
-            title: 'Arquivo muito grande',
-            description: `${file.name} excede o limite de 5MB`,
+            title: t('errors.fileTooLarge'),
+            description: `${file.name} ${t('errors.exceedsLimit')}`,
             variant: 'destructive',
           });
           continue;
@@ -141,14 +143,14 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       }
 
       toast({
-        title: 'Imagens enviadas',
-        description: `${uploadedUrls.length} imagem(ns) enviada(s) com sucesso.`,
+        title: t('common.imagesUploaded'),
+        description: `${uploadedUrls.length} ${t('common.imagesUploadedDesc')}`,
       });
     } catch (error: any) {
       console.error('Error uploading images:', error);
       toast({
-        title: 'Erro ao enviar imagens',
-        description: error.message || 'Ocorreu um erro ao enviar as imagens.',
+        title: t('errors.uploadingImages'),
+        description: error.message || t('errors.uploadingImagesDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -173,8 +175,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     } catch (error) {
       console.error('Error removing image:', error);
       toast({
-        title: 'Erro ao remover imagem',
-        description: 'Não foi possível remover a imagem.',
+        title: t('errors.removingImage'),
+        description: t('errors.removingImageDesc'),
         variant: 'destructive',
       });
     }
@@ -187,8 +189,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       if (user?.role === UserRole.TECNICO) {
         if (!solution) {
           toast({
-            title: 'Solução obrigatória',
-            description: 'Técnicos devem fornecer uma solução antes de fechar o chamado.',
+            title: t('ticket.solutionRequired'),
+            description: t('ticket.solutionRequiredDesc'),
             variant: 'destructive',
           });
           return;
@@ -237,8 +239,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       await ticketsService.update(ticket.id, updateData);
 
       toast({
-        title: 'Chamado atualizado',
-        description: 'As alterações foram salvas com sucesso.',
+        title: t('ticket.updated'),
+        description: t('ticket.updatedDesc'),
       });
 
       if (onUpdate) onUpdate();
@@ -246,8 +248,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     } catch (error: any) {
       console.error('Error updating ticket:', error);
       toast({
-        title: 'Erro ao atualizar chamado',
-        description: error.message || 'Ocorreu um erro ao atualizar o chamado.',
+        title: t('errors.updatingTicket'),
+        description: error.message || t('errors.updatingTicketDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -283,7 +285,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                   <StatusBadge status={ticket.status} />
                   <PriorityBadge priority={ticket.priority} />
                   <Badge variant="outline">
-                    {categoryLabels[ticket.category as keyof typeof categoryLabels]}
+                    {t(`category.${ticket.category.toLowerCase()}`)}
                   </Badge>
                 </DialogDescription>
               </DialogHeader>
@@ -295,24 +297,24 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Quarto/Área:</span>
+                        <span className="text-muted-foreground">{t('common.room_area')}:</span>
                         <span className="font-medium">{ticket.room_number}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Building className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Hotel:</span>
+                        <span className="text-muted-foreground">{t('tickets.hotel')}:</span>
                         <span className="font-medium">{hotel?.name || '-'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Criado em:</span>
+                        <span className="text-muted-foreground">{t('tickets.createdAt')}:</span>
                         <span className="font-medium">
-                          {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
+                          {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: language === 'fr' ? fr : ptBR })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Técnico:</span>
+                        <span className="text-muted-foreground">{t('tickets.technician')}:</span>
                         <span className="font-medium">
                           <TechnicianName assigneeId={ticket.assignee_id} />
                         </span>
@@ -324,7 +326,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <FileText className="h-4 w-4" />
-                        Descrição
+                        {t('ticket.description')}
                       </Label>
                       <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                         {ticket.description}
@@ -338,7 +340,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <ImageIcon className="h-4 w-4" />
-                            Imagens do Chamado
+                            {t('ticket.ticketImages')}
                           </Label>
                           
                           {ticketImages.length > 0 && (
@@ -347,7 +349,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                 <div key={index} className="relative group">
                                   <img
                                     src={img}
-                                    alt={`Imagem ${index + 1}`}
+                                    alt={`${t('common.image')} ${index + 1}`}
                                     className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
                                     onClick={() => openImageViewer(img)}
                                   />
@@ -389,7 +391,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                 ) : (
                                   <Upload className="mr-2 h-4 w-4" />
                                 )}
-                                Adicionar Imagens
+                                {t('common.add_images')}
                               </Button>
                               <input
                                 id="ticket-image-upload"
