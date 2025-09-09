@@ -183,13 +183,20 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const handleSave = async () => {
     // Validations
     if (status === TicketStatus.COMPLETED) {
-      if (user?.role === UserRole.TECNICO && !solution) {
-        toast({
-          title: 'Solução obrigatória',
-          description: 'Técnicos devem fornecer uma solução antes de fechar o chamado.',
-          variant: 'destructive',
-        });
-        return;
+      // Se um técnico está marcando como concluído, atribui automaticamente a ele
+      if (user?.role === UserRole.TECNICO) {
+        if (!solution) {
+          toast({
+            title: 'Solução obrigatória',
+            description: 'Técnicos devem fornecer uma solução antes de fechar o chamado.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        // Atribuir automaticamente ao técnico atual
+        if (user?.id) {
+          setSelectedTechnician(user.id);
+        }
       }
       
       if (user?.role === UserRole.TECNICO || (user?.role === UserRole.ADMIN && solution)) {
@@ -220,6 +227,11 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       // Admin can change technician
       if (user?.role === UserRole.ADMIN && selectedTechnician !== ticket.assignee_id) {
         updateData.assignee_id = selectedTechnician || null;
+      }
+      
+      // Se técnico está fechando, atribui automaticamente a ele
+      if (status === TicketStatus.COMPLETED && user?.role === UserRole.TECNICO && user?.id) {
+        updateData.assignee_id = user.id;
       }
       
       await ticketsService.update(ticket.id, updateData);

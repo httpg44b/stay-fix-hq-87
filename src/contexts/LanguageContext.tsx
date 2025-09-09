@@ -249,7 +249,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('language');
-    return (saved as Language) || 'pt';
+    return (saved as Language) || 'fr'; // Francês como padrão para implantação na França
   });
 
   useEffect(() => {
