@@ -34,7 +34,16 @@ export default function MyTickets() {
   const loadTickets = async () => {
     try {
       setLoading(true);
-      const data = await ticketsService.getAll();
+      
+      // For technicians, get all tickets from their hotels
+      const userHotels = await hotelsService.getUserHotels(user.id);
+      const hotelIds = userHotels.map((uh: any) => uh.hotel_id);
+      
+      let data: any[] = [];
+      if (hotelIds.length > 0) {
+        data = await ticketsService.getHotelTickets(hotelIds);
+      }
+      
       setTickets(data);
     } catch (error: any) {
       console.error('Error loading tickets:', error);

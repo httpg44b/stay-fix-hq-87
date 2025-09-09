@@ -72,6 +72,17 @@ class TicketsService {
     if (error) throw error;
     return data;
   }
+
+  async getHotelTickets(hotelIds: string[]) {
+    const { data, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .in('hotel_id', hotelIds)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
 }
 
 export const ticketsService = new TicketsService();

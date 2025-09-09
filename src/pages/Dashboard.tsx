@@ -64,9 +64,9 @@ export default function Dashboard() {
         const userHotels = await hotelsService.getUserHotels(user.id);
         const hotelIds = userHotels.map((uh: any) => uh.hotel_id);
         
-        // Get all tickets from those hotels
-        const allTickets = await ticketsService.getAll();
-        ticketData = allTickets.filter((t: any) => hotelIds.includes(t.hotel_id));
+        if (hotelIds.length > 0) {
+          ticketData = await ticketsService.getHotelTickets(hotelIds);
+        }
       } else if (user.role === UserRole.RECEPCAO) {
         // Reception sees only their created tickets
         ticketData = await ticketsService.getMyTickets(user.id);

@@ -57,6 +57,14 @@ export default function TicketList() {
       if (user.role === UserRole.ADMIN) {
         // Admin can see all tickets
         ticketData = await ticketsService.getAll();
+      } else if (user.role === UserRole.TECNICO) {
+        // Technicians see all tickets from their hotels
+        const userHotels = await hotelsService.getUserHotels(user.id);
+        const hotelIds = userHotels.map((uh: any) => uh.hotel_id);
+        
+        if (hotelIds.length > 0) {
+          ticketData = await ticketsService.getHotelTickets(hotelIds);
+        }
       } else {
         // Other users see only their created tickets (enforced by RLS)
         ticketData = await ticketsService.getMyTickets(user.id);
