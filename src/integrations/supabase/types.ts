@@ -133,6 +133,7 @@ export type Database = {
           description: string | null
           hotel_id: string
           id: string
+          images: string[] | null
           priority: Database["public"]["Enums"]["ticket_priority"]
           room_id: string | null
           room_number: string | null
@@ -151,6 +152,7 @@ export type Database = {
           description?: string | null
           hotel_id: string
           id?: string
+          images?: string[] | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
           room_id?: string | null
           room_number?: string | null
@@ -169,6 +171,7 @@ export type Database = {
           description?: string | null
           hotel_id?: string
           id?: string
+          images?: string[] | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
           room_id?: string | null
           room_number?: string | null
@@ -323,6 +326,14 @@ export type Database = {
       fix_admin_user_id: {
         Args: { new_auth_id: string }
         Returns: Json
+      }
+      get_hotel_technicians: {
+        Args: { _hotel_id: string }
+        Returns: {
+          display_name: string
+          email: string
+          id: string
+        }[]
       }
       get_user_display_name: {
         Args: { _user_id: string }

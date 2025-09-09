@@ -10,6 +10,7 @@ export interface CreateTicketInput {
   description: string;
   hotel_id: string;
   creator_id: string;
+  images?: string[];
 }
 
 export interface UpdateTicketInput {
@@ -19,13 +20,14 @@ export interface UpdateTicketInput {
   solution?: string;
   solution_images?: string[];
   closed_at?: string;
+  images?: string[];
 }
 
 class TicketsService {
   async create(input: CreateTicketInput) {
     const { data, error } = await supabase
       .from('tickets')
-      .insert([input])
+      .insert([{ ...input, images: input.images || [] }])
       .select()
       .single();
 

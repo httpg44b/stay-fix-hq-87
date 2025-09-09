@@ -22,14 +22,20 @@ import { PriorityBadge } from '@/components/PriorityBadge';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Upload, X, Save, CheckCircle, Loader2, Calendar, User, MapPin, FileText, Building } from 'lucide-react';
+import { 
+  Upload, X, Save, CheckCircle, Loader2, Calendar, User, MapPin, 
+  FileText, Building, ImageIcon, Eye, Download, UserCheck 
+} from 'lucide-react';
 import { TicketStatus, statusLabels, categoryLabels, UserRole } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
+import { storageService } from '@/services/storage.service';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { TechnicianName } from '@/components/TechnicianName';
+import { supabase } from '@/integrations/supabase/client';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface TicketModalProps {
   ticketId: string | null;
@@ -43,11 +49,18 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const { toast } = useToast();
   const [ticket, setTicket] = useState<any>(null);
   const [hotel, setHotel] = useState<any>(null);
+  const [technicians, setTechnicians] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [solution, setSolution] = useState('');
   const [status, setStatus] = useState<TicketStatus>(TicketStatus.NEW);
+  const [selectedTechnician, setSelectedTechnician] = useState<string>('');
   const [solutionImages, setSolutionImages] = useState<string[]>([]);
+  const [ticketImages, setTicketImages] = useState<string[]>([]);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>('');
 
   useEffect(() => {
     if (ticketId && isOpen) {
@@ -64,12 +77,24 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       setTicket(data);
       setSolution(data.solution || '');
       setStatus(data.status);
+      setSelectedTechnician(data.assignee_id || '');
       setSolutionImages(data.solution_images || []);
+      setTicketImages(data.images || []);
       
       // Load hotel info
       if (data.hotel_id) {
         const hotelData = await hotelsService.getById(data.hotel_id);
         setHotel(hotelData);
+        
+        // Load technicians for this hotel (admin only)
+        if (user?.role === UserRole.ADMIN) {
+          const { data: techData, error: techError } = await supabase
+            .rpc('get_hotel_technicians', { _hotel_id: data.hotel_id });
+          
+          if (!techError && techData) {
+            setTechnicians(techData);
+          }
+        }
       }
     } catch (error: any) {
       console.error('Error loading ticket:', error);
@@ -83,16 +108,121 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isSolution: boolean = false) => {
+    const files = e.target.files;
+    if (!files || !ticketId) return;
+
+    try {
+      setUploading(true);
+      const uploadedUrls: string[] = [];
+
+      for (const file of Array.from(files)) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            title: 'Arquivo muito grande',
+            description: `${file.name} excede o limite de 5MB`,
+            variant: 'destructive',
+          });
+          continue;
+        }
+
+        const url = await storageService.uploadTicketImage(file, ticketId);
+        uploadedUrls.push(url);
+      }
+
+      if (isSolution) {
+        setSolutionImages(prev => [...prev, ...uploadedUrls]);
+      } else {
+        const updatedImages = [...ticketImages, ...uploadedUrls];
+        setTicketImages(updatedImages);
+        
+        // Update ticket with new images immediately
+        await ticketsService.update(ticketId, { images: updatedImages });
+      }
+
+      toast({
+        title: 'Imagens enviadas',
+        description: `${uploadedUrls.length} imagem(ns) enviada(s) com sucesso.`,
+      });
+    } catch (error: any) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: 'Erro ao enviar imagens',
+        description: error.message || 'Ocorreu um erro ao enviar as imagens.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = async (url: string, isSolution: boolean = false) => {
+    try {
+      await storageService.deleteTicketImage(url);
+      
+      if (isSolution) {
+        setSolutionImages(prev => prev.filter(img => img !== url));
+      } else {
+        const updatedImages = ticketImages.filter(img => img !== url);
+        setTicketImages(updatedImages);
+        
+        if (ticketId) {
+          await ticketsService.update(ticketId, { images: updatedImages });
+        }
+      }
+    } catch (error) {
+      console.error('Error removing image:', error);
+      toast({
+        title: 'Erro ao remover imagem',
+        description: 'Não foi possível remover a imagem.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleSave = async () => {
+    // Validations
+    if (status === TicketStatus.COMPLETED) {
+      if (user?.role === UserRole.TECNICO && !solution) {
+        toast({
+          title: 'Solução obrigatória',
+          description: 'Técnicos devem fornecer uma solução antes de fechar o chamado.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      if (user?.role === UserRole.TECNICO || (user?.role === UserRole.ADMIN && solution)) {
+        setShowCloseConfirm(true);
+        return;
+      }
+      
+      if (user?.role === UserRole.ADMIN && !solution) {
+        setShowCloseConfirm(true);
+        return;
+      }
+    }
+    
+    performSave();
+  };
+
+  const performSave = async () => {
     try {
       setSaving(true);
       
-      await ticketsService.update(ticket.id, {
+      const updateData: any = {
         status,
         solution,
         solution_images: solutionImages,
         ...(status === TicketStatus.COMPLETED && { closed_at: new Date().toISOString() })
-      });
+      };
+      
+      // Admin can change technician
+      if (user?.role === UserRole.ADMIN && selectedTechnician !== ticket.assignee_id) {
+        updateData.assignee_id = selectedTechnician || null;
+      }
+      
+      await ticketsService.update(ticket.id, updateData);
 
       toast({
         title: 'Chamado atualizado',
@@ -110,234 +240,380 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       });
     } finally {
       setSaving(false);
+      setShowCloseConfirm(false);
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      // In a real app, upload to server and get URLs
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
-      setSolutionImages(prev => [...prev, ...newImages]);
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setSolutionImages(prev => prev.filter((_, i) => i !== index));
+  const openImageViewer = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setImageViewerOpen(true);
   };
 
   const canEdit = user?.role === UserRole.ADMIN || 
                    user?.role === UserRole.TECNICO ||
                    (user?.role === UserRole.RECEPCAO && ticket?.creator_id === user?.id);
 
+  const canChangeTechnician = user?.role === UserRole.ADMIN;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : ticket ? (
-          <>
-            <DialogHeader>
-              <DialogTitle className="text-xl">{ticket.title}</DialogTitle>
-              <DialogDescription className="flex items-center gap-4 mt-2">
-                <StatusBadge status={ticket.status} />
-                <PriorityBadge priority={ticket.priority} />
-                <Badge variant="outline">
-                  {categoryLabels[ticket.category as keyof typeof categoryLabels]}
-                </Badge>
-              </DialogDescription>
-            </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : ticket ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl">{ticket.title}</DialogTitle>
+                <DialogDescription className="flex items-center gap-4 mt-2">
+                  <StatusBadge status={ticket.status} />
+                  <PriorityBadge priority={ticket.priority} />
+                  <Badge variant="outline">
+                    {categoryLabels[ticket.category as keyof typeof categoryLabels]}
+                  </Badge>
+                </DialogDescription>
+              </DialogHeader>
 
-            <ScrollArea className="max-h-[60vh] pr-4">
-              <div className="space-y-6">
-                {/* Ticket Details */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Quarto/Área:</span>
-                      <span className="font-medium">{ticket.room_number}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Hotel:</span>
-                      <span className="font-medium">{hotel?.name || '-'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Criado em:</span>
-                      <span className="font-medium">
-                        {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
-                      </span>
-                    </div>
-                     <div className="flex items-center gap-2">
-                       <User className="h-4 w-4 text-muted-foreground" />
-                       <span className="text-muted-foreground">Técnico:</span>
-                       <span className="font-medium">
-                         <TechnicianName assigneeId={ticket.assignee_id} />
-                       </span>
-                     </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Descrição
-                    </Label>
-                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                      {ticket.description}
-                    </p>
-                  </div>
-
-                  {/* Status Update */}
-                  {canEdit && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <Label htmlFor="status">Status do Chamado</Label>
-                        <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
-                          <SelectTrigger id="status">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(statusLabels).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+              <ScrollArea className="max-h-[65vh] pr-4">
+                <div className="space-y-6">
+                  {/* Ticket Details */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Quarto/Área:</span>
+                        <span className="font-medium">{ticket.room_number}</span>
                       </div>
-                    </>
-                  )}
-
-                  {/* Solution Section */}
-                  {(canEdit || solution) && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <Label htmlFor="solution" className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4" />
-                          Solução
-                        </Label>
-                        {canEdit ? (
-                          <Textarea
-                            id="solution"
-                            placeholder="Descreva a solução aplicada ou o andamento do chamado..."
-                            value={solution}
-                            onChange={(e) => setSolution(e.target.value)}
-                            rows={4}
-                            className="resize-none"
-                          />
-                        ) : (
-                          <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                            {solution || 'Nenhuma solução registrada ainda.'}
-                          </p>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <Building className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Hotel:</span>
+                        <span className="font-medium">{hotel?.name || '-'}</span>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Criado em:</span>
+                        <span className="font-medium">
+                          {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Técnico:</span>
+                        <span className="font-medium">
+                          <TechnicianName assigneeId={ticket.assignee_id} />
+                        </span>
+                      </div>
+                    </div>
 
-                      {/* Solution Images */}
-                      {canEdit && (
+                    <Separator />
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Descrição
+                      </Label>
+                      <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                        {ticket.description}
+                      </p>
+                    </div>
+
+                    {/* Ticket Images */}
+                    {(ticketImages.length > 0 || canEdit) && (
+                      <>
+                        <Separator />
                         <div className="space-y-2">
-                          <Label>Anexar Imagens da Solução</Label>
-                          <div className="flex items-center gap-4">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => document.getElementById('solution-image-upload')?.click()}
-                            >
-                              <Upload className="mr-2 h-4 w-4" />
-                              Adicionar Fotos
-                            </Button>
-                            <input
-                              id="solution-image-upload"
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              className="hidden"
-                              onChange={handleImageUpload}
-                            />
-                            {solutionImages.length > 0 && (
-                              <span className="text-sm text-muted-foreground">
-                                {solutionImages.length} foto(s) adicionada(s)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {solutionImages.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2">
-                          {solutionImages.map((img, index) => (
-                            <div key={index} className="relative group">
-                              <img
-                                src={img}
-                                alt={`Solução ${index + 1}`}
-                                className="w-full h-24 object-cover rounded-lg border"
+                          <Label className="flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4" />
+                            Imagens do Chamado
+                          </Label>
+                          
+                          {ticketImages.length > 0 && (
+                            <div className="grid grid-cols-3 gap-2">
+                              {ticketImages.map((img, index) => (
+                                <div key={index} className="relative group">
+                                  <img
+                                    src={img}
+                                    alt={`Imagem ${index + 1}`}
+                                    className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => openImageViewer(img)}
+                                  />
+                                  {canEdit && (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(img, false)}
+                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openImageViewer(img);
+                                    }}
+                                    className="absolute bottom-1 left-1 bg-black/50 text-white rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <Eye className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {canEdit && (
+                            <div className="flex items-center gap-4">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={uploading}
+                                onClick={() => document.getElementById('ticket-image-upload')?.click()}
+                              >
+                                {uploading ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Upload className="mr-2 h-4 w-4" />
+                                )}
+                                Adicionar Imagens
+                              </Button>
+                              <input
+                                id="ticket-image-upload"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => handleImageUpload(e, false)}
                               />
-                              {canEdit && (
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Status and Technician Update */}
+                    {canEdit && (
+                      <>
+                        <Separator />
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="status">Status do Chamado</Label>
+                            <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
+                              <SelectTrigger id="status">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(statusLabels).map(([value, label]) => (
+                                  <SelectItem key={value} value={value}>
+                                    {label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          {canChangeTechnician && (
+                            <div className="space-y-2">
+                              <Label htmlFor="technician">
+                                <UserCheck className="inline h-4 w-4 mr-1" />
+                                Técnico Responsável
+                              </Label>
+                              <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
+                                <SelectTrigger id="technician">
+                                  <SelectValue placeholder="Selecione um técnico" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="">Não atribuído</SelectItem>
+                                  {technicians.map((tech) => (
+                                    <SelectItem key={tech.id} value={tech.id}>
+                                      {tech.display_name} ({tech.email})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Solution Section */}
+                    {(canEdit || solution) && (
+                      <>
+                        <Separator />
+                        <div className="space-y-2">
+                          <Label htmlFor="solution" className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            Solução
+                          </Label>
+                          {canEdit ? (
+                            <Textarea
+                              id="solution"
+                              placeholder="Descreva a solução aplicada ou o andamento do chamado..."
+                              value={solution}
+                              onChange={(e) => setSolution(e.target.value)}
+                              rows={4}
+                              className="resize-none"
+                            />
+                          ) : (
+                            <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                              {solution || 'Nenhuma solução registrada ainda.'}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Solution Images */}
+                        {canEdit && (
+                          <div className="space-y-2">
+                            <Label>Anexar Imagens da Solução</Label>
+                            <div className="flex items-center gap-4">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={uploading}
+                                onClick={() => document.getElementById('solution-image-upload')?.click()}
+                              >
+                                {uploading ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Upload className="mr-2 h-4 w-4" />
+                                )}
+                                Adicionar Fotos
+                              </Button>
+                              <input
+                                id="solution-image-upload"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => handleImageUpload(e, true)}
+                              />
+                              {solutionImages.length > 0 && (
+                                <span className="text-sm text-muted-foreground">
+                                  {solutionImages.length} foto(s) adicionada(s)
+                                </span>
                               )}
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        )}
+
+                        {solutionImages.length > 0 && (
+                          <div className="grid grid-cols-3 gap-2">
+                            {solutionImages.map((img, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={img}
+                                  alt={`Solução ${index + 1}`}
+                                  className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => openImageViewer(img)}
+                                />
+                                {canEdit && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeImage(img, true)}
+                                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </ScrollArea>
+
+              {canEdit && (
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={onClose}>
+                    Cancelar
+                  </Button>
+                  {status === TicketStatus.COMPLETED ? (
+                    <Button onClick={handleSave} disabled={saving}>
+                      {saving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Fechando...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Fechar Chamado
+                        </>
                       )}
-                    </>
+                    </Button>
+                  ) : (
+                    <Button onClick={handleSave} disabled={saving}>
+                      {saving ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          Salvar Alterações
+                        </>
+                      )}
+                    </Button>
                   )}
                 </div>
-              </div>
-            </ScrollArea>
+              )}
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
-            {canEdit && (
-              <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button variant="outline" onClick={onClose}>
-                  Cancelar
-                </Button>
-                {status === TicketStatus.COMPLETED ? (
-                  <Button onClick={handleSave} disabled={saving}>
-                    {saving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Fechando...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Fechar Chamado
-                      </>
-                    )}
-                  </Button>
-                ) : (
-                  <Button onClick={handleSave} disabled={saving}>
-                    {saving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Salvar Alterações
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            )}
-          </>
-        ) : null}
-      </DialogContent>
-    </Dialog>
+      {/* Close Confirmation Dialog */}
+      <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Fechamento</AlertDialogTitle>
+            <AlertDialogDescription>
+              {user?.role === UserRole.ADMIN && !solution
+                ? 'Você está fechando este chamado sem uma solução. Deseja continuar?'
+                : 'Tem certeza que deseja fechar este chamado? Esta ação não pode ser desfeita.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={performSave}>
+              Confirmar Fechamento
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Image Viewer Dialog */}
+      <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Visualizar Imagem</DialogTitle>
+          </DialogHeader>
+          <div className="relative">
+            <img
+              src={selectedImage}
+              alt="Imagem ampliada"
+              className="w-full h-auto rounded-lg"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={() => window.open(selectedImage, '_blank')}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Abrir Original
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
