@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,18 +28,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const smtpHost = Deno.env.get('SMTP_HOST');
-    const smtpPort = Number(Deno.env.get('SMTP_PORT') ?? '587');
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPass = Deno.env.get('SMTP_PASSWORD');
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
-    if (!smtpHost || !smtpUser || !smtpPass) {
-      console.error('SMTP not configured. Please set SMTP_HOST, SMTP_USER, SMTP_PASSWORD (and optional SMTP_PORT) in Supabase secrets');
+    if (!resendApiKey) {
+      console.error('Resend API key not configured. Please set RESEND_API_KEY in Supabase secrets');
       return new Response(
         JSON.stringify({ message: 'Email service not configured' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
+
+    const resend = new Resend(resendApiKey);
 
     const { 
       technicianEmail, 
@@ -157,29 +156,15 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Send email via SMTP
-    const client = new SmtpClient();
-    const connectFn = smtpPort === 465 ? client.connectTLS.bind(client) : client.connect.bind(client);
-    await connectFn({
-      hostname: smtpHost,
-      port: smtpPort,
-      username: smtpUser,
-      password: smtpPass,
+    // Send email via Resend
+    const emailResponse = await resend.emails.send({
+      from: "MAJ TECH <onboarding@resend.dev>",
+      to: technicianEmail,
+      subject: `🔧 Novo chamado atribuído - ${ticketTitle}`,
+      html: emailHtml,
     });
 
-    try {
-      await client.send({
-        from: `MAJ TECH <${smtpUser}>`,
-        to: technicianEmail,
-        subject: `🔧 Novo chamado atribuído - ${ticketTitle}`,
-        content: stripHtml(emailHtml),
-        html: emailHtml,
-      } as any);
-    } finally {
-      await client.close();
-    }
-
-    console.log("Assignment email sent successfully via SMTP:", technicianEmail);
+    console.log("Assignment email sent successfully via Resend:", technicianEmail, emailResponse);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

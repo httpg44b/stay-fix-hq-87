@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,20 +28,17 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
-    const smtpHost = Deno.env.get('SMTP_HOST');
-    const smtpPort = Number(Deno.env.get('SMTP_PORT') ?? '587');
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPass = Deno.env.get('SMTP_PASSWORD');
-
-    if (!smtpHost || !smtpUser || !smtpPass) {
-      console.error('SMTP not configured. Please set SMTP_HOST, SMTP_USER, SMTP_PASSWORD (and optional SMTP_PORT) in Supabase secrets');
+    if (!resendApiKey) {
+      console.error('Resend API key not configured. Please set RESEND_API_KEY in Supabase secrets');
       return new Response(
         JSON.stringify({ message: 'Email service not configured' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }
 
+    const resend = new Resend(resendApiKey);
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { user_id, ticket_id, type, title, message }: NotificationEmailRequest = await req.json();
@@ -141,29 +138,15 @@ serve(async (req) => {
       `;
     }
 
-    // Send email via SMTP
-    const client = new SmtpClient();
-    const connectFn = smtpPort === 465 ? client.connectTLS.bind(client) : client.connect.bind(client);
-    await connectFn({
-      hostname: smtpHost,
-      port: smtpPort,
-      username: smtpUser,
-      password: smtpPass,
+    // Send email via Resend
+    const emailResponse = await resend.emails.send({
+      from: "MAJ TECH <onboarding@resend.dev>",
+      to: userData.email,
+      subject: emailSubject,
+      html: emailHtml,
     });
 
-    try {
-      await client.send({
-        from: `MAJ TECH <${smtpUser}>`,
-        to: userData.email,
-        subject: emailSubject,
-        content: stripHtml(emailHtml),
-        html: emailHtml,
-      } as any);
-    } finally {
-      await client.close();
-    }
-
-    console.log("Email sent successfully via SMTP to:", userData.email);
+    console.log("Email sent successfully via Resend to:", userData.email, emailResponse);
 
     return new Response(
       JSON.stringify({ success: true, message: 'Email sent successfully' }),
