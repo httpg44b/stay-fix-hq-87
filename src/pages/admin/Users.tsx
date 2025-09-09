@@ -90,7 +90,7 @@ export function Users() {
 
     setPasswordLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('admin-update-password', {
+      const { error } = await supabase.functions.invoke('admin-reset-password', {
         body: { userId: selectedUserForPassword.id, newPassword: passwordForm.newPassword }
       });
       if (error) throw error;
@@ -359,13 +359,23 @@ export function Users() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleEdit(user)}
+                            title="Éditer"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => openPasswordDialog(user)}
+                            title="Changer le mot de passe"
+                          >
+                            <KeyRound className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleToggleActive(user)}
+                            title={user.is_active ? 'Désactiver' : 'Activer'}
                           >
                             {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                           </Button>
@@ -374,6 +384,7 @@ export function Users() {
                             size="icon"
                             onClick={() => handleDelete(user)}
                             disabled={isDeleting === user.id}
+                            title="Supprimer"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -387,6 +398,55 @@ export function Users() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Password Change Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Changer le mot de passe</DialogTitle>
+            <DialogDescription>
+              Définir un nouveau mot de passe pour {selectedUserForPassword?.display_name}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePasswordChangeSubmit}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  required
+                  minLength={6}
+                  placeholder="Minimum 6 caractères"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  required
+                  placeholder="Retapez le mot de passe"
+                />
+              </div>
+            </div>
+            
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" disabled={passwordLoading}>
+                {passwordLoading ? 'Mise à jour...' : 'Changer le mot de passe'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

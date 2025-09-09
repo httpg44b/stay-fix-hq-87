@@ -21,24 +21,21 @@ export function ForgotPassword() {
     setLoading(true);
 
     try {
-      // Get the current URL (preview or production)
-      const currentUrl = window.location.origin;
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${currentUrl}/reset-password`,
+      const { data, error } = await supabase.functions.invoke('reset-password-temporary', {
+        body: { email }
       });
 
       if (error) throw error;
 
       setEmailSent(true);
       toast({
-        title: 'Email enviado!',
-        description: 'Verifique sua caixa de entrada para redefinir sua senha.',
+        title: 'Email envoyé!',
+        description: 'Si un compte existe avec cet email, un mot de passe temporaire a été envoyé.',
       });
     } catch (error: any) {
       toast({
-        title: 'Erro ao enviar email',
-        description: error.message || 'Não foi possível enviar o email de recuperação.',
+        title: 'Erreur',
+        description: error.message || 'Impossible d\'envoyer l\'email.',
         variant: 'destructive'
       });
     } finally {
@@ -54,16 +51,16 @@ export function ForgotPassword() {
             <div className="mx-auto mb-4 p-3 bg-green-100 dark:bg-green-900 rounded-full w-fit">
               <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
-            <CardTitle className="text-2xl">Email Enviado!</CardTitle>
+            <CardTitle className="text-2xl">Email Envoyé!</CardTitle>
             <CardDescription>
-              Enviamos um link de recuperação para <strong>{email}</strong>
+              Un mot de passe temporaire a été envoyé à <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
               <AlertDescription>
-                Verifique sua caixa de entrada e clique no link para redefinir sua senha.
-                O link expira em 1 hora.
+                Vérifiez votre boîte de réception et utilisez le mot de passe temporaire pour vous connecter.
+                Nous vous recommandons de changer ce mot de passe après la connexion.
               </AlertDescription>
             </Alert>
             
@@ -74,7 +71,7 @@ export function ForgotPassword() {
                 onClick={() => navigate('/login')}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar ao Login
+                Retour à la connexion
               </Button>
               
               <Button
@@ -85,7 +82,7 @@ export function ForgotPassword() {
                   setEmail('');
                 }}
               >
-                Não recebeu? Tentar novamente
+                Pas reçu? Réessayer
               </Button>
             </div>
           </CardContent>
@@ -101,9 +98,9 @@ export function ForgotPassword() {
           <div className="mx-auto mb-4 p-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full w-fit">
             <Mail className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl">Esqueceu sua senha?</CardTitle>
+          <CardTitle className="text-2xl">Mot de passe oublié?</CardTitle>
           <CardDescription>
-            Digite seu email e enviaremos um link para redefinir sua senha
+            Entrez votre email et nous vous enverrons un mot de passe temporaire
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -116,13 +113,13 @@ export function ForgotPassword() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="seu@email.com"
+                placeholder="votre@email.com"
                 autoComplete="email"
               />
             </div>
             
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Enviando...' : 'Enviar Link de Recuperação'}
+              {loading ? 'Envoi...' : 'Envoyer le mot de passe temporaire'}
             </Button>
           </form>
           
@@ -132,7 +129,7 @@ export function ForgotPassword() {
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="inline-block mr-1 h-3 w-3" />
-              Voltar ao login
+              Retour à la connexion
             </Link>
           </div>
         </CardContent>
