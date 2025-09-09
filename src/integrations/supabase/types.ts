@@ -50,6 +50,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          ticket_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          ticket_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          ticket_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rooms: {
         Row: {
           created_at: string
@@ -247,6 +288,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_notification: {
+        Args: {
+          _message: string
+          _ticket_id: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: string
+      }
       create_user_as_admin: {
         Args: {
           p_display_name: string
@@ -272,6 +323,10 @@ export type Database = {
       fix_admin_user_id: {
         Args: { new_auth_id: string }
         Returns: Json
+      }
+      get_user_display_name: {
+        Args: { _user_id: string }
+        Returns: string
       }
       is_admin: {
         Args: Record<PropertyKey, never>
