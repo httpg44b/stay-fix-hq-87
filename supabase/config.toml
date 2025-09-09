@@ -3,6 +3,9 @@ project_id = "vesffhlaeycsulblwxsa"
 [functions.send-assignment-email]
 verify_jwt = false
 
+[functions.send-notification-email]
+verify_jwt = false
+
 [functions.reset-password-temporary]
 verify_jwt = false
 
