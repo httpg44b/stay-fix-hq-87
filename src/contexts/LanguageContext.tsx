@@ -780,6 +780,31 @@ const translations = {
     'ticket.addPhotos': 'Ajouter des Photos',
     'ticket.photosAdded': 'photo(s) ajoutée(s)',
     'ticket.openTicket': 'Ouvrir l\'Appel',
+    'ticket.assigned': 'Appel attribué',
+    'ticket.assignedSuccess': 'L\'appel vous a été attribué avec succès.',
+    
+    // MyTickets specific
+    'myTickets.subtitle': 'Gérer vos appels attribués',
+    'myTickets.activeTickets': 'Appels Actifs',
+    'myTickets.inProgress': 'En cours',
+    'myTickets.unassigned': 'Non Attribués',
+    'myTickets.availableToTake': 'Disponibles à prendre',
+    'myTickets.active': 'Actifs',
+    'myTickets.completed': 'Terminés',
+    'myTickets.availableTickets': 'Appels Disponibles',
+    'myTickets.unassignedFromHotels': 'Appels non attribués de vos hôtels',
+    'myTickets.noAvailableTickets': 'Aucun appel disponible à prendre',
+    'myTickets.take': 'Prendre',
+    'myTickets.currentlyAssignedToYou': 'Appels actuellement attribués à vous',
+    'myTickets.noActiveTickets': 'Aucun appel actif',
+    'myTickets.completedTickets': 'Appels Terminés',
+    'myTickets.historyFinalized': 'Historique des appels finalisés',
+    'myTickets.noCompletedTickets': 'Aucun appel terminé',
+    'myTickets.completedOn': 'Terminé le',
+    
+    // Additional errors
+    'errors.assigningTicket': 'Erreur lors de l\'attribution de l\'appel',
+    'errors.assigningTicketDesc': 'Une erreur s\'est produite lors de l\'attribution de l\'appel.',
   },
 };
 
