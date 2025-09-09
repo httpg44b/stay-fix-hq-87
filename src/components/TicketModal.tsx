@@ -420,12 +420,12 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                 <UserCheck className="inline h-4 w-4 mr-1" />
                                 Técnico Responsável
                               </Label>
-                              <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
+                              <Select value={selectedTechnician || "unassigned"} onValueChange={(value) => setSelectedTechnician(value === "unassigned" ? "" : value)}>
                                 <SelectTrigger id="technician">
                                   <SelectValue placeholder="Selecione um técnico" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="">Não atribuído</SelectItem>
+                                  <SelectItem value="unassigned">Não atribuído</SelectItem>
                                   {technicians.map((tech) => (
                                     <SelectItem key={tech.id} value={tech.id}>
                                       {tech.display_name} ({tech.email})
