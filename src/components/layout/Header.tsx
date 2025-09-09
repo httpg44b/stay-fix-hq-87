@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { roleLabels } from '@/lib/constants';
+import { roleLabels, UserRole } from '@/lib/constants';
 import { Bell, User, Sun, Moon, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,11 +15,30 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { hotelsService } from '@/services/hotels.service';
 
 export const Header = () => {
   const { user, logout } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { t } = useLanguage();
+  const [userHotel, setUserHotel] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserHotel = async () => {
+      if (user && user.role === UserRole.RECEPCAO) {
+        try {
+          const hotels = await hotelsService.getUserHotels(user.id);
+          if (hotels.length > 0) {
+            setUserHotel(hotels[0].hotels.name);
+          }
+        } catch (error) {
+          console.error('Error loading user hotel:', error);
+        }
+      }
+    };
+    loadUserHotel();
+  }, [user]);
 
   if (!user) return null;
 
@@ -91,6 +110,9 @@ export const Header = () => {
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">{user.name}</p>
+                  {userHotel && user.role === UserRole.RECEPCAO && (
+                    <p className="text-xs text-muted-foreground font-medium">{userHotel}</p>
+                  )}
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
