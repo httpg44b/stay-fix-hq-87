@@ -95,6 +95,8 @@ export type Database = {
           priority: Database["public"]["Enums"]["ticket_priority"]
           room_id: string | null
           room_number: string | null
+          solution: string | null
+          solution_images: string[] | null
           status: Database["public"]["Enums"]["ticket_status"]
           title: string
           updated_at: string
@@ -111,6 +113,8 @@ export type Database = {
           priority?: Database["public"]["Enums"]["ticket_priority"]
           room_id?: string | null
           room_number?: string | null
+          solution?: string | null
+          solution_images?: string[] | null
           status?: Database["public"]["Enums"]["ticket_status"]
           title: string
           updated_at?: string
@@ -127,6 +131,8 @@ export type Database = {
           priority?: Database["public"]["Enums"]["ticket_priority"]
           room_id?: string | null
           room_number?: string | null
+          solution?: string | null
+          solution_images?: string[] | null
           status?: Database["public"]["Enums"]["ticket_status"]
           title?: string
           updated_at?: string

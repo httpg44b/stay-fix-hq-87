@@ -15,6 +15,9 @@ export interface UpdateTicketInput {
   status?: TicketStatus;
   assignee_id?: string;
   priority?: TicketPriority;
+  solution?: string;
+  solution_images?: string[];
+  closed_at?: string;
 }
 
 class TicketsService {

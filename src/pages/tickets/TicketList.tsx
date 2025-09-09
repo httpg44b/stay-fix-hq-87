@@ -29,6 +29,7 @@ import { statusLabels, priorityLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
 import { useToast } from '@/hooks/use-toast';
+import { TicketModal } from '@/components/TicketModal';
 
 export default function TicketList() {
   const { user } = useAuth();
@@ -41,6 +42,8 @@ export default function TicketList() {
   const [tickets, setTickets] = useState<any[]>([]);
   const [hotels, setHotels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (!user) return null;
 
@@ -105,6 +108,20 @@ export default function TicketList() {
 
     return matchesSearch && matchesStatus && matchesPriority && matchesHotel;
   });
+
+  const handleTicketClick = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedTicketId(null);
+  };
+
+  const handleTicketUpdate = () => {
+    loadData(); // Reload tickets after update
+  };
 
   const exportToCSV = () => {
     // Implement CSV export
@@ -273,7 +290,7 @@ export default function TicketList() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/tickets/${ticket.id}`)}
+                            onClick={() => handleTicketClick(ticket.id)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -288,6 +305,13 @@ export default function TicketList() {
         </Card>
         </>
         )}
+        
+        <TicketModal
+          ticketId={selectedTicketId}
+          isOpen={modalOpen}
+          onClose={handleModalClose}
+          onUpdate={handleTicketUpdate}
+        />
       </div>
     </AppLayout>
   );

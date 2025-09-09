@@ -14,6 +14,7 @@ import { usersService } from '@/services/users.service';
 import { hotelsService } from '@/services/hotels.service';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { TicketModal } from '@/components/TicketModal';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -23,6 +24,8 @@ export default function Dashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [hotels, setHotels] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (!user) return null;
 
@@ -106,6 +109,20 @@ export default function Dashboard() {
   const myTickets = user.role === UserRole.TECNICO 
     ? tickets.filter(t => t.assignee_id === user.id)
     : [];
+
+  const handleTicketClick = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedTicketId(null);
+  };
+
+  const handleTicketUpdate = () => {
+    loadData(); // Reload tickets after update
+  };
 
   return (
     <AppLayout>
@@ -218,7 +235,7 @@ export default function Dashboard() {
                 <div
                   key={ticket.id}
                   className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
-                  onClick={() => navigate(`/tickets/${ticket.id}`)}
+                  onClick={() => handleTicketClick(ticket.id)}
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -279,7 +296,7 @@ export default function Dashboard() {
                     <div
                       key={ticket.id}
                       className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/tickets/${ticket.id}`)}
+                      onClick={() => handleTicketClick(ticket.id)}
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -344,6 +361,13 @@ export default function Dashboard() {
         )}
         </>
         )}
+        
+        <TicketModal
+          ticketId={selectedTicketId}
+          isOpen={modalOpen}
+          onClose={handleModalClose}
+          onUpdate={handleTicketUpdate}
+        />
       </div>
     </AppLayout>
   );
