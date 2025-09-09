@@ -38,7 +38,7 @@ export default function Login() {
               className="h-24 w-auto"
             />
           </div>
-          <CardTitle className="text-2xl font-display">MAJ TECH</CardTitle>
+          <CardTitle className="text-2xl font-display">MAJ DESK</CardTitle>
           <CardDescription>
             Système de Gestion de Maintenance
           </CardDescription>
