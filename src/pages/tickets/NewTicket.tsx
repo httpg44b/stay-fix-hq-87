@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { UserRole, TicketCategory, TicketPriority } from '@/lib/constants';
@@ -18,12 +18,15 @@ import { Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { categoryLabels, priorityLabels } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
+import { ticketsService } from '@/services/tickets.service';
+import { hotelsService } from '@/services/hotels.service';
 
 export default function NewTicket() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userHotelId, setUserHotelId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     roomNumber: '',
@@ -34,6 +37,22 @@ export default function NewTicket() {
     images: [] as string[]
   });
 
+  useEffect(() => {
+    const loadUserHotel = async () => {
+      if (user) {
+        try {
+          const hotels = await hotelsService.getUserHotels(user.id);
+          if (hotels.length > 0) {
+            setUserHotelId(hotels[0].hotel_id);
+          }
+        } catch (error) {
+          console.error('Error loading user hotel:', error);
+        }
+      }
+    };
+    loadUserHotel();
+  }, [user]);
+
   if (!user || user.role !== UserRole.RECEPCAO) {
     navigate('/dashboard');
     return null;
@@ -41,16 +60,45 @@ export default function NewTicket() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!userHotelId) {
+      toast({
+        title: 'Erro',
+        description: 'Você precisa estar vinculado a um hotel para criar chamados.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await ticketsService.create({
+        room_number: formData.roomNumber,
+        category: formData.category,
+        priority: formData.priority,
+        title: formData.title,
+        description: formData.description,
+        hotel_id: userHotelId,
+        creator_id: user.id,
+      });
+
       toast({
         title: 'Chamado criado com sucesso',
         description: `Chamado para o quarto ${formData.roomNumber} foi criado.`,
       });
+      
       navigate('/tickets');
-    }, 1000);
+    } catch (error: any) {
+      console.error('Error creating ticket:', error);
+      toast({
+        title: 'Erro ao criar chamado',
+        description: error.message || 'Ocorreu um erro ao criar o chamado.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
