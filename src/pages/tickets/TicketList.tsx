@@ -30,6 +30,7 @@ import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
 import { useToast } from '@/hooks/use-toast';
 import { TicketModal } from '@/components/TicketModal';
+import { TechnicianName } from '@/components/TechnicianName';
 
 export default function TicketList() {
   const { user } = useAuth();
@@ -281,7 +282,7 @@ export default function TicketList() {
                           <PriorityBadge priority={ticket.priority} />
                         </TableCell>
                         <TableCell>
-                          {ticket.assignee_id || '-'}
+                          <TechnicianName assigneeId={ticket.assignee_id} />
                         </TableCell>
                         <TableCell>
                           {new Date(ticket.created_at).toLocaleDateString('pt-BR')}

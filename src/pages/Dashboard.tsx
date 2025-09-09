@@ -15,6 +15,7 @@ import { hotelsService } from '@/services/hotels.service';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TicketModal } from '@/components/TicketModal';
+import { TechnicianName } from '@/components/TechnicianName';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -246,9 +247,9 @@ export default function Dashboard() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>Quarto {ticket.room_number}</span>
                       <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
-                      {ticket.assignee_id && (
-                        <span>Técnico: {ticket.assignee_id}</span>
-                      )}
+                       {ticket.assignee_id && (
+                         <span>Técnico: <TechnicianName assigneeId={ticket.assignee_id} inline /></span>
+                       )}
                     </div>
                   </div>
                   <div className="text-sm text-muted-foreground">

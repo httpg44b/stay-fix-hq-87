@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { hotelsService } from '@/services/hotels.service';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
 export const Header = () => {
   const { user, logout } = useAuth();
@@ -89,12 +90,7 @@ export const Header = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
-              3
-            </span>
-          </Button>
+          <NotificationCenter />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

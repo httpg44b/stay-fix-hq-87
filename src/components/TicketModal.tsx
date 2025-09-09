@@ -29,6 +29,7 @@ import { hotelsService } from '@/services/hotels.service';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { TechnicianName } from '@/components/TechnicianName';
 
 interface TicketModalProps {
   ticketId: string | null;
@@ -171,11 +172,13 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Técnico:</span>
-                      <span className="font-medium">{ticket.assignee_id || 'Não atribuído'}</span>
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <User className="h-4 w-4 text-muted-foreground" />
+                       <span className="text-muted-foreground">Técnico:</span>
+                       <span className="font-medium">
+                         <TechnicianName assigneeId={ticket.assignee_id} />
+                       </span>
+                     </div>
                   </div>
 
                   <Separator />

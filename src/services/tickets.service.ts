@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { TicketStatus, TicketPriority, TicketCategory } from '@/lib/constants';
+import { notificationsService } from './notifications.service';
 
 export interface CreateTicketInput {
   room_number: string;
@@ -54,6 +55,13 @@ class TicketsService {
   }
 
   async update(id: string, input: UpdateTicketInput) {
+    // Get the current ticket data before update
+    const { data: currentTicket } = await supabase
+      .from('tickets')
+      .select('*')
+      .eq('id', id)
+      .single();
+
     const { data, error } = await supabase
       .from('tickets')
       .update(input)
@@ -62,6 +70,17 @@ class TicketsService {
       .single();
 
     if (error) throw error;
+
+    // Send email notification if a technician is being assigned
+    if (input.assignee_id && (!currentTicket?.assignee_id || currentTicket.assignee_id !== input.assignee_id)) {
+      try {
+        await notificationsService.sendAssignmentEmail(input.assignee_id, data);
+      } catch (error) {
+        console.error('Error sending assignment email:', error);
+        // Don't fail the update if email fails
+      }
+    }
+
     return data;
   }
 
