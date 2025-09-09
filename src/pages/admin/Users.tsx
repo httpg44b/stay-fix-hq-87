@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { usersService, type User, type CreateUserInput, type UpdateUserInput, type UserRole } from '@/services/users.service';
-import { Plus, Pencil, Trash2, Search, UserCheck, UserX } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, UserCheck, UserX, KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AppLayout } from '@/components/layout/AppLayout';
 
@@ -34,6 +34,12 @@ export function Users() {
     is_active: true
   });
 
+  // Password change dialog state
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<User | null>(null);
+  const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
   useEffect(() => {
     loadUsers();
   }, []);
@@ -54,9 +60,59 @@ export function Users() {
     }
   };
 
+  const openPasswordDialog = (user: User) => {
+    setSelectedUserForPassword(user);
+    setPasswordForm({ newPassword: '', confirmPassword: '' });
+    setIsPasswordDialogOpen(true);
+  };
+
+  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserForPassword) return;
+
+    if (passwordForm.newPassword.length < 6) {
+      toast({
+        title: 'Senha muito curta',
+        description: 'A senha deve ter pelo menos 6 caracteres.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({
+        title: 'Senhas não coincidem',
+        description: 'Digite a mesma senha nos dois campos.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('admin-update-password', {
+        body: { userId: selectedUserForPassword.id, newPassword: passwordForm.newPassword }
+      });
+      if (error) throw error;
+
+      toast({
+        title: 'Senha atualizada',
+        description: `Senha de ${selectedUserForPassword.display_name} alterada com sucesso.`
+      });
+      setIsPasswordDialogOpen(false);
+    } catch (err: any) {
+      toast({
+        title: 'Erro ao alterar senha',
+        description: err.message || 'Não foi possível alterar a senha.',
+        variant: 'destructive'
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     try {
       if (editingUser) {
         // Update existing user

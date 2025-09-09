@@ -19,26 +19,39 @@ export function ResetPassword() {
   const [isValidToken, setIsValidToken] = useState(true); // Start as true to avoid flash
 
   useEffect(() => {
-    // Check if we have a recovery token in the URL
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
-    
-    // Also check search params (sometimes Supabase uses query params)
-    const searchParams = new URLSearchParams(window.location.search);
-    const token = searchParams.get('token') || hashParams.get('access_token');
-    const tokenType = searchParams.get('type') || type;
-    
-    if (tokenType === 'recovery' || token) {
-      setIsValidToken(true);
-    }
+    const processAuth = async () => {
+      try {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const searchParams = new URLSearchParams(window.location.search);
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth event:', event);
-      if (event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
-        setIsValidToken(true);
+        const type = searchParams.get('type') || hashParams.get('type');
+        const code = searchParams.get('code');
+        const access_token = hashParams.get('access_token');
+        const refresh_token = hashParams.get('refresh_token');
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          setIsValidToken(true);
+        } else if (type === 'recovery' && access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (error) throw error;
+          setIsValidToken(true);
+        } else {
+          const { data: { session } } = await supabase.auth.getSession();
+          setIsValidToken(!!session);
+        }
+      } catch (err) {
+        console.error('Erro ao processar token de recuperação:', err);
+        setIsValidToken(false);
       }
-      if (event === 'SIGNED_IN' && session) {
+    };
+
+    processAuth();
+
+    // Listen for auth state changes (sync only)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
         setIsValidToken(true);
       }
     });
