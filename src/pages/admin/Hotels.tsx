@@ -15,6 +15,7 @@ import { HotelUsersList } from '@/components/hotel/HotelUsersList';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Hotels() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -30,6 +31,7 @@ export function Hotels() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -266,10 +268,10 @@ export function Hotels() {
           <div>
             <CardTitle className="text-2xl flex items-center gap-2">
               <Building2 className="h-6 w-6" />
-              Gerenciar Hotéis
+              {t('nav.hotels')}
             </CardTitle>
             <CardDescription>
-              Gerencie os hotéis cadastrados no sistema
+              {t('hotel.subtitle')}
             </CardDescription>
           </div>
           <Button onClick={() => {
@@ -277,7 +279,7 @@ export function Hotels() {
             setIsDialogOpen(true);
           }}>
             <Plus className="mr-2 h-4 w-4" />
-            Novo Hotel
+            {t('hotel.newHotel')}
           </Button>
         </div>
       </CardHeader>
@@ -286,7 +288,7 @@ export function Hotels() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Buscar por nome, endereço ou CNPJ/SIREN..."
+              placeholder={t('hotel.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -296,29 +298,29 @@ export function Hotels() {
 
         <div className="border rounded-lg">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Endereço</TableHead>
-                <TableHead>Contato</TableHead>
-                <TableHead>CNPJ/SIREN</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Criado em</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('hotel.name')}</TableHead>
+                  <TableHead>{t('hotel.address')}</TableHead>
+                  <TableHead>{t('common.contact')}</TableHead>
+                  <TableHead>{t('hotel.cnpj')}</TableHead>
+                  <TableHead>{t('user.status')}</TableHead>
+                  <TableHead>{t('hotel.createdAt')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    Carregando...
-                  </TableCell>
-                </TableRow>
-              ) : filteredHotels.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    Nenhum hotel encontrado
-                  </TableCell>
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      {t('common.loading')}
+                    </TableCell>
+                  </TableRow>
+                ) : filteredHotels.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      {t('hotel.noHotels')}
+                    </TableCell>
                 </TableRow>
               ) : (
                 filteredHotels.map((hotel) => (
@@ -370,7 +372,7 @@ export function Hotels() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={hotel.is_active ? 'default' : 'secondary'}>
-                        {hotel.is_active ? 'Ativo' : 'Inativo'}
+                        {hotel.is_active ? t('hotel.active') : t('hotel.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -382,7 +384,7 @@ export function Hotels() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleManageUsers(hotel)}
-                          title="Gerenciar usuários"
+                          title={t('hotel.manageUsers')}
                         >
                           <Users className="h-4 w-4" />
                         </Button>
@@ -427,12 +429,12 @@ export function Hotels() {
           <form onSubmit={handleSubmit}>
             <DialogHeader>
               <DialogTitle>
-                {editingHotel ? 'Editar Hotel' : 'Novo Hotel'}
+                {editingHotel ? t('hotel.editHotel') : t('hotel.newHotel')}
               </DialogTitle>
               <DialogDescription>
                 {editingHotel 
-                  ? 'Edite as informações do hotel.' 
-                  : 'Adicione um novo hotel ao sistema.'}
+                  ? t('hotel.editHotelDesc') 
+                  : t('hotel.newHotelDesc')}
               </DialogDescription>
             </DialogHeader>
             

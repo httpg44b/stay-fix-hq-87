@@ -683,6 +683,18 @@ const translations = {
     'user.createUser': 'Créer un Utilisateur',
     'user.updateUser': 'Mettre à Jour l\'Utilisateur',
     'user.profile': 'Profil',
+    'user.subtitle': 'Gérer les utilisateurs du système et leurs autorisations',
+    'user.searchPlaceholder': 'Rechercher par nom ou e-mail...',
+    'user.filterByRole': 'Filtrer par rôle',
+    'user.noUsers': 'Aucun utilisateur trouvé',
+    'user.editUser': 'Modifier l\'Utilisateur',
+    'user.editUserDesc': 'Mettre à jour les informations de l\'utilisateur.',
+    'user.newUserDesc': 'Ajouter un nouvel utilisateur au système.',
+    'user.setNewPassword': 'Définir un nouveau mot de passe pour',
+    'user.minimumCharacters': 'Minimum 6 caractères',
+    'user.retypePassword': 'Retaper le mot de passe',
+    'user.deactivate': 'Désactiver',
+    'user.activate': 'Activer',
     
     // Hotels
     'hotel.name': 'Nom',
@@ -703,6 +715,26 @@ const translations = {
     'hotel.updateHotel': 'Mettre à Jour l\'Hôtel',
     'hotel.users': 'Utilisateurs',
     'hotel.viewUsers': 'Voir les Utilisateurs',
+    'hotel.subtitle': 'Gérer les hôtels enregistrés dans le système',
+    'hotel.searchPlaceholder': 'Rechercher par nom, adresse ou CNPJ/SIREN...',
+    'hotel.cnpj': 'CNPJ/SIREN',
+    'hotel.noHotels': 'Aucun hôtel trouvé',
+    'hotel.manageUsers': 'Gérer les utilisateurs',
+    'hotel.editHotel': 'Modifier l\'Hôtel',
+    'hotel.editHotelDesc': 'Modifier les informations de l\'hôtel.',
+    'hotel.newHotelDesc': 'Ajouter un nouvel hôtel au système.',
+    
+    // Settings additional
+    'settings.themeSubtitle': 'Choisir le thème de l\'application',
+    'settings.themeLightDesc': 'Thème clair pour une meilleure visibilité pendant la journée',
+    'settings.themeDarkDesc': 'Thème sombre pour réduire la fatigue oculaire',
+    'settings.themeSystemDesc': 'Suivre les préférences du système d\'exploitation',
+    'settings.languageSubtitle': 'Choisir la langue de l\'application',
+    'settings.preferredLanguage': 'Langue préférée',
+    'settings.passwordSubtitle': 'Mettre à jour votre mot de passe d\'accès',
+    
+    // Common additions
+    'common.updating': 'Mise à jour...',
     
     // Errors
     'errors.loadingData': 'Erreur lors du chargement des données',
