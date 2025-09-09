@@ -116,7 +116,7 @@ export const Header = () => {
               <DropdownMenuItem asChild>
                 <Link to="/settings" className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  Perfil
+                  {t('user.profile')}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -124,7 +124,7 @@ export const Header = () => {
                 className="text-destructive cursor-pointer"
                 onClick={logout}
               >
-                Sair
+                {t('nav.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

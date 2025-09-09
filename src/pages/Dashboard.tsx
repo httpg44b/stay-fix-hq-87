@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { UserRole } from '@/lib/constants';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,7 @@ import { TechnicianName } from '@/components/TechnicianName';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [tickets, setTickets] = useState<any[]>([]);
@@ -90,8 +92,8 @@ export default function Dashboard() {
     } catch (error: any) {
       console.error('Error loading data:', error);
       toast({
-        title: 'Erro ao carregar dados',
-        description: error.message || 'Ocorreu um erro ao carregar os dados.',
+        title: t('errors.loadingData'),
+        description: error.message || t('errors.loadingDataDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -136,10 +138,10 @@ export default function Dashboard() {
           <>
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">
-            Dashboard
+            {t('nav.dashboard')}
           </h1>
           <p className="text-muted-foreground">
-            Bem-vindo de volta, {user.name}
+            {t('dashboard.welcome')}, {user.name}
           </p>
         </div>
 
@@ -148,14 +150,14 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total de Chamados
+                {t('dashboard.total_tickets')}
               </CardTitle>
               <Ticket className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.new} novos hoje
+                {stats.new} {t('dashboard.new_today')}
               </p>
             </CardContent>
           </Card>
@@ -163,14 +165,14 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Em Atendimento
+                {t('dashboard.in_progress')}
               </CardTitle>
               <Clock className="h-4 w-4 text-status-in-progress" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.inProgress}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.waiting} aguardando peças
+                {stats.waiting} {t('dashboard.waiting_parts')}
               </p>
             </CardContent>
           </Card>
@@ -178,14 +180,14 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Concluídos
+                {t('dashboard.completed')}
               </CardTitle>
               <CheckCircle className="h-4 w-4 text-status-completed" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.completed}</div>
               <p className="text-xs text-muted-foreground">
-                Este mês
+                {t('dashboard.this_month')}
               </p>
             </CardContent>
           </Card>
@@ -194,14 +196,14 @@ export default function Dashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total de Hotéis
+                  {t('dashboard.total_hotels')}
                 </CardTitle>
                 <Building className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{hotels.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  {users.length} usuários ativos
+                  {users.length} {t('dashboard.active_users')}
                 </p>
               </CardContent>
             </Card>
@@ -211,14 +213,14 @@ export default function Dashboard() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Meus Chamados
+                  {t('nav.myTickets')}
                 </CardTitle>
                 <AlertCircle className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{myTickets.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  Atribuídos a você
+                  {t('dashboard.assignedToYou')}
                 </p>
               </CardContent>
             </Card>
@@ -228,7 +230,7 @@ export default function Dashboard() {
         {/* Recent Tickets */}
         <Card>
           <CardHeader>
-            <CardTitle>Chamados Recentes</CardTitle>
+            <CardTitle>{t('dashboard.recent_tickets')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -245,10 +247,10 @@ export default function Dashboard() {
                       <PriorityBadge priority={ticket.priority} />
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>Quarto {ticket.room_number}</span>
+                      <span>{t('ticket.room')} {ticket.room_number}</span>
                       <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
                        {ticket.assignee_id && (
-                         <span>Técnico: <TechnicianName assigneeId={ticket.assignee_id} inline /></span>
+                         <span>{t('tickets.technician')}: <TechnicianName assigneeId={ticket.assignee_id} inline /></span>
                        )}
                     </div>
                   </div>
@@ -266,7 +268,7 @@ export default function Dashboard() {
                   className="w-full"
                   onClick={() => navigate('/tickets')}
                 >
-                  Ver todos os chamados
+                  {t('tickets.viewAll')}
                 </Button>
               </div>
             )}
@@ -277,20 +279,20 @@ export default function Dashboard() {
         {user.role === UserRole.TECNICO && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Todos os Chamados dos Meus Hotéis</CardTitle>
+              <CardTitle>{t('dashboard.allTicketsHotels')}</CardTitle>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/tickets')}
               >
-                Ver Todos
+                {t('tickets.viewAll')}
               </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {tickets.length === 0 ? (
                   <p className="text-center py-8 text-muted-foreground">
-                    Nenhum chamado disponível
+                    {t('tickets.noTickets')}
                   </p>
                 ) : (
                   tickets.slice(0, 10).map((ticket: any) => (
@@ -306,11 +308,11 @@ export default function Dashboard() {
                           <PriorityBadge priority={ticket.priority} />
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Quarto {ticket.room_number}</span>
+                          <span>{t('ticket.room')} {ticket.room_number}</span>
                           <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
                           {ticket.assignee_id && (
                             <span className={ticket.assignee_id === user.id ? "text-primary font-medium" : ""}>
-                              {ticket.assignee_id === user.id ? '✓ Atribuído a você' : 'Atribuído'}
+                              {ticket.assignee_id === user.id ? `✓ ${t('dashboard.assignedToYou')}` : t('tickets.assigned')}
                             </span>
                           )}
                         </div>
@@ -323,7 +325,7 @@ export default function Dashboard() {
                           navigate(`/tickets/${ticket.id}`);
                         }}
                       >
-                        Ver
+                        {t('common.view')}
                       </Button>
                     </div>
                   ))
@@ -337,7 +339,7 @@ export default function Dashboard() {
         {user.role === UserRole.RECEPCAO && (
           <Card>
             <CardHeader>
-              <CardTitle>Ações Rápidas</CardTitle>
+              <CardTitle>{t('dashboard.quickActions')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
@@ -346,7 +348,7 @@ export default function Dashboard() {
                   onClick={() => navigate('/tickets/new')}
                 >
                   <Ticket className="mr-2 h-5 w-5" />
-                  Novo Chamado
+                  {t('tickets.newTicket')}
                 </Button>
                 <Button
                   variant="outline"
@@ -354,7 +356,7 @@ export default function Dashboard() {
                   onClick={() => navigate('/tickets')}
                 >
                   <Clock className="mr-2 h-5 w-5" />
-                  Ver Chamados Abertos
+                  {t('dashboard.openTickets')}
                 </Button>
               </div>
             </CardContent>
