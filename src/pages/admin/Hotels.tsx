@@ -9,7 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { hotelsService, type Hotel, type CreateHotelInput, type UpdateHotelInput } from '@/services/hotels.service';
-import { Plus, Pencil, Trash2, Search, Building2, MapPin, Phone, Mail, FileText } from 'lucide-react';
+import { usersService, type User } from '@/services/users.service';
+import { Plus, Pencil, Trash2, Search, Building2, MapPin, Phone, Mail, FileText, Users, UserPlus } from 'lucide-react';
+import { HotelUsersList } from '@/components/hotel/HotelUsersList';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -21,6 +23,12 @@ export function Hotels() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isManageUsersOpen, setIsManageUsersOpen] = useState(false);
+  const [selectedHotelForUsers, setSelectedHotelForUsers] = useState<Hotel | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [hotelUsers, setHotelUsers] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const { toast } = useToast();
 
   // Form state
@@ -35,6 +43,7 @@ export function Hotels() {
 
   useEffect(() => {
     loadHotels();
+    loadUsers();
   }, []);
 
   const loadHotels = async () => {
@@ -50,6 +59,78 @@ export function Hotels() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const data = await usersService.getAll();
+      setUsers(data);
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+    }
+  };
+
+  const loadHotelUsers = async (hotelId: string) => {
+    try {
+      setLoadingUsers(true);
+      const data = await hotelsService.getHotelUsers(hotelId);
+      setHotelUsers(data);
+      setSelectedUsers(data.map(hu => hu.user_id));
+    } catch (error) {
+      toast({
+        title: 'Erro ao carregar usuários',
+        description: 'Não foi possível carregar os usuários do hotel.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleManageUsers = async (hotel: Hotel) => {
+    setSelectedHotelForUsers(hotel);
+    setIsManageUsersOpen(true);
+    await loadHotelUsers(hotel.id);
+  };
+
+  const handleSaveUsers = async () => {
+    if (!selectedHotelForUsers) return;
+
+    try {
+      setLoadingUsers(true);
+      
+      // Get current users
+      const currentUsers = hotelUsers.map(hu => hu.user_id);
+      
+      // Find users to add and remove
+      const usersToAdd = selectedUsers.filter(userId => !currentUsers.includes(userId));
+      const usersToRemove = currentUsers.filter(userId => !selectedUsers.includes(userId));
+      
+      // Remove users
+      for (const userId of usersToRemove) {
+        await hotelsService.removeUser(userId, selectedHotelForUsers.id);
+      }
+      
+      // Add users
+      for (const userId of usersToAdd) {
+        await hotelsService.assignUser(userId, selectedHotelForUsers.id);
+      }
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Usuários do hotel atualizados com sucesso!'
+      });
+      
+      setIsManageUsersOpen(false);
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao salvar usuários',
+        description: error.message || 'Ocorreu um erro ao atualizar os usuários do hotel.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
@@ -205,7 +286,7 @@ export function Hotels() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Buscar por nome, endereço ou CNPJ..."
+              placeholder="Buscar por nome, endereço ou CNPJ/SIREN..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -220,7 +301,7 @@ export function Hotels() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Endereço</TableHead>
                 <TableHead>Contato</TableHead>
-                <TableHead>CNPJ</TableHead>
+                <TableHead>CNPJ/SIREN</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Criado em</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -297,6 +378,14 @@ export function Hotels() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleManageUsers(hotel)}
+                          title="Gerenciar usuários"
+                        >
+                          <Users className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -387,11 +476,12 @@ export function Hotels() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="cnpj">CNPJ</Label>
+                <Label htmlFor="cnpj">CNPJ/SIREN</Label>
                 <Input
                   id="cnpj"
                   value={formData.cnpj}
                   onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                  placeholder="Digite o CNPJ (Brasil) ou SIREN (França)"
                 />
               </div>
 
@@ -417,6 +507,56 @@ export function Hotels() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para gerenciar usuários do hotel */}
+      <Dialog open={isManageUsersOpen} onOpenChange={setIsManageUsersOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Gerenciar Usuários - {selectedHotelForUsers?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Selecione os usuários que terão acesso a este hotel
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            {loadingUsers ? (
+              <div className="text-center py-8">Carregando usuários...</div>
+            ) : (
+              <HotelUsersList
+                users={users}
+                selectedUsers={selectedUsers}
+                onToggleUser={(userId, selected) => {
+                  if (selected) {
+                    setSelectedUsers([...selectedUsers, userId]);
+                  } else {
+                    setSelectedUsers(selectedUsers.filter(id => id !== userId));
+                  }
+                }}
+              />
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsManageUsersOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveUsers}
+              disabled={loadingUsers}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Salvar Usuários
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </Card>
