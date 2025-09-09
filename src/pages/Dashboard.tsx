@@ -1,38 +1,99 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/lib/constants';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Ticket, Clock, CheckCircle, AlertCircle, Users, Building } from 'lucide-react';
-import { mockTickets, mockUsers, mockHotels } from '@/lib/mock-data';
+import { Ticket, Clock, CheckCircle, AlertCircle, Users, Building, Loader2 } from 'lucide-react';
 import { TicketStatus } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { ticketsService } from '@/services/tickets.service';
+import { usersService } from '@/services/users.service';
+import { hotelsService } from '@/services/hotels.service';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   if (!user) return null;
 
-  // Filter tickets based on user role
-  const getFilteredTickets = () => {
-    if (user.role === UserRole.ADMIN) {
-      return mockTickets;
-    } else if (user.role === UserRole.TECNICO) {
-      return mockTickets.filter(t => 
-        user.hotels.some(h => h.id === t.hotelId)
-      );
-    } else if (user.role === UserRole.RECEPCAO) {
-      return mockTickets.filter(t => 
-        user.hotels.some(h => h.id === t.hotelId)
-      );
-    }
-    return [];
-  };
+  useEffect(() => {
+    loadData();
+    
+    // Setup realtime subscription
+    const channel = supabase
+      .channel('dashboard-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tickets'
+        },
+        () => {
+          // Reload data when tickets change
+          loadData();
+        }
+      )
+      .subscribe();
 
-  const tickets = getFilteredTickets();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load tickets based on user role
+      let ticketData: any[] = [];
+      if (user.role === UserRole.ADMIN) {
+        ticketData = await ticketsService.getAll();
+      } else if (user.role === UserRole.TECNICO) {
+        // For technicians, get all tickets from their hotels
+        const userHotels = await hotelsService.getUserHotels(user.id);
+        const hotelIds = userHotels.map((uh: any) => uh.hotel_id);
+        
+        // Get all tickets from those hotels
+        const allTickets = await ticketsService.getAll();
+        ticketData = allTickets.filter((t: any) => hotelIds.includes(t.hotel_id));
+      } else if (user.role === UserRole.RECEPCAO) {
+        // Reception sees only their created tickets
+        ticketData = await ticketsService.getMyTickets(user.id);
+      }
+      
+      setTickets(ticketData);
+
+      // Load users and hotels for admin
+      if (user.role === UserRole.ADMIN) {
+        const [userData, hotelData] = await Promise.all([
+          usersService.getAll(),
+          hotelsService.getAll()
+        ]);
+        setUsers(userData);
+        setHotels(hotelData);
+      }
+    } catch (error: any) {
+      console.error('Error loading data:', error);
+      toast({
+        title: 'Erro ao carregar dados',
+        description: error.message || 'Ocorreu um erro ao carregar os dados.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stats = {
     total: tickets.length,
@@ -43,12 +104,18 @@ export default function Dashboard() {
   };
 
   const myTickets = user.role === UserRole.TECNICO 
-    ? tickets.filter(t => t.technicianId === user.id)
+    ? tickets.filter(t => t.assignee_id === user.id)
     : [];
 
   return (
     <AppLayout>
       <div className="space-y-6">
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">
             Dashboard
@@ -114,9 +181,9 @@ export default function Dashboard() {
                 <Building className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{mockHotels.length}</div>
+                <div className="text-2xl font-bold">{hotels.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  {mockUsers.length} usuários ativos
+                  {users.length} usuários ativos
                 </p>
               </CardContent>
             </Card>
@@ -160,10 +227,10 @@ export default function Dashboard() {
                       <PriorityBadge priority={ticket.priority} />
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>Quarto {ticket.roomNumber}</span>
-                      <span>{ticket.hotel?.name}</span>
-                      {ticket.technician && (
-                        <span>Técnico: {ticket.technician.name}</span>
+                      <span>Quarto {ticket.room_number}</span>
+                      <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
+                      {ticket.assignee_id && (
+                        <span>Técnico: {ticket.assignee_id}</span>
                       )}
                     </div>
                   </div>
@@ -187,6 +254,66 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Technician's All Tickets from Hotels */}
+        {user.role === UserRole.TECNICO && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Todos os Chamados dos Meus Hotéis</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/tickets')}
+              >
+                Ver Todos
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {tickets.length === 0 ? (
+                  <p className="text-center py-8 text-muted-foreground">
+                    Nenhum chamado disponível
+                  </p>
+                ) : (
+                  tickets.slice(0, 10).map((ticket: any) => (
+                    <div
+                      key={ticket.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/tickets/${ticket.id}`)}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{ticket.title}</p>
+                          <StatusBadge status={ticket.status} />
+                          <PriorityBadge priority={ticket.priority} />
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>Quarto {ticket.room_number}</span>
+                          <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
+                          {ticket.assignee_id && (
+                            <span className={ticket.assignee_id === user.id ? "text-primary font-medium" : ""}>
+                              {ticket.assignee_id === user.id ? '✓ Atribuído a você' : 'Atribuído'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/tickets/${ticket.id}`);
+                        }}
+                      >
+                        Ver
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         {user.role === UserRole.RECEPCAO && (
@@ -214,6 +341,8 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
+        )}
+        </>
         )}
       </div>
     </AppLayout>
