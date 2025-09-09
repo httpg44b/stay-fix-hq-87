@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TechnicianNameProps {
   assigneeId?: string | null;
@@ -9,10 +10,11 @@ interface TechnicianNameProps {
 export function TechnicianName({ assigneeId, inline = false }: TechnicianNameProps) {
   const [technicianName, setTechnicianName] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!assigneeId) {
-      setTechnicianName('Não atribuído');
+      setTechnicianName(t('common.unassigned'));
       return;
     }
 
@@ -23,23 +25,23 @@ export function TechnicianName({ assigneeId, inline = false }: TechnicianNamePro
           .rpc('get_user_display_name', { _user_id: assigneeId });
 
         if (error) throw error;
-        setTechnicianName(data || 'Técnico não encontrado');
+        setTechnicianName(data || t('common.not_found'));
       } catch (error) {
         console.error('Error fetching technician name:', error);
-        setTechnicianName('Erro ao carregar');
+        setTechnicianName(t('common.error_loading'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchTechnicianName();
-  }, [assigneeId]);
+  }, [assigneeId, t]);
 
   if (loading) {
     return inline ? (
-      <span className="text-muted-foreground">Carregando...</span>
+      <span className="text-muted-foreground">{t('common.loading')}</span>
     ) : (
-      <div className="text-muted-foreground">Carregando...</div>
+      <div className="text-muted-foreground">{t('common.loading')}</div>
     );
   }
 

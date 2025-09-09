@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { TicketPriority } from '@/lib/constants';
-import { priorityLabels } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PriorityBadgeProps {
   priority: TicketPriority;
@@ -9,6 +9,8 @@ interface PriorityBadgeProps {
 }
 
 export const PriorityBadge: React.FC<PriorityBadgeProps> = ({ priority, className }) => {
+  const { t } = useLanguage();
+  
   const getPriorityStyles = (priority: TicketPriority) => {
     switch (priority) {
       case TicketPriority.LOW:
@@ -24,12 +26,22 @@ export const PriorityBadge: React.FC<PriorityBadgeProps> = ({ priority, classNam
     }
   };
 
+  const getPriorityLabel = (priority: TicketPriority) => {
+    const priorityKeys: Record<TicketPriority, string> = {
+      [TicketPriority.LOW]: 'priority.low',
+      [TicketPriority.MEDIUM]: 'priority.medium',
+      [TicketPriority.HIGH]: 'priority.high',
+      [TicketPriority.URGENT]: 'priority.urgent',
+    };
+    return t(priorityKeys[priority]);
+  };
+
   return (
     <Badge 
       variant="outline" 
       className={cn(getPriorityStyles(priority), 'font-medium', className)}
     >
-      {priorityLabels[priority]}
+      {getPriorityLabel(priority)}
     </Badge>
   );
 };
