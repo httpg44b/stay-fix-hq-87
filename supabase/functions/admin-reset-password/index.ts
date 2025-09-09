@@ -31,17 +31,30 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
-    // Check if the current user is an admin
-    const { data: currentUser } = await supabaseClient.auth.getUser();
-    if (!currentUser?.user) {
+    // Extract current user ID from the verified JWT
+    const token = authHeader.replace('Bearer ', '');
+    let currentUserId: string | null = null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1] || ''));
+      currentUserId = payload?.sub ?? null;
+    } catch (_) {
+      // If parsing fails, treat as unauthenticated
+      currentUserId = null;
+    }
+
+    if (!currentUserId) {
       throw new Error('Not authenticated');
     }
 
-    const { data: adminCheck } = await supabaseClient
+    const { data: adminCheck, error: adminErr } = await supabaseClient
       .from('users')
       .select('role')
-      .eq('id', currentUser.user.id)
+      .eq('id', currentUserId)
       .single();
+
+    if (adminErr) {
+      throw adminErr;
+    }
 
     if (!adminCheck || adminCheck.role !== 'ADMIN') {
       throw new Error('Only administrators can reset passwords');
@@ -74,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw updateError;
     }
 
-    console.log(`Password updated for user ${userId} by admin ${currentUser.user.id}`);
+    console.log(`Password updated for user ${userId} by admin ${currentUserId}`);
 
     return new Response(
       JSON.stringify({ 
