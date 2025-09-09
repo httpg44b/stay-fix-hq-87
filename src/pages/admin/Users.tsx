@@ -91,11 +91,31 @@ export function Users() {
     setPasswordLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const { error } = await supabase.functions.invoke('admin-reset-password', {
+      const { data, error } = await supabase.functions.invoke('admin-reset-password', {
         body: { userId: selectedUserForPassword.id, newPassword: passwordForm.newPassword },
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
-      if (error) throw error;
+      
+      if (error) {
+        // Parse the error message from the edge function response
+        let errorMessage = 'Não foi possível alterar a senha.';
+        if (error.message) {
+          try {
+            // Try to parse as JSON if it's a JSON error response
+            const errorData = JSON.parse(error.message);
+            errorMessage = errorData.error || errorData.message || error.message;
+          } catch {
+            // If not JSON, use the message directly
+            errorMessage = error.message;
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Check if the response contains an error
+      if (data && typeof data === 'object' && 'error' in data) {
+        throw new Error(data.error || 'Erro ao alterar senha');
+      }
 
       toast({
         title: 'Senha atualizada',
@@ -103,6 +123,7 @@ export function Users() {
       });
       setIsPasswordDialogOpen(false);
     } catch (err: any) {
+      console.error('Password change error:', err);
       toast({
         title: 'Erro ao alterar senha',
         description: err.message || 'Não foi possível alterar a senha.',
