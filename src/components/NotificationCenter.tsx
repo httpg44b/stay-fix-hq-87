@@ -110,7 +110,15 @@ export function NotificationCenter() {
     if (!notification.read) {
       handleMarkAsRead(notification.id);
     }
-    navigate(`/tickets/${notification.ticket_id}`);
+    // Navigate to the ticket details page
+    navigate(`/tickets`);
+    // After navigation, scroll to the specific ticket
+    setTimeout(() => {
+      const ticketElement = document.querySelector(`[data-ticket-id="${notification.ticket_id}"]`);
+      if (ticketElement) {
+        ticketElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const getNotificationIcon = (type: string) => {
