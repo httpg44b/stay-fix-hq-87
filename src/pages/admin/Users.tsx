@@ -90,8 +90,10 @@ export function Users() {
 
     setPasswordLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const { error } = await supabase.functions.invoke('admin-reset-password', {
-        body: { userId: selectedUserForPassword.id, newPassword: passwordForm.newPassword }
+        body: { userId: selectedUserForPassword.id, newPassword: passwordForm.newPassword },
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
       });
       if (error) throw error;
 
