@@ -22,22 +22,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        loadUserProfile(session.user.id);
+    // Listen for auth changes FIRST (no async calls inside)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+      const hasUser = !!sess?.user;
+      setIsAuthenticated(hasUser);
+
+      if (hasUser && sess?.user) {
+        // Defer fetching the profile to avoid deadlocks inside the auth callback
+        setTimeout(() => {
+          loadUserProfile(sess.user!.id);
+        }, 0);
       } else {
+        setUser(null);
         setLoading(false);
       }
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const hasUser = !!session?.user;
+      setIsAuthenticated(hasUser);
+
+      if (hasUser && session?.user) {
         loadUserProfile(session.user.id);
       } else {
-        setUser(null);
-        setIsAuthenticated(false);
         setLoading(false);
       }
     });
@@ -52,10 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Error loading user profile:', error);
-      // If profile doesn't exist, sign out
-      await supabase.auth.signOut();
+      // Do not force sign out if profile loading fails; keep session and auth state
       setUser(null);
-      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
