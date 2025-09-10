@@ -23,77 +23,78 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
 const handlePasswordChange = async () => {
-    try {
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        toast({
-          title: "Erro",
-          description: "Preencha todos os campos",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        toast({
-          title: "Erro",
-          description: "As senhas não coincidem",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (newPassword.length < 6) {
-        toast({
-          title: "Erro",
-          description: "A nova senha deve ter pelo menos 6 caracteres",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!user?.email) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível identificar o e-mail do usuário",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Verifica a senha atual (reauth)
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password: currentPassword,
-      });
-
-      if (signInError) {
-        toast({
-          title: "Senha atual incorreta",
-          description: "Verifique sua senha atual e tente novamente",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-      if (updateError) throw updateError;
-
+  try {
+    if (!currentPassword || !newPassword || !confirmPassword) {
       toast({
-        title: "Sucesso",
-        description: "Senha alterada com sucesso",
-      });
-
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (error: any) {
-      toast({
-        title: "Erro ao alterar senha",
-        description: error?.message || "Tente novamente mais tarde",
+        title: "Erro",
+        description: "Veuillez remplir tous les champs",
         variant: "destructive",
       });
+      return;
     }
-  };
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "Les mots de passe ne correspondent pas",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Erro",
+        description: "Le nouveau mot de passe doit contenir au moins 6 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user?.email) {
+      toast({
+        title: "Erro",
+        description: "Impossible d'identifier l'adresse e-mail de l'utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verifica a senha atual (reauth)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+
+    if (signInError) {
+      toast({
+        title: "Senha atual incorreta",
+        description: "Vérifiez votre mot de passe actuel et réessayez",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    if (updateError) throw updateError;
+
+    toast({
+      title: "Sucesso",
+      description: "Mot de passe modifié avec succès",
+    });
+
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+  } catch (error: any) {
+    toast({
+      title: "Erro ao alterar senha",
+      description: error?.message || "Veuillez réessayer plus tard",
+      variant: "destructive",
+    });
+  }
+};
+
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value as Language);
