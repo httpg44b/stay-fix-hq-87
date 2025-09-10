@@ -73,15 +73,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.user) {
         await loadUserProfile(data.user.id);
         toast({
-          title: 'Login realizado com sucesso',
-          description: `Bem-vindo de volta!`,
+          title: 'Connexion réussie',
+          description: `Bienvenue à nouveau !`,
         });
         navigate('/dashboard');
       }
     } catch (error: any) {
       toast({
         title: 'Erro no login',
-        description: error.message || 'Email ou senha incorretos',
+        description: error.message || 'Adresse e-mail ou mot de passe incorrects',
         variant: 'destructive',
       });
       throw error;
@@ -93,8 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setIsAuthenticated(false);
     toast({
-      title: 'Logout realizado',
-      description: 'Até logo!',
+      title: 'Déconnexion effectuée',
+      description: 'Á bientôt !',
     });
     navigate('/login');
   }, [navigate, toast]);
