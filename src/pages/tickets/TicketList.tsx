@@ -166,7 +166,7 @@ export default function TicketList() {
             </p>
           </div>
           <div className="flex gap-2">
-            {user.role === UserRole.RECEPCAO && (
+            {(user.role === UserRole.RECEPCAO || user.role === UserRole.ADMIN) && (
               <Button onClick={() => navigate('/tickets/new')}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('tickets.newTicket')}

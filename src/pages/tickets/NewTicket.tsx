@@ -29,6 +29,7 @@ export default function NewTicket() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userHotelId, setUserHotelId] = useState<string | null>(null);
+  const [availableHotels, setAvailableHotels] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     roomNumber: '',
@@ -43,9 +44,19 @@ export default function NewTicket() {
     const loadUserHotel = async () => {
       if (user) {
         try {
-          const hotels = await hotelsService.getUserHotels(user.id);
-          if (hotels.length > 0) {
-            setUserHotelId(hotels[0].hotel_id);
+          // Admin can choose any hotel, so we'll need to handle this differently
+          if (user.role === UserRole.ADMIN) {
+            // For admin, we'll get all hotels and use the first one as default
+            const allHotels = await hotelsService.getAll();
+            setAvailableHotels(allHotels);
+            if (allHotels.length > 0) {
+              setUserHotelId(allHotels[0].id);
+            }
+          } else {
+            const hotels = await hotelsService.getUserHotels(user.id);
+            if (hotels.length > 0) {
+              setUserHotelId(hotels[0].hotel_id);
+            }
           }
         } catch (error) {
           console.error('Error loading user hotel:', error);
@@ -55,7 +66,7 @@ export default function NewTicket() {
     loadUserHotel();
   }, [user]);
 
-  if (!user || user.role !== UserRole.RECEPCAO) {
+  if (!user || (user.role !== UserRole.RECEPCAO && user.role !== UserRole.ADMIN)) {
     navigate('/dashboard');
     return null;
   }
@@ -146,6 +157,28 @@ export default function NewTicket() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
+                {user.role === UserRole.ADMIN && availableHotels.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="hotel">{t('hotel.hotel')}*</Label>
+                    <Select
+                      value={userHotelId || ''}
+                      onValueChange={(value) => setUserHotelId(value)}
+                      disabled={isSubmitting}
+                    >
+                      <SelectTrigger id="hotel">
+                        <SelectValue placeholder={t('hotel.selectHotel')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableHotels.map((hotel) => (
+                          <SelectItem key={hotel.id} value={hotel.id}>
+                            {hotel.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="roomNumber">{t('ticket.roomAreaNumber')}*</Label>
                   <Input
