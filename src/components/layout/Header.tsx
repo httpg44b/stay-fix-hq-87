@@ -55,7 +55,7 @@ export const Header = () => {
       <div className="flex h-full items-center justify-between">
         <div className="flex items-center gap-4 md:ml-0 ml-12">
           <h2 className="text-lg font-semibold text-foreground">
-            {user.hotels.length > 0 ? user.hotels[0].name : 'MAJ TECH'}
+            {user.hotels.length > 0 ? user.hotels[0].name : 'MAJ DESK'}
           </h2>
           <Badge variant="secondary">
             {roleLabels[user.role]}
