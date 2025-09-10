@@ -13,6 +13,7 @@ import { usersService, type User, type CreateUserInput, type UpdateUserInput, ty
 import { Plus, Pencil, Trash2, Search, UserCheck, UserX, KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -23,6 +24,7 @@ export function Users() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -277,9 +279,9 @@ export function Users() {
     };
     
     const labels: Record<UserRole, string> = {
-      ADMIN: 'Administrador',
-      TECNICO: 'Técnico',
-      RECEPCAO: 'Recepção'
+      ADMIN: t('role.admin'),
+      TECNICO: t('role.technician'),
+      RECEPCAO: t('role.reception')
     };
     
     return <Badge variant={variants[role]}>{labels[role]}</Badge>;
@@ -291,14 +293,14 @@ export function Users() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Gerenciar Usuários</CardTitle>
+              <CardTitle>{t('nav.users')}</CardTitle>
               <CardDescription>
-                Gerencie os usuários do sistema e suas permissões
+                {t('user.subtitle')}
               </CardDescription>
             </div>
             <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
               <Plus className="mr-2 h-4 w-4" />
-              Novo Usuário
+              {t('user.newUser')}
             </Button>
           </div>
         </CardHeader>
@@ -309,7 +311,7 @@ export function Users() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por nome ou email..."
+                  placeholder={t('user.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -318,13 +320,13 @@ export function Users() {
             </div>
             <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole | 'ALL')}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filtrar por papel" />
+                <SelectValue placeholder={t('user.filterByRole')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Todos os papéis</SelectItem>
-                <SelectItem value="ADMIN">Administrador</SelectItem>
-                <SelectItem value="TECNICO">Técnico</SelectItem>
-                <SelectItem value="RECEPCAO">Recepção</SelectItem>
+                <SelectItem value="ALL">{t('common.all')}</SelectItem>
+                <SelectItem value="ADMIN">{t('role.admin')}</SelectItem>
+                <SelectItem value="TECNICO">{t('role.technician')}</SelectItem>
+                <SelectItem value="RECEPCAO">{t('role.reception')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -334,25 +336,25 @@ export function Users() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Papel</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Data de Criação</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead>{t('user.name')}</TableHead>
+                  <TableHead>{t('user.email')}</TableHead>
+                  <TableHead>{t('user.role')}</TableHead>
+                  <TableHead>{t('user.status')}</TableHead>
+                  <TableHead>{t('user.createdAt')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">
-                      Carregando...
+                      {t('common.loading')}
                     </TableCell>
                   </TableRow>
                 ) : filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">
-                      Nenhum usuário encontrado
+                      {t('user.noUsers')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -369,7 +371,7 @@ export function Users() {
                             <UserX className="h-4 w-4 text-red-600" />
                           )}
                           <span className={user.is_active ? 'text-green-600' : 'text-red-600'}>
-                            {user.is_active ? 'Ativo' : 'Inativo'}
+                            {user.is_active ? t('user.active') : t('user.inactive')}
                           </span>
                         </div>
                       </TableCell>
@@ -382,7 +384,7 @@ export function Users() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleEdit(user)}
-                            title="Éditer"
+                            title={t('common.edit')}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -390,7 +392,7 @@ export function Users() {
                             variant="ghost"
                             size="icon"
                             onClick={() => openPasswordDialog(user)}
-                            title="Changer le mot de passe"
+                            title={t('settings.changePassword')}
                           >
                             <KeyRound className="h-4 w-4" />
                           </Button>
@@ -398,7 +400,7 @@ export function Users() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleToggleActive(user)}
-                            title={user.is_active ? 'Désactiver' : 'Activer'}
+                            title={user.is_active ? t('user.deactivate') : t('user.activate')}
                           >
                             {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                           </Button>
@@ -407,7 +409,7 @@ export function Users() {
                             size="icon"
                             onClick={() => handleDelete(user)}
                             disabled={isDeleting === user.id}
-                            title="Supprimer"
+                            title={t('common.delete')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -426,15 +428,15 @@ export function Users() {
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Changer le mot de passe</DialogTitle>
+            <DialogTitle>{t('settings.changePassword')}</DialogTitle>
             <DialogDescription>
-              Définir un nouveau mot de passe pour {selectedUserForPassword?.display_name}
+              {t('user.setNewPassword')} {selectedUserForPassword?.display_name}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePasswordChangeSubmit}>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                <Label htmlFor="newPassword">{t('settings.newPassword')}</Label>
                 <Input
                   id="newPassword"
                   type="password"
@@ -442,29 +444,29 @@ export function Users() {
                   onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                   required
                   minLength={6}
-                  placeholder="Minimum 6 caractères"
+                  placeholder={t('user.minimumCharacters')}
                 />
               </div>
               
               <div>
-                <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirmPassword">{t('settings.confirmPassword')}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={passwordForm.confirmPassword}
                   onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                   required
-                  placeholder="Retapez le mot de passe"
+                  placeholder={t('user.retypePassword')}
                 />
               </div>
             </div>
             
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
-                Annuler
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={passwordLoading}>
-                {passwordLoading ? 'Mise à jour...' : 'Changer le mot de passe'}
+                {passwordLoading ? t('common.updating') : t('settings.changePassword')}
               </Button>
             </DialogFooter>
           </form>
@@ -476,10 +478,10 @@ export function Users() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
+              {editingUser ? t('user.editUser') : t('user.newUser')}
             </DialogTitle>
             <DialogDescription>
-              {editingUser ? 'Atualize as informações do usuário' : 'Preencha os dados do novo usuário'}
+              {editingUser ? t('user.editUserDesc') : t('user.newUserDesc')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>

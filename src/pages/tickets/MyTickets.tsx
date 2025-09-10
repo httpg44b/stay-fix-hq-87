@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { UserRole, TicketStatus } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -16,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function MyTickets() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('active');
@@ -48,8 +50,8 @@ export default function MyTickets() {
     } catch (error: any) {
       console.error('Error loading tickets:', error);
       toast({
-        title: 'Erro ao carregar chamados',
-        description: error.message || 'Ocorreu um erro ao carregar os chamados.',
+        title: t('errors.loadingTickets'),
+        description: error.message || t('errors.loadingTicketsDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -79,15 +81,15 @@ export default function MyTickets() {
         status: TicketStatus.IN_PROGRESS
       });
       toast({
-        title: 'Chamado atribuído',
-        description: 'O chamado foi atribuído a você com sucesso.',
+        title: t('ticket.assigned'),
+        description: t('ticket.assignedSuccess'),
       });
       loadTickets();
     } catch (error: any) {
       console.error('Error assigning ticket:', error);
       toast({
-        title: 'Erro ao atribuir chamado',
-        description: error.message || 'Ocorreu um erro ao atribuir o chamado.',
+        title: t('errors.assigningTicket'),
+        description: error.message || t('errors.assigningTicketDesc'),
         variant: 'destructive',
       });
     }
@@ -104,10 +106,10 @@ export default function MyTickets() {
           <>
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">
-            Meus Chamados
+            {t('nav.myTickets')}
           </h1>
           <p className="text-muted-foreground">
-            Gerencie seus chamados atribuídos
+            {t('myTickets.subtitle')}
           </p>
         </div>
 
@@ -116,14 +118,14 @@ export default function MyTickets() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Chamados Ativos
+                {t('myTickets.activeTickets')}
               </CardTitle>
               <AlertTriangle className="h-4 w-4 text-status-in-progress" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{activeTickets.length}</div>
               <p className="text-xs text-muted-foreground">
-                Em atendimento
+                {t('myTickets.inProgress')}
               </p>
             </CardContent>
           </Card>
@@ -131,14 +133,14 @@ export default function MyTickets() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Não Atribuídos
+                {t('myTickets.unassigned')}
               </CardTitle>
               <Clock className="h-4 w-4 text-status-new" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{unassignedTickets.length}</div>
               <p className="text-xs text-muted-foreground">
-                Disponíveis para assumir
+                {t('myTickets.availableToTake')}
               </p>
             </CardContent>
           </Card>
@@ -146,14 +148,14 @@ export default function MyTickets() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Concluídos
+                {t('dashboard.completed')}
               </CardTitle>
               <CheckCircle className="h-4 w-4 text-status-completed" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{completedTickets.length}</div>
               <p className="text-xs text-muted-foreground">
-                Este mês
+                {t('dashboard.this_month')}
               </p>
             </CardContent>
           </Card>
@@ -162,29 +164,29 @@ export default function MyTickets() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="unassigned">
-              Não Atribuídos ({unassignedTickets.length})
+              {t('myTickets.unassigned')} ({unassignedTickets.length})
             </TabsTrigger>
             <TabsTrigger value="active">
-              Ativos ({activeTickets.length})
+              {t('myTickets.active')} ({activeTickets.length})
             </TabsTrigger>
             <TabsTrigger value="completed">
-              Concluídos ({completedTickets.length})
+              {t('myTickets.completed')} ({completedTickets.length})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="unassigned" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Chamados Disponíveis</CardTitle>
+                <CardTitle>{t('myTickets.availableTickets')}</CardTitle>
                 <CardDescription>
-                  Chamados não atribuídos dos seus hotéis
+                  {t('myTickets.unassignedFromHotels')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {unassignedTickets.length === 0 ? (
                     <p className="text-center py-8 text-muted-foreground">
-                      Nenhum chamado disponível para assumir
+                      {t('myTickets.noAvailableTickets')}
                     </p>
                   ) : (
                     unassignedTickets.map((ticket) => (
@@ -198,8 +200,8 @@ export default function MyTickets() {
                             <PriorityBadge priority={ticket.priority} />
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Quarto {ticket.room_number}</span>
-                            <span>{categoryLabels[ticket.category as keyof typeof categoryLabels]}</span>
+                            <span>{t('ticket.room')} {ticket.room_number}</span>
+                            <span>{t(`category.${ticket.category.toLowerCase()}`)}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -209,13 +211,13 @@ export default function MyTickets() {
                             onClick={() => navigate(`/tickets/${ticket.id}`)}
                           >
                             <Eye className="mr-2 h-4 w-4" />
-                            Ver
+                            {t('common.view')}
                           </Button>
                           <Button
                             size="sm"
                             onClick={() => handleAssignTicket(ticket.id)}
                           >
-                            Assumir
+                            {t('myTickets.take')}
                           </Button>
                         </div>
                       </div>
@@ -229,16 +231,16 @@ export default function MyTickets() {
           <TabsContent value="active" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Chamados Ativos</CardTitle>
+                <CardTitle>{t('myTickets.activeTickets')}</CardTitle>
                 <CardDescription>
-                  Chamados atualmente atribuídos a você
+                  {t('myTickets.currentlyAssignedToYou')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {activeTickets.length === 0 ? (
                     <p className="text-center py-8 text-muted-foreground">
-                      Nenhum chamado ativo
+                      {t('myTickets.noActiveTickets')}
                     </p>
                   ) : (
                     activeTickets.map((ticket) => (
@@ -254,8 +256,8 @@ export default function MyTickets() {
                             <PriorityBadge priority={ticket.priority} />
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Quarto {ticket.room_number}</span>
-                            <span>{categoryLabels[ticket.category as keyof typeof categoryLabels]}</span>
+                            <span>{t('ticket.room')} {ticket.room_number}</span>
+                            <span>{t(`category.${ticket.category.toLowerCase()}`)}</span>
                           </div>
                         </div>
                         <Button variant="ghost" size="sm">
@@ -272,16 +274,16 @@ export default function MyTickets() {
           <TabsContent value="completed" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Chamados Concluídos</CardTitle>
+                <CardTitle>{t('myTickets.completedTickets')}</CardTitle>
                 <CardDescription>
-                  Histórico de chamados finalizados
+                  {t('myTickets.historyFinalized')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {completedTickets.length === 0 ? (
                     <p className="text-center py-8 text-muted-foreground">
-                      Nenhum chamado concluído
+                      {t('myTickets.noCompletedTickets')}
                     </p>
                   ) : (
                     completedTickets.map((ticket) => (
@@ -296,9 +298,9 @@ export default function MyTickets() {
                             <StatusBadge status={ticket.status} />
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Quarto {ticket.room_number}</span>
+                            <span>{t('ticket.room')} {ticket.room_number}</span>
                             <span>
-                              Concluído em {new Date(ticket.updated_at).toLocaleDateString('pt-BR')}
+                              {t('myTickets.completedOn')} {new Date(ticket.updated_at).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
                         </div>

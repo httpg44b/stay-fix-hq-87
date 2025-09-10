@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { UserRole, TicketStatus, TicketPriority } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -43,6 +44,7 @@ import { cn } from '@/lib/utils';
 
 export default function TicketList() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -98,8 +100,8 @@ export default function TicketList() {
     } catch (error: any) {
       console.error('Error loading data:', error);
       toast({
-        title: 'Erro ao carregar dados',
-        description: error.message || 'Ocorreu um erro ao carregar os chamados.',
+        title: t('errors.loadingData'),
+        description: error.message || t('errors.loadingTickets'),
         variant: 'destructive',
       });
     } finally {
@@ -157,23 +159,23 @@ export default function TicketList() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold text-foreground">
-              Chamados
+              {t('nav.tickets')}
             </h1>
             <p className="text-muted-foreground">
-              Gerencie todos os chamados de manutenção
+              {t('tickets.subtitle')}
             </p>
           </div>
           <div className="flex gap-2">
             {user.role === UserRole.RECEPCAO && (
               <Button onClick={() => navigate('/tickets/new')}>
                 <Plus className="mr-2 h-4 w-4" />
-                Novo Chamado
+                {t('tickets.newTicket')}
               </Button>
             )}
             {user.role === UserRole.ADMIN && (
               <Button variant="outline" onClick={exportToCSV}>
                 <Download className="mr-2 h-4 w-4" />
-                Exportar CSV
+                {t('tickets.exportCSV')}
               </Button>
             )}
           </div>
@@ -184,17 +186,17 @@ export default function TicketList() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              Filtros
+              {t('tickets.filters')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
               <div className="space-y-2 md:col-span-2">
-                <Label>Buscar</Label>
+                <Label>{t('tickets.search')}</Label>
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por título, quarto..."
+                    placeholder={t('tickets.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-8"
@@ -203,13 +205,13 @@ export default function TicketList() {
               </div>
 
               <div className="space-y-2">
-                <Label>Status</Label>
+                <Label>{t('tickets.status')}</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
+                    <SelectValue placeholder={t('common.all')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="all">{t('common.all')}</SelectItem>
                     {Object.entries(statusLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
@@ -220,13 +222,13 @@ export default function TicketList() {
               </div>
 
               <div className="space-y-2">
-                <Label>Prioridade</Label>
+                <Label>{t('tickets.priority')}</Label>
                 <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todas" />
+                    <SelectValue placeholder={t('common.all')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="all">{t('common.all')}</SelectItem>
                     {Object.entries(priorityLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
@@ -237,7 +239,7 @@ export default function TicketList() {
               </div>
 
               <div className="space-y-2">
-                <Label>Data Inicial</Label>
+                <Label>{t('tickets.dateFrom')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -248,7 +250,7 @@ export default function TicketList() {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Selecionar"}
+                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : t('common.select')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -265,7 +267,7 @@ export default function TicketList() {
               </div>
 
               <div className="space-y-2">
-                <Label>Data Final</Label>
+                <Label>{t('tickets.dateTo')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -276,7 +278,7 @@ export default function TicketList() {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateTo ? format(dateTo, "dd/MM/yyyy") : "Selecionar"}
+                      {dateTo ? format(dateTo, "dd/MM/yyyy") : t('common.select')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -295,13 +297,13 @@ export default function TicketList() {
 
               {(user.role === UserRole.ADMIN || user.hotels.length > 1) && (
                 <div className="space-y-2">
-                  <Label>Hotel</Label>
+                  <Label>{t('tickets.hotel')}</Label>
                   <Select value={hotelFilter} onValueChange={setHotelFilter}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Todos" />
+                      <SelectValue placeholder={t('common.all')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="all">{t('common.all')}</SelectItem>
                       {hotels.map((hotel: any) => (
                         <SelectItem key={hotel.id} value={hotel.id}>
                           {hotel.name}
@@ -323,7 +325,7 @@ export default function TicketList() {
                     setDateTo(undefined);
                   }}
                 >
-                  Limpar filtro de data
+                  {t('tickets.clearDateFilter')}
                 </Button>
               </div>
             )}
@@ -336,21 +338,21 @@ export default function TicketList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Quarto</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Hotel</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Prioridade</TableHead>
-                  <TableHead>Técnico</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead>Ações</TableHead>
+                  <TableHead>{t('ticket.room')}</TableHead>
+                  <TableHead>{t('ticket.title')}</TableHead>
+                  <TableHead>{t('tickets.hotel')}</TableHead>
+                  <TableHead>{t('tickets.status')}</TableHead>
+                  <TableHead>{t('tickets.priority')}</TableHead>
+                  <TableHead>{t('tickets.technician')}</TableHead>
+                  <TableHead>{t('tickets.createdAt')}</TableHead>
+                  <TableHead>{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredTickets.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      Nenhum chamado encontrado
+                      {t('tickets.noTickets')}
                     </TableCell>
                   </TableRow>
                 ) : (

@@ -124,7 +124,7 @@ const handlePasswordChange = async () => {
             </TabsTrigger>
             <TabsTrigger value="security">
               <Lock className="h-4 w-4 mr-2" />
-              Segurança
+              {t('settings.security')}
             </TabsTrigger>
           </TabsList>
 
@@ -133,12 +133,12 @@ const handlePasswordChange = async () => {
               <CardHeader>
                 <CardTitle>{t('settings.profile')}</CardTitle>
                 <CardDescription>
-                  Informações do seu perfil
+                  {t('common.profile_info')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Nome</Label>
+                  <Label>{t('user.name')}</Label>
                   <Input value={user?.name} disabled />
                 </div>
                 <div>
@@ -146,7 +146,7 @@ const handlePasswordChange = async () => {
                   <Input value={user?.email} disabled />
                 </div>
                 <div>
-                  <Label>Cargo</Label>
+                  <Label>{t('user.role')}</Label>
                   <Input value={user?.role} disabled />
                 </div>
               </CardContent>
@@ -158,7 +158,7 @@ const handlePasswordChange = async () => {
               <CardHeader>
                 <CardTitle>{t('settings.theme')}</CardTitle>
                 <CardDescription>
-                  Escolha o tema da aplicação
+                  {t('settings.themeSubtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -169,7 +169,7 @@ const handlePasswordChange = async () => {
                       <Sun className="h-5 w-5" />
                       <div>
                         <div className="font-medium">{t('settings.themeLight')}</div>
-                        <div className="text-sm text-muted-foreground">Tema claro para melhor visibilidade durante o dia</div>
+                        <div className="text-sm text-muted-foreground">{t('settings.themeLightDesc')}</div>
                       </div>
                     </Label>
                   </div>
@@ -179,7 +179,7 @@ const handlePasswordChange = async () => {
                       <Moon className="h-5 w-5" />
                       <div>
                         <div className="font-medium">{t('settings.themeDark')}</div>
-                        <div className="text-sm text-muted-foreground">Tema escuro para reduzir o cansaço visual</div>
+                        <div className="text-sm text-muted-foreground">{t('settings.themeDarkDesc')}</div>
                       </div>
                     </Label>
                   </div>
@@ -189,7 +189,7 @@ const handlePasswordChange = async () => {
                       <Monitor className="h-5 w-5" />
                       <div>
                         <div className="font-medium">{t('settings.themeSystem')}</div>
-                        <div className="text-sm text-muted-foreground">Seguir as preferências do sistema operacional</div>
+                        <div className="text-sm text-muted-foreground">{t('settings.themeSystemDesc')}</div>
                       </div>
                     </Label>
                   </div>
@@ -203,12 +203,12 @@ const handlePasswordChange = async () => {
               <CardHeader>
                 <CardTitle>{t('settings.language')}</CardTitle>
                 <CardDescription>
-                  Escolha o idioma da aplicação
+                  {t('settings.languageSubtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Idioma preferido</Label>
+                  <Label>{t('settings.preferredLanguage')}</Label>
                   <Select value={language} onValueChange={handleLanguageChange}>
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -251,7 +251,7 @@ const handlePasswordChange = async () => {
               <CardHeader>
                 <CardTitle>{t('settings.changePassword')}</CardTitle>
                 <CardDescription>
-                  Atualize sua senha de acesso
+                  {t('settings.passwordSubtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -283,7 +283,7 @@ const handlePasswordChange = async () => {
                   />
                 </div>
                 <Button onClick={handlePasswordChange} className="w-full md:w-auto">
-                  {t('settings.save')}
+                  {t('common.save')}
                 </Button>
               </CardContent>
             </Card>
