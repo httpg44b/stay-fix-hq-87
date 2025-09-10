@@ -237,25 +237,28 @@ export default function Dashboard() {
               {tickets.slice(0, 5).map((ticket) => (
                 <div
                   key={ticket.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                  className="p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
                   onClick={() => handleTicketClick(ticket.id)}
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{ticket.title}</p>
-                      <StatusBadge status={ticket.status} />
-                      <PriorityBadge priority={ticket.priority} />
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <p className="font-medium truncate">{ticket.title}</p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <StatusBadge status={ticket.status} />
+                        <PriorityBadge priority={ticket.priority} />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{t('ticket.room')} {ticket.room_number}</span>
-                      <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-muted-foreground">
+                      <span className="truncate">{t('ticket.room')} {ticket.room_number}</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="whitespace-nowrap">{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
                        {ticket.assignee_id && (
-                         <span>{t('tickets.technician')}: <TechnicianName assigneeId={ticket.assignee_id} inline /></span>
+                         <>
+                           <span className="hidden sm:inline">•</span>
+                           <span className="truncate">{t('tickets.technician')}: <TechnicianName assigneeId={ticket.assignee_id} inline /></span>
+                         </>
                        )}
                     </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}
                   </div>
                 </div>
               ))}
@@ -298,35 +301,44 @@ export default function Dashboard() {
                   tickets.slice(0, 10).map((ticket: any) => (
                     <div
                       key={ticket.id}
-                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                      className="p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
                       onClick={() => handleTicketClick(ticket.id)}
                     >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{ticket.title}</p>
-                          <StatusBadge status={ticket.status} />
-                          <PriorityBadge priority={ticket.priority} />
+                      <div className="space-y-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <p className="font-medium truncate">{ticket.title}</p>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <StatusBadge status={ticket.status} />
+                            <PriorityBadge priority={ticket.priority} />
+                          </div>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{t('ticket.room')} {ticket.room_number}</span>
-                          <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
-                          {ticket.assignee_id && (
-                            <span className={ticket.assignee_id === user.id ? "text-primary font-medium" : ""}>
-                              {ticket.assignee_id === user.id ? `✓ ${t('dashboard.assignedToYou')}` : t('tickets.assigned')}
-                            </span>
-                          )}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-muted-foreground">
+                            <span className="truncate">{t('ticket.room')} {ticket.room_number}</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="whitespace-nowrap">{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
+                            {ticket.assignee_id && (
+                              <>
+                                <span className="hidden sm:inline">•</span>
+                                <span className={`truncate ${ticket.assignee_id === user.id ? "text-primary font-medium" : ""}`}>
+                                  {ticket.assignee_id === user.id ? `✓ ${t('dashboard.assignedToYou')}` : t('tickets.assigned')}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="self-end sm:self-auto mt-2 sm:mt-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/tickets/${ticket.id}`);
+                            }}
+                          >
+                            {t('common.view')}
+                          </Button>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/tickets/${ticket.id}`);
-                        }}
-                      >
-                        {t('common.view')}
-                      </Button>
                     </div>
                   ))
                 )}
