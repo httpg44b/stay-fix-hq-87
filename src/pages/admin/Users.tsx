@@ -291,14 +291,17 @@ export function Users() {
     <div className="container mx-auto p-6">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
               <CardTitle>{t('nav.users')}</CardTitle>
               <CardDescription>
                 {t('user.subtitle')}
               </CardDescription>
             </div>
-            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+            <Button 
+              onClick={() => { resetForm(); setIsDialogOpen(true); }}
+              className="w-full sm:w-auto"
+            >
               <Plus className="mr-2 h-4 w-4" />
               {t('user.newUser')}
             </Button>
