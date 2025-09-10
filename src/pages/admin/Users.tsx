@@ -53,8 +53,8 @@ export function Users() {
       setUsers(data);
     } catch (error) {
       toast({
-        title: 'Erro ao carregar usuários',
-        description: 'Não foi possível carregar a lista de usuários.',
+        title: 'Erreur lors du chargement des utilisateurs',
+        description: "Impossible de charger la liste des utilisateurs.",
         variant: 'destructive'
       });
     } finally {
@@ -74,8 +74,8 @@ export function Users() {
 
     if (passwordForm.newPassword.length < 6) {
       toast({
-        title: 'Senha muito curta',
-        description: 'A senha deve ter pelo menos 6 caracteres.',
+        title: 'Mot de passe trop court',
+        description: 'Le mot de passe doit contenir au moins 6 caractères.',
         variant: 'destructive'
       });
       return;
@@ -83,8 +83,8 @@ export function Users() {
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast({
-        title: 'Senhas não coincidem',
-        description: 'Digite a mesma senha nos dois campos.',
+        title: 'Les mots de passe ne correspondent pas',
+        description: 'Entrez le même mot de passe dans les deux champs.',
         variant: 'destructive'
       });
       return;
@@ -99,36 +99,32 @@ export function Users() {
       });
       
       if (error) {
-        // Parse the error message from the edge function response
-        let errorMessage = 'Não foi possível alterar a senha.';
+        let errorMessage = "Impossible de modifier le mot de passe.";
         if (error.message) {
           try {
-            // Try to parse as JSON if it's a JSON error response
             const errorData = JSON.parse(error.message);
             errorMessage = errorData.error || errorData.message || error.message;
           } catch {
-            // If not JSON, use the message directly
             errorMessage = error.message;
           }
         }
         throw new Error(errorMessage);
       }
 
-      // Check if the response contains an error
       if (data && typeof data === 'object' && 'error' in data) {
-        throw new Error(data.error || 'Erro ao alterar senha');
+        throw new Error(data.error || "Erreur lors du changement du mot de passe");
       }
 
       toast({
-        title: 'Senha atualizada',
-        description: `Senha de ${selectedUserForPassword.display_name} alterada com sucesso.`
+        title: 'Mot de passe mis à jour',
+        description: `Le mot de passe de ${selectedUserForPassword.display_name} a été modifié avec succès.`
       });
       setIsPasswordDialogOpen(false);
     } catch (err: any) {
       console.error('Password change error:', err);
       toast({
-        title: 'Erro ao alterar senha',
-        description: err.message || 'Não foi possível alterar a senha.',
+        title: "Erreur lors du changement du mot de passe",
+        description: err.message || "Impossible de modifier le mot de passe.",
         variant: 'destructive'
       });
     } finally {
@@ -140,7 +136,6 @@ export function Users() {
     e.preventDefault();
     try {
       if (editingUser) {
-        // Update existing user
         const updateData: UpdateUserInput = {
           display_name: formData.display_name,
           role: formData.role,
@@ -150,11 +145,10 @@ export function Users() {
         
         await usersService.update(editingUser.id, updateData);
         toast({
-          title: 'Usuário atualizado',
-          description: 'As informações do usuário foram atualizadas com sucesso.'
+          title: 'Utilisateur mis à jour',
+          description: "Les informations de l'utilisateur ont été mises à jour avec succès."
         });
       } else {
-        // Create new user in auth first
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -164,9 +158,8 @@ export function Users() {
         });
 
         if (authError) throw authError;
-        if (!authData.user) throw new Error('Falha ao criar usuário');
+        if (!authData.user) throw new Error("Échec de la création de l'utilisateur");
 
-        // Then create user profile
         const createData: CreateUserInput = {
           id: authData.user.id,
           email: formData.email,
@@ -178,8 +171,8 @@ export function Users() {
         
         await usersService.create(createData);
         toast({
-          title: 'Usuário criado',
-          description: 'O novo usuário foi criado com sucesso.'
+          title: 'Utilisateur créé',
+          description: "Le nouvel utilisateur a été créé avec succès."
         });
       }
       
@@ -188,8 +181,8 @@ export function Users() {
       loadUsers();
     } catch (error: any) {
       toast({
-        title: editingUser ? 'Erro ao atualizar usuário' : 'Erro ao criar usuário',
-        description: error.message || 'Ocorreu um erro ao processar a solicitação.',
+        title: editingUser ? "Erreur lors de la mise à jour de l'utilisateur" : "Erreur lors de la création de l'utilisateur",
+        description: error.message || "Une erreur est survenue lors du traitement de la demande.",
         variant: 'destructive'
       });
     }
@@ -209,7 +202,7 @@ export function Users() {
   };
 
   const handleDelete = async (user: User) => {
-    if (!confirm(`Tem certeza que deseja excluir o usuário ${user.display_name}?`)) {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${user.display_name} ?`)) {
       return;
     }
 
@@ -217,14 +210,14 @@ export function Users() {
     try {
       await usersService.delete(user.id);
       toast({
-        title: 'Usuário excluído',
-        description: 'O usuário foi excluído com sucesso.'
+        title: 'Utilisateur supprimé',
+        description: "L'utilisateur a été supprimé avec succès."
       });
       loadUsers();
     } catch (error) {
       toast({
-        title: 'Erro ao excluir usuário',
-        description: 'Não foi possível excluir o usuário.',
+        title: "Erreur lors de la suppression de l'utilisateur",
+        description: "Impossible de supprimer l'utilisateur.",
         variant: 'destructive'
       });
     } finally {
@@ -236,14 +229,14 @@ export function Users() {
     try {
       await usersService.toggleActive(user.id);
       toast({
-        title: user.is_active ? 'Usuário desativado' : 'Usuário ativado',
-        description: `O usuário ${user.display_name} foi ${user.is_active ? 'desativado' : 'ativado'} com sucesso.`
+        title: user.is_active ? 'Utilisateur désactivé' : 'Utilisateur activé',
+        description: `L'utilisateur ${user.display_name} a été ${user.is_active ? 'désactivé' : 'activé'} avec succès.`
       });
       loadUsers();
     } catch (error) {
       toast({
-        title: 'Erro ao alterar status',
-        description: 'Não foi possível alterar o status do usuário.',
+        title: "Erreur lors du changement de statut",
+        description: "Impossible de modifier le statut de l'utilisateur.",
         variant: 'destructive'
       });
     }
@@ -308,32 +301,6 @@ export function Users() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Filters */}
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('user.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole | 'ALL')}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder={t('user.filterByRole')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t('common.all')}</SelectItem>
-                <SelectItem value="ADMIN">{t('role.admin')}</SelectItem>
-                <SelectItem value="TECNICO">{t('role.technician')}</SelectItem>
-                <SelectItem value="RECEPCAO">{t('role.reception')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Table */}
           <div className="rounded-md border">
             <Table>
@@ -387,7 +354,7 @@ export function Users() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleEdit(user)}
-                            title={t('common.edit')}
+                            title="Éditer"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -395,7 +362,7 @@ export function Users() {
                             variant="ghost"
                             size="icon"
                             onClick={() => openPasswordDialog(user)}
-                            title={t('settings.changePassword')}
+                            title="Changer le mot de passe"
                           >
                             <KeyRound className="h-4 w-4" />
                           </Button>
@@ -403,7 +370,7 @@ export function Users() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleToggleActive(user)}
-                            title={user.is_active ? t('user.deactivate') : t('user.activate')}
+                            title={user.is_active ? "Désactiver l'utilisateur" : "Activer l'utilisateur"}
                           >
                             {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
                           </Button>
@@ -412,7 +379,7 @@ export function Users() {
                             size="icon"
                             onClick={() => handleDelete(user)}
                             disabled={isDeleting === user.id}
-                            title={t('common.delete')}
+                            title="Supprimer"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -431,9 +398,9 @@ export function Users() {
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('settings.changePassword')}</DialogTitle>
+            <DialogTitle>Changer le mot de passe</DialogTitle>
             <DialogDescription>
-              {t('user.setNewPassword')} {selectedUserForPassword?.display_name}
+              Définir un nouveau mot de passe pour {selectedUserForPassword?.display_name}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePasswordChangeSubmit}>
@@ -469,7 +436,7 @@ export function Users() {
                 {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={passwordLoading}>
-                {passwordLoading ? t('common.updating') : t('settings.changePassword')}
+                {passwordLoading ? t('common.updating') : "Changer le mot de passe"}
               </Button>
             </DialogFooter>
           </form>
@@ -481,10 +448,12 @@ export function Users() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingUser ? t('user.editUser') : t('user.newUser')}
+              {editingUser ? "Modifier l'utilisateur" : "Nouvel utilisateur"}
             </DialogTitle>
             <DialogDescription>
-              {editingUser ? t('user.editUserDesc') : t('user.newUserDesc')}
+              {editingUser
+                ? "Modifiez les informations de l'utilisateur sélectionné."
+                : "Créez un nouveau compte utilisateur."}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
@@ -503,7 +472,7 @@ export function Users() {
               
               {!editingUser && (
                 <div>
-                  <Label htmlFor="password">Senha</Label>
+                  <Label htmlFor="password">Mot de passe</Label>
                   <Input
                     id="password"
                     type="password"
@@ -516,7 +485,7 @@ export function Users() {
               )}
               
               <div>
-                <Label htmlFor="display_name">Nome de Exibição</Label>
+                <Label htmlFor="display_name">Nom d'affichage</Label>
                 <Input
                   id="display_name"
                   value={formData.display_name}
@@ -526,7 +495,7 @@ export function Users() {
               </div>
               
               <div>
-                <Label htmlFor="role">Papel</Label>
+                <Label htmlFor="role">Rôle</Label>
                 <Select
                   value={formData.role}
                   onValueChange={(value) => setFormData({ ...formData, role: value as UserRole })}
@@ -535,15 +504,15 @@ export function Users() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ADMIN">Administrador</SelectItem>
-                    <SelectItem value="TECNICO">Técnico</SelectItem>
-                    <SelectItem value="RECEPCAO">Recepção</SelectItem>
+                    <SelectItem value="ADMIN">Administrateur</SelectItem>
+                    <SelectItem value="TECNICO">Technicien</SelectItem>
+                    <SelectItem value="RECEPCAO">Réception</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label htmlFor="locale">Idioma</Label>
+                <Label htmlFor="locale">Langue</Label>
                 <Select
                   value={formData.locale}
                   onValueChange={(value) => setFormData({ ...formData, locale: value })}
@@ -565,7 +534,7 @@ export function Users() {
                   checked={formData.is_active}
                   onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
-                <Label htmlFor="is_active">Usuário ativo</Label>
+                <Label htmlFor="is_active">Utilisateur actif</Label>
               </div>
             </div>
             
