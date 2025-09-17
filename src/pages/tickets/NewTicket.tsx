@@ -202,11 +202,24 @@ export default function NewTicket() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(categoryLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {t(`category.${value.toLowerCase()}`)}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value={TicketCategory.CARPENTRY}>
+                        {t('category.carpentry')}
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.PAINTING}>
+                        {t('category.painting')}
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.FLOORING}>
+                        {t('category.flooring')}
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.PLUMBING}>
+                        {t('category.plumbing')}
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.ELECTRICAL}>
+                        {t('category.electrical')}
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.OTHER}>
+                        {t('category.other')}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

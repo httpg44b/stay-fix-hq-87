@@ -26,12 +26,11 @@ export const TicketPriority = {
 export type TicketPriority = typeof TicketPriority[keyof typeof TicketPriority];
 
 export const TicketCategory = {
-  HVAC: 'HVAC',
-  ELECTRICAL: 'ELECTRICAL',
-  PLUMBING: 'PLUMBING',
   CARPENTRY: 'CARPENTRY',
-  CLEANING: 'CLEANING',
-  IT: 'IT',
+  PAINTING: 'PAINTING',
+  FLOORING: 'FLOORING',
+  PLUMBING: 'PLUMBING',
+  ELECTRICAL: 'ELECTRICAL',
   OTHER: 'OTHER'
 } as const;
 
@@ -53,13 +52,12 @@ export const priorityLabels: Record<TicketPriority, string> = {
 };
 
 export const categoryLabels: Record<TicketCategory, string> = {
-  [TicketCategory.HVAC]: 'Ar Condicionado',
-  [TicketCategory.ELECTRICAL]: 'Elétrica',
-  [TicketCategory.PLUMBING]: 'Hidráulica',
-  [TicketCategory.CARPENTRY]: 'Marcenaria',
-  [TicketCategory.CLEANING]: 'Limpeza',
-  [TicketCategory.IT]: 'TI',
-  [TicketCategory.OTHER]: 'Outros'
+  [TicketCategory.CARPENTRY]: 'Menuiserie & Bois',
+  [TicketCategory.PAINTING]: 'Peinture & Finitions',
+  [TicketCategory.FLOORING]: 'Moquette & Revêtements',
+  [TicketCategory.PLUMBING]: 'Plomberie',
+  [TicketCategory.ELECTRICAL]: 'Électricité',
+  [TicketCategory.OTHER]: 'Autres'
 };
 
 export const roleLabels: Record<UserRole, string> = {
