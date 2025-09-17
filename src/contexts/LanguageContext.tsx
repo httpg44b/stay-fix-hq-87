@@ -38,7 +38,7 @@ const translations = {
     // Dashboard
     'dashboard.welcome': 'Bem-vindo de volta',
     'dashboard.total_tickets': 'Total de Chamados',
-    'dashboard.in_progress': 'Em Atendimento',
+    'dashboard.in_progress': 'En service',
     'dashboard.completed': 'Concluídos',
     'dashboard.total_hotels': 'Total de Hotéis',
     'dashboard.recent_tickets': 'Chamados Recentes',
@@ -48,7 +48,7 @@ const translations = {
     'dashboard.active_users': 'usuários ativos',
     'dashboard.overview': 'Visão Geral',
     'dashboard.openTickets': 'Chamados Abertos',
-    'dashboard.inProgress': 'Em Atendimento',
+    'dashboard.inProgress': 'En service',
     'dashboard.waitingParts': 'Aguardando Peça',
     'dashboard.monthlyCompleted': 'Concluídos no Mês',
     'dashboard.avgTime': 'Tempo Médio',
@@ -99,7 +99,7 @@ const translations = {
     'ticket.save': 'Salvar',
     'ticket.cancel': 'Cancelar',
     'ticket.statusNew': 'Novo',
-    'ticket.statusInProgress': 'Em Atendimento',
+    'ticket.statusInProgress': 'En service',
     'ticket.statusWaitingParts': 'Aguardando Peças',
     'ticket.statusCompleted': 'Concluído',
     'ticket.statusCancelled': 'Cancelado',
@@ -133,7 +133,7 @@ const translations = {
     
     // Status
     'status.new': 'Novo',
-    'status.in_progress': 'Em Atendimento',
+    'status.in_progress': 'En service',
     'status.waiting_parts': 'Aguardando Peças',
     'status.completed': 'Concluído',
     'status.cancelled': 'Cancelado',

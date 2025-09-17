@@ -39,7 +39,7 @@ export type TicketCategory = typeof TicketCategory[keyof typeof TicketCategory];
 
 export const statusLabels: Record<TicketStatus, string> = {
   [TicketStatus.NEW]: 'Novo',
-  [TicketStatus.IN_PROGRESS]: 'Em Atendimento',
+  [TicketStatus.IN_PROGRESS]: 'En service',
   [TicketStatus.WAITING_PARTS]: 'Aguardando Peça',
   [TicketStatus.COMPLETED]: 'Concluído',
   [TicketStatus.CANCELLED]: 'Cancelado'
