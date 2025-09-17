@@ -91,6 +91,9 @@ const translations = {
     'ticket.createdAt': 'Criado em',
     'ticket.attachImages': 'Anexar Imagens',
     'ticket.solution': 'Solução',
+    'ticket.assignee': 'Técnico Responsável',
+    'ticket.add_solution_images': 'Adicionar Imagens da Solução',
+    'ticket.selectTechnician': 'Selecione um técnico',
     'ticket.close': 'Fechar Chamado',
     'ticket.reopen': 'Reabrir Chamado',
     'ticket.assign': 'Atribuir',
@@ -187,11 +190,11 @@ const translations = {
     'common.profile_info': 'Informações do seu perfil',
     
     // Categories
-    'category.electrical': 'Elétrico',
-    'category.plumbing': 'Hidráulico',
-    'category.air_conditioning': 'Ar Condicionado',
-    'category.furniture': 'Móveis',
-    'category.cleaning': 'Limpeza',
+    'category.carpentry': 'Marcenaria',
+    'category.painting': 'Pintura',
+    'category.flooring': 'Pisos',
+    'category.plumbing': 'Hidráulica',
+    'category.electrical': 'Elétrica',
     'category.other': 'Outros',
     
     // Roles
@@ -316,6 +319,9 @@ const translations = {
     'ticket.createdAt': 'Created at',
     'ticket.attachImages': 'Attach Images',
     'ticket.solution': 'Solution',
+    'ticket.assignee': 'Assigned Technician',
+    'ticket.add_solution_images': 'Add Solution Images',
+    'ticket.selectTechnician': 'Select a technician',
     'ticket.close': 'Close Ticket',
     'ticket.reopen': 'Reopen Ticket',
     'ticket.assign': 'Assign',
@@ -412,11 +418,11 @@ const translations = {
     'common.profile_info': 'Your profile information',
     
     // Categories
-    'category.electrical': 'Electrical',
+    'category.carpentry': 'Carpentry',
+    'category.painting': 'Painting',
+    'category.flooring': 'Flooring',
     'category.plumbing': 'Plumbing',
-    'category.air_conditioning': 'Air Conditioning',
-    'category.furniture': 'Furniture',
-    'category.cleaning': 'Cleaning',
+    'category.electrical': 'Electrical',
     'category.other': 'Other',
     
     // Roles
@@ -556,6 +562,9 @@ const translations = {
     'ticket.createdAt': 'Créé le',
     'ticket.attachImages': 'Joindre des Images',
     'ticket.solution': 'Solution',
+    'ticket.assignee': 'Technicien Responsable',
+    'ticket.add_solution_images': 'Ajouter des Images de Solution',
+    'ticket.selectTechnician': 'Sélectionner un technicien',
     'ticket.close': 'Fermer l\'Appel',
     'ticket.reopen': 'Rouvrir l\'Appel',
     'ticket.assign': 'Attribuer',
@@ -656,11 +665,11 @@ const translations = {
     'common.view': 'Voir',
     
     // Categories
-    'category.electrical': 'Électrique',
+    'category.carpentry': 'Menuiserie & Bois',
+    'category.painting': 'Peinture & Finitions',
+    'category.flooring': 'Moquette & Revêtements',
     'category.plumbing': 'Plomberie',
-    'category.air_conditioning': 'Climatisation',
-    'category.furniture': 'Mobilier',
-    'category.cleaning': 'Nettoyage',
+    'category.electrical': 'Électricité',
     'category.other': 'Autres',
     
     // Roles
@@ -750,6 +759,7 @@ const translations = {
     'errors.exceedsLimit': 'dépasse la limite de 5MB',
     'errors.uploadingImages': 'Erreur lors de l\'envoi des images',
     'errors.uploadingImagesDesc': 'Une erreur s\'est produite lors de l\'envoi des images.',
+    'errors.uploadingImage': 'Erreur lors de l\'envoi de l\'image',
     'errors.removingImage': 'Erreur lors de la suppression de l\'image',
     'errors.removingImageDesc': 'Impossible de supprimer l\'image.',
     'errors.updatingTicket': 'Erreur lors de la mise à jour de l\'appel',

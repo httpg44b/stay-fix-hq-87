@@ -413,7 +413,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         <Separator />
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="status">Status do Chamado</Label>
+                            <Label htmlFor="status">{t('ticket.status')}</Label>
                             <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
                               <SelectTrigger id="status">
                                 <SelectValue />
@@ -432,14 +432,14 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                             <div className="space-y-2">
                               <Label htmlFor="technician">
                                 <UserCheck className="inline h-4 w-4 mr-1" />
-                                Técnico Responsável
+                                {t('ticket.assignee')}
                               </Label>
                               <Select value={selectedTechnician || "unassigned"} onValueChange={(value) => setSelectedTechnician(value === "unassigned" ? "" : value)}>
                                 <SelectTrigger id="technician">
-                                  <SelectValue placeholder="Selecione um técnico" />
+                                  <SelectValue placeholder={t('ticket.selectTechnician')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="unassigned">Não atribuído</SelectItem>
+                                  <SelectItem value="unassigned">{t('common.unassigned')}</SelectItem>
                                   {technicians.map((tech) => (
                                     <SelectItem key={tech.id} value={tech.id}>
                                       {tech.display_name} ({tech.email})
@@ -460,7 +460,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         <div className="space-y-2">
                           <Label htmlFor="solution" className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4" />
-                            Solução
+                            {t('ticket.solution')}
                           </Label>
                           {canEdit ? (
                             <Textarea
@@ -495,7 +495,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                 ) : (
                                   <Upload className="mr-2 h-4 w-4" />
                                 )}
-                                Adicionar Fotos
+                                {t('ticket.add_solution_images')}
                               </Button>
                               <input
                                 id="solution-image-upload"
