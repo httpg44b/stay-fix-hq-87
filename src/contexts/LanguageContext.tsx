@@ -43,13 +43,13 @@ const translations = {
     'dashboard.total_hotels': 'Total de Hotéis',
     'dashboard.recent_tickets': 'Chamados Recentes',
     'dashboard.new_today': 'novos hoje',
-    'dashboard.waiting_parts': 'aguardando peças',
+    'dashboard.waiting_parts': 'En attente Pièces',
     'dashboard.this_month': 'Este mês',
     'dashboard.active_users': 'usuários ativos',
     'dashboard.overview': 'Visão Geral',
     'dashboard.openTickets': 'Chamados Abertos',
     'dashboard.inProgress': 'En service',
-    'dashboard.waitingParts': 'Aguardando Peça',
+    'dashboard.waitingParts': 'En attente Pièce',
     'dashboard.monthlyCompleted': 'Concluídos no Mês',
     'dashboard.avgTime': 'Tempo Médio',
     'dashboard.activeTickets': 'Chamados Ativos',
@@ -103,9 +103,9 @@ const translations = {
     'ticket.cancel': 'Cancelar',
     'ticket.statusNew': 'Nouveau',
     'ticket.statusInProgress': 'En service',
-    'ticket.statusWaitingParts': 'Aguardando Peças',
-    'ticket.statusCompleted': 'Concluído',
-    'ticket.statusCancelled': 'Cancelado',
+    'ticket.statusWaitingParts': 'En attente Pièces',
+    'ticket.statusCompleted': 'Terminé',
+    'ticket.statusCancelled': 'Annulé',
     
     // Settings
     'settings.profile': 'Perfil',
@@ -137,9 +137,9 @@ const translations = {
     // Status
     'status.new': 'Nouveau',
     'status.in_progress': 'En service',
-    'status.waiting_parts': 'Aguardando Peças',
-    'status.completed': 'Concluído',
-    'status.cancelled': 'Cancelado',
+    'status.waiting_parts': 'En attente Pièces',
+    'status.completed': 'Terminé',
+    'status.cancelled': 'Annulé',
     
     // Priority
     'priority.low': 'Baixa',
