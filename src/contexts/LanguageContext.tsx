@@ -101,7 +101,7 @@ const translations = {
     'ticket.create': 'Criar Chamado',
     'ticket.save': 'Salvar',
     'ticket.cancel': 'Cancelar',
-    'ticket.statusNew': 'Novo',
+    'ticket.statusNew': 'Nouveau',
     'ticket.statusInProgress': 'En service',
     'ticket.statusWaitingParts': 'Aguardando Peças',
     'ticket.statusCompleted': 'Concluído',
@@ -135,7 +135,7 @@ const translations = {
     'settings.notifications': 'Notificações',
     
     // Status
-    'status.new': 'Novo',
+    'status.new': 'Nouveau',
     'status.in_progress': 'En service',
     'status.waiting_parts': 'Aguardando Peças',
     'status.completed': 'Concluído',
