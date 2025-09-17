@@ -15,12 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Loader2, ArrowLeft } from 'lucide-react';
+import { Upload, Loader2, ArrowLeft, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { categoryLabels, priorityLabels } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
+import { storageService } from '@/services/storage.service';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function NewTicket() {
   const { user } = useAuth();
@@ -37,7 +39,8 @@ export default function NewTicket() {
     priority: TicketPriority.MEDIUM as TicketPriority,
     title: '',
     description: '',
-    images: [] as string[]
+    images: [] as string[],
+    imageFiles: [] as File[]
   });
 
   useEffect(() => {
@@ -86,6 +89,27 @@ export default function NewTicket() {
     setIsSubmitting(true);
 
     try {
+      // Generate a temporary ticket ID for image uploads
+      const tempTicketId = uuidv4();
+      
+      // Upload images first if any
+      const uploadedImageUrls: string[] = [];
+      if (formData.imageFiles.length > 0) {
+        for (const file of formData.imageFiles) {
+          try {
+            const imageUrl = await storageService.uploadTicketImage(file, tempTicketId);
+            uploadedImageUrls.push(imageUrl);
+          } catch (uploadError) {
+            console.error('Error uploading image:', uploadError);
+            toast({
+              title: t('errors.error'),
+              description: t('errors.uploadingImage'),
+              variant: 'destructive',
+            });
+          }
+        }
+      }
+
       await ticketsService.create({
         room_number: formData.roomNumber,
         category: formData.category,
@@ -94,6 +118,7 @@ export default function NewTicket() {
         description: formData.description,
         hotel_id: userHotelId,
         creator_id: user.id,
+        images: uploadedImageUrls,
       });
 
       toast({
@@ -117,11 +142,12 @@ export default function NewTicket() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      // In a real app, upload to server and get URLs
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
+      const newFiles = Array.from(files);
+      const newImages = newFiles.map(file => URL.createObjectURL(file));
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, ...newImages]
+        images: [...prev.images, ...newImages],
+        imageFiles: [...prev.imageFiles, ...newFiles]
       }));
     }
   };
@@ -312,12 +338,13 @@ export default function NewTicket() {
                         type="button"
                         onClick={() => setFormData(prev => ({
                           ...prev,
-                          images: prev.images.filter((_, i) => i !== index)
+                          images: prev.images.filter((_, i) => i !== index),
+                          imageFiles: prev.imageFiles.filter((_, i) => i !== index)
                         }))}
                         className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                         disabled={isSubmitting}
                       >
-                        ×
+                        <X className="h-4 w-4" />
                       </button>
                     </div>
                   ))}

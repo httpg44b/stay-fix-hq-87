@@ -759,6 +759,7 @@ const translations = {
     'errors.exceedsLimit': 'dépasse la limite de 5MB',
     'errors.uploadingImages': 'Erreur lors de l\'envoi des images',
     'errors.uploadingImagesDesc': 'Une erreur s\'est produite lors de l\'envoi des images.',
+    'errors.uploadingImage': 'Erreur lors de l\'envoi de l\'image',
     'errors.removingImage': 'Erreur lors de la suppression de l\'image',
     'errors.removingImageDesc': 'Impossible de supprimer l\'image.',
     'errors.updatingTicket': 'Erreur lors de la mise à jour de l\'appel',
