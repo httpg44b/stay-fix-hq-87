@@ -465,7 +465,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           {canEdit ? (
                             <Textarea
                               id="solution"
-                              placeholder="Descreva a solução aplicada ou o andamento do chamado..."
+                              placeholder="Décrivez la solution appliquée ou l'avancement de l'appel..."
                               value={solution}
                               onChange={(e) => setSolution(e.target.value)}
                               rows={4}
@@ -481,7 +481,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         {/* Solution Images */}
                         {canEdit && (
                           <div className="space-y-2">
-                            <Label>Anexar Imagens da Solução</Label>
+                            <Label>Joindre des images de la solution</Label>
                             <div className="flex items-center gap-4">
                               <Button
                                 type="button"
