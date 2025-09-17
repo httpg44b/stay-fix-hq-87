@@ -198,7 +198,7 @@ const translations = {
     'category.other': 'Outros',
     
     // Roles
-    'role.admin': 'Administrador',
+    'role.admin': 'Administrateur',
     'role.technician': 'Técnico',
     'role.reception': 'Recepção',
     

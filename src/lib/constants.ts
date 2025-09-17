@@ -61,7 +61,7 @@ export const categoryLabels: Record<TicketCategory, string> = {
 };
 
 export const roleLabels: Record<UserRole, string> = {
-  [UserRole.ADMIN]: 'Administrador',
+  [UserRole.ADMIN]: 'Administrateur',
   [UserRole.TECNICO]: 'Técnico',
   [UserRole.RECEPCAO]: 'Recepção'
 };
