@@ -40,7 +40,9 @@ export default function NewTicket() {
     title: '',
     description: '',
     images: [] as string[],
-    imageFiles: [] as File[]
+    imageFiles: [] as File[],
+    videos: [] as string[],
+    videoFiles: [] as File[]
   });
 
   useEffect(() => {
@@ -92,18 +94,37 @@ export default function NewTicket() {
       // Generate a temporary ticket ID for image uploads
       const tempTicketId = uuidv4();
       
-      // Upload images first if any
-      const uploadedImageUrls: string[] = [];
+      // Upload images and videos first if any
+      const uploadedMediaUrls: string[] = [];
+      
+      // Upload images
       if (formData.imageFiles.length > 0) {
         for (const file of formData.imageFiles) {
           try {
-            const imageUrl = await storageService.uploadTicketImage(file, tempTicketId);
-            uploadedImageUrls.push(imageUrl);
+            const imageUrl = await storageService.uploadTicketMedia(file, tempTicketId);
+            uploadedMediaUrls.push(imageUrl);
           } catch (uploadError) {
             console.error('Error uploading image:', uploadError);
             toast({
               title: t('errors.error'),
               description: t('errors.uploadingImage'),
+              variant: 'destructive',
+            });
+          }
+        }
+      }
+      
+      // Upload videos
+      if (formData.videoFiles.length > 0) {
+        for (const file of formData.videoFiles) {
+          try {
+            const videoUrl = await storageService.uploadTicketMedia(file, tempTicketId);
+            uploadedMediaUrls.push(videoUrl);
+          } catch (uploadError: any) {
+            console.error('Error uploading video:', uploadError);
+            toast({
+              title: t('errors.error'),
+              description: uploadError.message || t('errors.uploadingVideo'),
               variant: 'destructive',
             });
           }
@@ -118,7 +139,7 @@ export default function NewTicket() {
         description: formData.description,
         hotel_id: userHotelId,
         creator_id: user.id,
-        images: uploadedImageUrls,
+        images: uploadedMediaUrls,
       });
 
       toast({
@@ -139,15 +160,32 @@ export default function NewTicket() {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const newFiles = Array.from(files);
-      const newImages = newFiles.map(file => URL.createObjectURL(file));
+      const imageFiles: File[] = [];
+      const videoFiles: File[] = [];
+      const imageUrls: string[] = [];
+      const videoUrls: string[] = [];
+      
+      newFiles.forEach(file => {
+        const url = URL.createObjectURL(file);
+        if (file.type.startsWith('video/')) {
+          videoFiles.push(file);
+          videoUrls.push(url);
+        } else {
+          imageFiles.push(file);
+          imageUrls.push(url);
+        }
+      });
+      
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, ...newImages],
-        imageFiles: [...prev.imageFiles, ...newFiles]
+        images: [...prev.images, ...imageUrls],
+        imageFiles: [...prev.imageFiles, ...imageFiles],
+        videos: [...prev.videos, ...videoUrls],
+        videoFiles: [...prev.videoFiles, ...videoFiles]
       }));
     }
   };
@@ -297,38 +335,41 @@ export default function NewTicket() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="images">{t('ticket.photos')} ({t('common.optional')})</Label>
+                <Label htmlFor="media">{t('ticket.photosVideos')} ({t('common.optional')})</Label>
                 <div className="flex items-center gap-4">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={isSubmitting}
-                    onClick={() => document.getElementById('image-upload')?.click()}
+                    onClick={() => document.getElementById('media-upload')?.click()}
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    {t('ticket.addPhotos')}
+                    {t('ticket.addMedia')}
                   </Button>
                   <input
-                    id="image-upload"
+                    id="media-upload"
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime"
                     multiple
                     className="hidden"
-                    onChange={handleImageUpload}
+                    onChange={handleMediaUpload}
                     disabled={isSubmitting}
                   />
-                  {formData.images.length > 0 && (
+                  {(formData.images.length > 0 || formData.videos.length > 0) && (
                     <span className="text-sm text-muted-foreground">
-                      {formData.images.length} {t('ticket.photosAdded')}
+                      {formData.images.length > 0 && `${formData.images.length} ${t('ticket.photosAdded')}`}
+                      {formData.images.length > 0 && formData.videos.length > 0 && ', '}
+                      {formData.videos.length > 0 && `${formData.videos.length} ${t('ticket.videosAdded')}`}
                     </span>
                   )}
                 </div>
+                <p className="text-xs text-muted-foreground">{t('ticket.videoSizeLimit')}</p>
               </div>
 
-              {formData.images.length > 0 && (
+              {(formData.images.length > 0 || formData.videos.length > 0) && (
                 <div className="grid grid-cols-3 gap-2">
                   {formData.images.map((img, index) => (
-                    <div key={index} className="relative group">
+                    <div key={`img-${index}`} className="relative group">
                       <img
                         src={img}
                         alt={`Upload ${index + 1}`}
@@ -340,6 +381,27 @@ export default function NewTicket() {
                           ...prev,
                           images: prev.images.filter((_, i) => i !== index),
                           imageFiles: prev.imageFiles.filter((_, i) => i !== index)
+                        }))}
+                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        disabled={isSubmitting}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {formData.videos.map((video, index) => (
+                    <div key={`vid-${index}`} className="relative group">
+                      <video
+                        src={video}
+                        className="w-full h-24 object-cover rounded-lg"
+                        controls={false}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({
+                          ...prev,
+                          videos: prev.videos.filter((_, i) => i !== index),
+                          videoFiles: prev.videoFiles.filter((_, i) => i !== index)
                         }))}
                         className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                         disabled={isSubmitting}

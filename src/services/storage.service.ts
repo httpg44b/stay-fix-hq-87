@@ -4,7 +4,25 @@ import { v4 as uuidv4 } from 'uuid';
 class StorageService {
   private bucketName = 'ticket-images';
 
-  async uploadTicketImage(file: File, ticketId: string): Promise<string> {
+  async uploadTicketMedia(file: File, ticketId: string): Promise<string> {
+    try {
+      // Check if it's a video file
+      const isVideo = file.type.startsWith('video/');
+      
+      if (isVideo) {
+        // For videos, upload directly without compression
+        return await this.uploadVideo(file, ticketId);
+      } else {
+        // For images, use compression
+        return await this.uploadImage(file, ticketId);
+      }
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      throw error;
+    }
+  }
+
+  private async uploadImage(file: File, ticketId: string): Promise<string> {
     try {
       // Convert file to base64
       const base64 = await this.fileToBase64(file);
@@ -34,6 +52,38 @@ class StorageService {
       console.error('Error uploading image:', error);
       throw error;
     }
+  }
+
+  private async uploadVideo(file: File, ticketId: string): Promise<string> {
+    try {
+      // Check video size (max 50MB)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        throw new Error('Video file size must be less than 50MB');
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${ticketId}/${uuidv4()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .upload(fileName, file, {
+          contentType: file.type,
+          cacheControl: '3600',
+        });
+
+      if (error) throw error;
+
+      return this.getImageUrl(fileName);
+    } catch (error) {
+      console.error('Error uploading video:', error);
+      throw error;
+    }
+  }
+
+  // Backward compatibility
+  async uploadTicketImage(file: File, ticketId: string): Promise<string> {
+    return this.uploadTicketMedia(file, ticketId);
   }
 
   private fileToBase64(file: File): Promise<string> {

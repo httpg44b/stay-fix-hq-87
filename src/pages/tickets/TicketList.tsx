@@ -33,7 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { TicketModal } from '@/components/TicketModal';
 import { TechnicianName } from '@/components/TechnicianName';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { fr } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -259,7 +259,7 @@ export default function TicketList() {
                       selected={dateFrom}
                       onSelect={setDateFrom}
                       initialFocus
-                      locale={ptBR}
+                      locale={fr}
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
@@ -288,7 +288,7 @@ export default function TicketList() {
                       onSelect={setDateTo}
                       disabled={(date) => dateFrom ? date < dateFrom : false}
                       initialFocus
-                      locale={ptBR}
+                      locale={fr}
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
