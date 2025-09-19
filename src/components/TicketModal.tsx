@@ -345,35 +345,49 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           
                           {ticketImages.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
-                              {ticketImages.map((img, index) => (
-                                <div key={index} className="relative group">
-                                  <img
-                                    src={img}
-                                    alt={`${t('common.image')} ${index + 1}`}
-                                    className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => openImageViewer(img)}
-                                  />
-                                  {canEdit && (
-                                    <button
-                                      type="button"
-                                      onClick={() => removeImage(img, false)}
-                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  )}
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      openImageViewer(img);
-                                    }}
-                                    className="absolute bottom-1 left-1 bg-black/50 text-white rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <Eye className="h-3 w-3" />
-                                  </button>
-                                </div>
-                              ))}
+                              {ticketImages.map((media, index) => {
+                                const isVideo = media.includes('.mp4') || media.includes('.webm') || media.includes('.ogg') || media.includes('.mov');
+                                
+                                return (
+                                  <div key={index} className="relative group">
+                                    {isVideo ? (
+                                      <video
+                                        src={media}
+                                        className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                        controls
+                                      />
+                                    ) : (
+                                      <>
+                                        <img
+                                          src={media}
+                                          alt={`${t('common.image')} ${index + 1}`}
+                                          className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                          onClick={() => openImageViewer(media)}
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            openImageViewer(media);
+                                          }}
+                                          className="absolute bottom-1 left-1 bg-black/50 text-white rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                          <Eye className="h-3 w-3" />
+                                        </button>
+                                      </>
+                                    )}
+                                    {canEdit && (
+                                      <button
+                                        type="button"
+                                        onClick={() => removeImage(media, false)}
+                                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                           
