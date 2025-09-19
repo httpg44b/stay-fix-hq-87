@@ -45,10 +45,10 @@ export const statusLabels: Record<TicketStatus, string> = {
 };
 
 export const priorityLabels: Record<TicketPriority, string> = {
-  [TicketPriority.LOW]: 'Baixa',
+  [TicketPriority.LOW]: 'Basse',
   [TicketPriority.MEDIUM]: 'Moyenne',
-  [TicketPriority.HIGH]: 'Alta',
-  [TicketPriority.URGENT]: 'Urgente'
+  [TicketPriority.HIGH]: 'Haute',
+  [TicketPriority.URGENT]: 'Urgent'
 };
 
 export const categoryLabels: Record<TicketCategory, string> = {

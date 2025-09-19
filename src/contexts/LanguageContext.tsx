@@ -619,7 +619,7 @@ const translations = {
     'priority.low': 'Basse',
     'priority.medium': 'Moyenne',
     'priority.high': 'Haute',
-    'priority.urgent': 'Urgente',
+    'priority.urgent': 'Urgent',
     
     // Common
     'common.loading': 'Chargement...',
