@@ -240,7 +240,7 @@ const handlePasswordChange = async () => {
                   <p className="text-sm text-muted-foreground">
                     {language === 'pt' && 'A mudança de idioma será aplicada imediatamente em toda a aplicação.'}
                     {language === 'en' && 'The language change will be applied immediately throughout the application.'}
-                    {language === 'fr' && 'Le changement de langue sera appliqué immédiatement dans toute l\'application.'}
+                    {language === 'fr' && 'Le changement de langue sera appliqué imMoyennetement dans toute l\'application.'}
                   </p>
                 </div>
               </CardContent>

@@ -558,7 +558,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       ) : (
                         <>
                           <CheckCircle className="mr-2 h-4 w-4" />
-                          Fechar Chamado
+                          Fermer Appel
                         </>
                       )}
                     </Button>

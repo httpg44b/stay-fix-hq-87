@@ -94,7 +94,7 @@ const translations = {
     'ticket.assignee': 'Técnico Responsável',
     'ticket.add_solution_images': 'Adicionar Imagens da Solução',
     'ticket.selectTechnician': 'Selecione um técnico',
-    'ticket.close': 'Fechar Chamado',
+    'ticket.close': 'Fermer Appel',
     'ticket.reopen': 'Reabrir Chamado',
     'ticket.assign': 'Atribuir',
     'ticket.update': 'Atualizar',
@@ -143,9 +143,9 @@ const translations = {
     
     // Priority
     'priority.low': 'Baixa',
-    'priority.medium': 'Média',
-    'priority.high': 'Alta',
-    'priority.urgent': 'Urgente',
+    'priority.medium': 'Moyenne',
+    'priority.high': 'Haute',
+    'priority.urgent': 'Urgent',
     
     // Common
     'common.loading': 'Carregando...',

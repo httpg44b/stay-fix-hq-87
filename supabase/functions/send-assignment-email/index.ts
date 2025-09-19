@@ -112,7 +112,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 <div class="detail-row">
                   <span class="detail-label">⚡ Prioridade:</span>
-                  <span class="priority-${priority.toLowerCase()}">${priority === 'HIGH' ? 'ALTA' : priority === 'MEDIUM' ? 'MÉDIA' : 'BAIXA'}</span>
+                  <span class="priority-${priority.toLowerCase()}">${priority === 'HIGH' ? 'ALTA' : priority === 'MEDIUM' ? 'Moyenne' : 'BAIXA'}</span>
                 </div>
                 <div class="detail-row">
                   <span class="detail-label">📋 ID do Chamado:</span>
