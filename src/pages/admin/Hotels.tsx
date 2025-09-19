@@ -54,9 +54,9 @@ export function Hotels() {
       const data = await hotelsService.getAll();
       setHotels(data);
     } catch (error) {
-      toast({
-        title: 'Erro ao carregar hotéis',
-        description: 'Não foi possível carregar a lista de hotéis.',
+        toast({
+        title: t('errors.loadingHotels'),
+        description: t('errors.loadingHotelsDesc'),
         variant: 'destructive'
       });
     } finally {
@@ -81,8 +81,8 @@ export function Hotels() {
       setSelectedUsers(data.map(hu => hu.user_id));
     } catch (error) {
       toast({
-        title: 'Erro ao carregar usuários',
-        description: 'Não foi possível carregar os usuários do hotel.',
+        title: t('errors.loadingUsers'),
+        description: t('errors.loadingUsersDesc'),
         variant: 'destructive'
       });
     } finally {
@@ -120,15 +120,15 @@ export function Hotels() {
       }
       
       toast({
-        title: 'Sucesso',
-        description: 'Usuários do hotel atualizados com sucesso!'
+        title: t('common.success'),
+        description: t('hotel.usersUpdated')
       });
       
       setIsManageUsersOpen(false);
     } catch (error: any) {
       toast({
-        title: 'Erro ao salvar usuários',
-        description: error.message || 'Ocorreu um erro ao atualizar os usuários do hotel.',
+        title: t('errors.savingUsers'),
+        description: error.message || t('errors.savingUsersDesc'),
         variant: 'destructive'
       });
     } finally {
@@ -153,8 +153,8 @@ export function Hotels() {
 
         await hotelsService.update(editingHotel.id, updateData);
         toast({
-          title: 'Hotel atualizado',
-          description: 'Hotel atualizado com sucesso!'
+          title: t('hotel.updated'),
+          description: t('hotel.updatedDesc')
         });
       } else {
         // Create new hotel
@@ -169,8 +169,8 @@ export function Hotels() {
 
         await hotelsService.create(createData);
         toast({
-          title: 'Hotel criado',
-          description: 'Hotel criado com sucesso!'
+          title: t('hotel.created'),
+          description: t('hotel.createdDesc')
         });
       }
 
@@ -179,8 +179,8 @@ export function Hotels() {
       resetForm();
     } catch (error: any) {
       toast({
-        title: 'Erro ao salvar hotel',
-        description: error.message || 'Ocorreu um erro ao salvar o hotel.',
+        title: t('errors.savingHotel'),
+        description: error.message || t('errors.savingHotelDesc'),
         variant: 'destructive'
       });
     }
@@ -200,7 +200,7 @@ export function Hotels() {
   };
 
   const handleDelete = async (hotel: Hotel) => {
-    if (!confirm(`Tem certeza que deseja excluir o hotel "${hotel.name}"?`)) {
+    if (!confirm(`${t('hotel.deleteConfirm')} "${hotel.name}"?`)) {
       return;
     }
 
@@ -208,14 +208,14 @@ export function Hotels() {
     try {
       await hotelsService.delete(hotel.id);
       toast({
-        title: 'Hotel excluído',
-        description: 'Hotel excluído com sucesso!'
+        title: t('hotel.deleted'),
+        description: t('hotel.deletedDesc')
       });
       await loadHotels();
     } catch (error: any) {
       toast({
-        title: 'Erro ao excluir hotel',
-        description: error.message || 'Ocorreu um erro ao excluir o hotel.',
+        title: t('errors.deletingHotel'),
+        description: error.message || t('errors.deletingHotelDesc'),
         variant: 'destructive'
       });
     } finally {
@@ -227,14 +227,14 @@ export function Hotels() {
     try {
       await hotelsService.toggleActive(hotel.id);
       toast({
-        title: hotel.is_active ? 'Hotel desativado' : 'Hotel ativado',
-        description: `Hotel ${hotel.is_active ? 'desativado' : 'ativado'} com sucesso!`
+        title: hotel.is_active ? t('hotel.deactivated') : t('hotel.activated'),
+        description: hotel.is_active ? t('hotel.deactivatedDesc') : t('hotel.activatedDesc')
       });
       await loadHotels();
     } catch (error: any) {
       toast({
-        title: 'Erro ao alterar status',
-        description: error.message || 'Ocorreu um erro ao alterar o status do hotel.',
+        title: t('errors.changingStatus'),
+        description: error.message || t('errors.changingStatusDesc'),
         variant: 'destructive'
       });
     }
@@ -440,7 +440,7 @@ export function Hotels() {
             
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="name">Nome *</Label>
+                <Label htmlFor="name">{t('hotel.name')} *</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -450,7 +450,7 @@ export function Hotels() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="address">Endereço</Label>
+                <Label htmlFor="address">{t('hotel.address')}</Label>
                 <Input
                   id="address"
                   value={formData.address}
@@ -459,7 +459,7 @@ export function Hotels() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="phone">Telefone</Label>
+                <Label htmlFor="phone">{t('hotel.phone')}</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
@@ -468,7 +468,7 @@ export function Hotels() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="email">{t('hotel.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -488,7 +488,7 @@ export function Hotels() {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="is_active">Ativo</Label>
+                <Label htmlFor="is_active">{t('hotel.active')}</Label>
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
