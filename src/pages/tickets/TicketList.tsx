@@ -24,7 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { statusLabels, priorityLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
@@ -41,6 +41,16 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function TicketList() {
   const { user } = useAuth();
@@ -58,6 +68,8 @@ export default function TicketList() {
   const [loading, setLoading] = useState(true);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
 
   if (!user) return null;
 
@@ -140,6 +152,34 @@ export default function TicketList() {
 
   const handleTicketUpdate = () => {
     loadData(); // Reload tickets after update
+  };
+
+  const handleDeleteClick = (ticketId: string) => {
+    setTicketToDelete(ticketId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!ticketToDelete) return;
+
+    try {
+      await ticketsService.delete(ticketToDelete);
+      toast({
+        title: t('ticket.deleted'),
+        description: t('ticket.deletedDesc'),
+      });
+      loadData();
+    } catch (error: any) {
+      console.error('Error deleting ticket:', error);
+      toast({
+        title: t('errors.deletingTicket'),
+        description: error.message || t('errors.deletingTicketDesc'),
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setTicketToDelete(null);
+    }
   };
 
   const exportToCSV = () => {
@@ -378,13 +418,25 @@ export default function TicketList() {
                           {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleTicketClick(ticket.id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleTicketClick(ticket.id)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {user.role === UserRole.ADMIN && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteClick(ticket.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -403,6 +455,23 @@ export default function TicketList() {
           onClose={handleModalClose}
           onUpdate={handleTicketUpdate}
         />
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('ticket.deleteConfirmTitle')}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t('ticket.deleteConfirmDescription')}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirm}>
+                {t('common.delete')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );

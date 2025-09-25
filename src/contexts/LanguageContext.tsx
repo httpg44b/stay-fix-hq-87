@@ -188,6 +188,12 @@ const translations = {
     'common.created': 'Criado em',
     'common.actions': 'Ações',
     'common.profile_info': 'Informações do seu perfil',
+    'ticket.deleted': 'Appel supprimé',
+    'ticket.deletedDesc': 'L\'appel a été supprimé avec succès',
+    'ticket.deleteConfirmTitle': 'Supprimer l\'appel',
+    'ticket.deleteConfirmDescription': 'Êtes-vous sûr de vouloir supprimer cet appel ? Cette action est irréversible.',
+    'errors.deletingTicket': 'Erreur lors de la suppression',
+    'errors.deletingTicketDesc': 'Impossible de supprimer l\'appel',
     
     // Categories
     'category.carpentry': 'Marcenaria',

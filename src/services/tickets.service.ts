@@ -21,6 +21,10 @@ export interface UpdateTicketInput {
   solution_images?: string[];
   closed_at?: string;
   images?: string[];
+  title?: string;
+  description?: string;
+  category?: TicketCategory;
+  room_number?: string;
 }
 
 class TicketsService {
@@ -106,6 +110,15 @@ class TicketsService {
 
     if (error) throw error;
     return data;
+  }
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   }
 }
 

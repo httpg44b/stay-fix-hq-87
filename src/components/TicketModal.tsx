@@ -23,11 +23,12 @@ import { PriorityBadge } from '@/components/PriorityBadge';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 import { 
   Upload, X, Save, CheckCircle, Loader2, Calendar, User, MapPin, 
   FileText, Building, ImageIcon, Eye, Download, UserCheck 
 } from 'lucide-react';
-import { TicketStatus, statusLabels, categoryLabels, UserRole } from '@/lib/constants';
+import { TicketStatus, statusLabels, categoryLabels, UserRole, TicketPriority, priorityLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
 import { storageService } from '@/services/storage.service';
@@ -63,6 +64,13 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
+  // States for editing all fields (admin only)
+  const [editMode, setEditMode] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editRoomNumber, setEditRoomNumber] = useState('');
+  const [editPriority, setEditPriority] = useState<TicketPriority>(TicketPriority.MEDIUM);
 
   useEffect(() => {
     if (ticketId && isOpen) {
@@ -82,6 +90,12 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       setSelectedTechnician(data.assignee_id || '');
       setSolutionImages(data.solution_images || []);
       setTicketImages(data.images || []);
+      // Initialize edit fields
+      setEditTitle(data.title || '');
+      setEditDescription(data.description || '');
+      setEditCategory(data.category || '');
+      setEditRoomNumber(data.room_number || '');
+      setEditPriority(data.priority || TicketPriority.MEDIUM);
       
       // Load hotel info
       if (data.hotel_id) {
@@ -119,7 +133,10 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       const uploadedUrls: string[] = [];
 
       for (const file of Array.from(files)) {
-        if (file.size > 5 * 1024 * 1024) {
+        const isVideo = file.type.startsWith('video/');
+        const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for images
+        
+        if (file.size > maxSize) {
           toast({
             title: t('errors.fileTooLarge'),
             description: `${file.name} ${t('errors.exceedsLimit')}`,
@@ -226,6 +243,15 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
         ...(status === TicketStatus.COMPLETED && { closed_at: new Date().toISOString() })
       };
       
+      // Admin can change all fields
+      if (user?.role === UserRole.ADMIN && editMode) {
+        updateData.title = editTitle;
+        updateData.description = editDescription;
+        updateData.category = editCategory;
+        updateData.room_number = editRoomNumber;
+        updateData.priority = editPriority;
+      }
+      
       // Admin can change technician
       if (user?.role === UserRole.ADMIN && selectedTechnician !== ticket.assignee_id) {
         updateData.assignee_id = selectedTechnician || null;
@@ -280,13 +306,77 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
           ) : ticket ? (
             <>
               <DialogHeader>
-                <DialogTitle className="text-xl">{ticket.title}</DialogTitle>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    {user?.role === UserRole.ADMIN && editMode ? (
+                      <Input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="text-xl font-semibold"
+                      />
+                    ) : (
+                      <DialogTitle className="text-xl">{ticket.title}</DialogTitle>
+                    )}
+                  </div>
+                  {user?.role === UserRole.ADMIN && !editMode && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditMode(true)}
+                    >
+                      {t('common.edit')}
+                    </Button>
+                  )}
+                </div>
                 <DialogDescription className="flex items-center gap-4 mt-2">
-                  <StatusBadge status={ticket.status} />
-                  <PriorityBadge priority={ticket.priority} />
-                  <Badge variant="outline">
-                    {t(`category.${ticket.category.toLowerCase()}`)}
-                  </Badge>
+                  {user?.role === UserRole.ADMIN && editMode ? (
+                    <div className="flex gap-2 w-full">
+                      <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(statusLabels).map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select value={editPriority} onValueChange={(value) => setEditPriority(value as TicketPriority)}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(priorityLabels).map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select value={editCategory} onValueChange={setEditCategory}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(categoryLabels).map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <>
+                      <StatusBadge status={ticket.status} />
+                      <PriorityBadge priority={ticket.priority} />
+                      <Badge variant="outline">
+                        {t(`category.${ticket.category.toLowerCase()}`)}
+                      </Badge>
+                    </>
+                  )}
                 </DialogDescription>
               </DialogHeader>
 
@@ -298,7 +388,15 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                         <span className="text-muted-foreground">{t('common.room_area')}:</span>
-                        <span className="font-medium">{ticket.room_number}</span>
+                        {user?.role === UserRole.ADMIN && editMode ? (
+                          <Input
+                            value={editRoomNumber}
+                            onChange={(e) => setEditRoomNumber(e.target.value)}
+                            className="h-7"
+                          />
+                        ) : (
+                          <span className="font-medium">{ticket.room_number}</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Building className="h-4 w-4 text-muted-foreground" />
@@ -328,9 +426,17 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         <FileText className="h-4 w-4" />
                         {t('ticket.description')}
                       </Label>
-                      <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                        {ticket.description}
-                      </p>
+                      {user?.role === UserRole.ADMIN && editMode ? (
+                        <Textarea
+                          value={editDescription}
+                          onChange={(e) => setEditDescription(e.target.value)}
+                          rows={4}
+                        />
+                      ) : (
+                        <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                          {ticket.description}
+                        </p>
+                      )}
                     </div>
 
                     {/* Ticket Images */}
@@ -410,7 +516,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                               <input
                                 id="ticket-image-upload"
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime"
                                 multiple
                                 className="hidden"
                                 onChange={(e) => handleImageUpload(e, false)}
@@ -559,9 +665,16 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
               {canEdit && (
                 <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button variant="outline" onClick={onClose}>
-                    Cancelar
-                  </Button>
+                  {user?.role === UserRole.ADMIN && editMode && (
+                    <Button variant="outline" onClick={() => setEditMode(false)}>
+                      {t('common.cancel')}
+                    </Button>
+                  )}
+                  {!editMode && (
+                    <Button variant="outline" onClick={onClose}>
+                      {t('common.cancel')}
+                    </Button>
+                  )}
                   {status === TicketStatus.COMPLETED ? (
                     <Button onClick={handleSave} disabled={saving}>
                       {saving ? (
