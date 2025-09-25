@@ -71,12 +71,33 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [editCategory, setEditCategory] = useState('');
   const [editRoomNumber, setEditRoomNumber] = useState('');
   const [editPriority, setEditPriority] = useState<TicketPriority>(TicketPriority.MEDIUM);
+  const [editHotelId, setEditHotelId] = useState('');
+  const [hotels, setHotels] = useState<any[]>([]);
 
   useEffect(() => {
     if (ticketId && isOpen) {
       loadTicket();
     }
   }, [ticketId, isOpen]);
+
+  const loadTechniciansForHotel = async (hotelId: string) => {
+    if (!hotelId || user?.role !== UserRole.ADMIN) return;
+    
+    try {
+      const { data: techData, error: techError } = await supabase
+        .rpc('get_hotel_technicians', { _hotel_id: hotelId });
+      
+      if (!techError && techData) {
+        setTechnicians(techData);
+        // Reset selected technician if not from this hotel
+        if (selectedTechnician && !techData.find((t: any) => t.id === selectedTechnician)) {
+          setSelectedTechnician('');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading technicians:', error);
+    }
+  };
 
   const loadTicket = async () => {
     if (!ticketId) return;
@@ -96,6 +117,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       setEditCategory(data.category || '');
       setEditRoomNumber(data.room_number || '');
       setEditPriority(data.priority || TicketPriority.MEDIUM);
+      setEditHotelId(data.hotel_id || '');
       
       // Load hotel info
       if (data.hotel_id) {
@@ -110,6 +132,16 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
           if (!techError && techData) {
             setTechnicians(techData);
           }
+        }
+      }
+      
+      // Load all hotels for admin
+      if (user?.role === UserRole.ADMIN) {
+        try {
+          const hotelsList = await hotelsService.getAll();
+          setHotels(hotelsList);
+        } catch (error) {
+          console.error('Error loading hotels:', error);
         }
       }
     } catch (error: any) {
@@ -250,6 +282,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
         updateData.category = editCategory;
         updateData.room_number = editRoomNumber;
         updateData.priority = editPriority;
+        updateData.hotel_id = editHotelId;
       }
       
       // Admin can change technician
@@ -401,7 +434,26 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       <div className="flex items-center gap-2">
                         <Building className="h-4 w-4 text-muted-foreground" />
                         <span className="text-muted-foreground">{t('tickets.hotel')}:</span>
-                        <span className="font-medium">{hotel?.name || '-'}</span>
+                        {user?.role === UserRole.ADMIN && editMode ? (
+                          <Select value={editHotelId} onValueChange={(value) => {
+                            setEditHotelId(value);
+                            // Reload technicians for new hotel
+                            loadTechniciansForHotel(value);
+                          }}>
+                            <SelectTrigger className="h-7 w-[180px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hotels.map((h) => (
+                                <SelectItem key={h.id} value={h.id}>
+                                  {h.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span className="font-medium">{hotel?.name || '-'}</span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -413,9 +465,30 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span className="text-muted-foreground">{t('tickets.technician')}:</span>
-                        <span className="font-medium">
-                          <TechnicianName assigneeId={ticket.assignee_id} />
-                        </span>
+                        {user?.role === UserRole.ADMIN && editMode ? (
+                          <Select 
+                            value={selectedTechnician} 
+                            onValueChange={setSelectedTechnician}
+                          >
+                            <SelectTrigger className="h-7 w-[180px]">
+                              <SelectValue placeholder={t('tickets.selectTechnician')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">
+                                {t('tickets.noTechnician')}
+                              </SelectItem>
+                              {technicians.map((tech) => (
+                                <SelectItem key={tech.id} value={tech.id}>
+                                  {tech.display_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span className="font-medium">
+                            <TechnicianName assigneeId={ticket.assignee_id} />
+                          </span>
+                        )}
                       </div>
                     </div>
 

@@ -25,6 +25,7 @@ export interface UpdateTicketInput {
   description?: string;
   category?: TicketCategory;
   room_number?: string;
+  hotel_id?: string;
 }
 
 class TicketsService {
