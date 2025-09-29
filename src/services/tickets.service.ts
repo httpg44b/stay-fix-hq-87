@@ -11,6 +11,7 @@ export interface CreateTicketInput {
   hotel_id: string;
   creator_id: string;
   images?: string[];
+  scheduled_date?: string;
 }
 
 export interface UpdateTicketInput {
@@ -111,6 +112,28 @@ class TicketsService {
 
     if (error) throw error;
     return data;
+  }
+
+  async getScheduledTickets() {
+    const { data, error } = await supabase
+      .from('tickets')
+      .select(`
+        *,
+        hotel:hotels (
+          id,
+          name
+        ),
+        technician:users!tickets_assignee_id_fkey (
+          id,
+          display_name,
+          email
+        )
+      `)
+      .not('scheduled_date', 'is', null)
+      .order('scheduled_date', { ascending: true });
+
+    if (error) throw error;
+    return data as any;
   }
 
   async delete(id: string) {

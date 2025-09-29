@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   PlusCircle,
-  ClipboardList
+  ClipboardList,
+  Calendar
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,12 @@ export const Sidebar = () => {
       href: '/my-tickets',
       icon: ClipboardList,
       roles: [UserRole.TECNICO]
+    },
+    {
+      key: 'nav.calendar',
+      href: '/calendar',
+      icon: Calendar,
+      roles: [UserRole.ADMIN]
     },
     {
       key: 'nav.users',

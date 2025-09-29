@@ -18,6 +18,9 @@ import { InitialSetup } from "./pages/InitialSetup";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword";
 import { SupabaseSetup } from "./pages/SupabaseSetup";
+import React from "react";
+
+const Calendar = React.lazy(() => import("./pages/Calendar"));
 
 const queryClient = new QueryClient();
 
@@ -57,6 +60,14 @@ const App = () => (
             <Route path="/my-tickets" element={
               <ProtectedRoute>
                 <MyTickets />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <React.Suspense fallback={<div>Loading...</div>}>
+                  <Calendar />
+                </React.Suspense>
               </ProtectedRoute>
             } />
             
