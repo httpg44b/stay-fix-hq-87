@@ -166,7 +166,7 @@ export default function Calendar() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Agendar Chamado
+                Planifier un appel
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
