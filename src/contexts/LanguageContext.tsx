@@ -486,6 +486,7 @@ const translations = {
     'nav.tickets': 'Appels',
     'nav.myTickets': 'Mes Appels',
     'nav.newTicket': 'Nouvel Appel',
+    'nav.calendar': 'Calendrier',
     
     // Auth
     'auth.login': 'Se connecter',
