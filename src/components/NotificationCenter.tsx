@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { fr } from 'date-fns/locale';
 
 export function NotificationCenter() {
   const { user } = useAuth();
@@ -75,8 +75,8 @@ export function NotificationCenter() {
     } catch (error: any) {
       console.error('Error marking notification as read:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível marcar a notificação como lida.',
+        title: 'Erreur',
+        description: 'Impossible de marquer la notification comme lue.',
         variant: 'destructive',
       });
     }
@@ -90,14 +90,14 @@ export function NotificationCenter() {
       await notificationsService.markAllAsRead(user.id);
       loadNotifications();
       toast({
-        title: 'Sucesso',
-        description: 'Todas as notificações foram marcadas como lidas.',
+        title: 'Succès',
+        description: 'Toutes les notifications ont été marquées comme lues.',
       });
     } catch (error: any) {
       console.error('Error marking all notifications as read:', error);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível marcar todas as notificações como lidas.',
+        title: 'Erreur',
+        description: 'Impossible de marquer toutes les notifications comme lues.',
         variant: 'destructive',
       });
     } finally {
@@ -151,7 +151,7 @@ export function NotificationCenter() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold">Notificações</h3>
+          <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -161,7 +161,7 @@ export function NotificationCenter() {
               className="text-xs"
             >
               <Check className="h-3 w-3 mr-1" />
-              Marcar todas como lidas
+              Marquer tout comme lu
             </Button>
           )}
         </div>
@@ -170,7 +170,7 @@ export function NotificationCenter() {
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
               <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Nenhuma notificação</p>
+              <p className="text-sm">Aucune notification</p>
             </div>
           ) : (
             notifications.map((notification) => (
@@ -196,7 +196,7 @@ export function NotificationCenter() {
                       {notification.message}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(notification.created_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                      {format(new Date(notification.created_at), "dd/MM 'à' HH:mm", { locale: fr })}
                     </p>
                   </div>
                   {!notification.read && (
@@ -226,7 +226,7 @@ export function NotificationCenter() {
               onClick={() => navigate('/notifications')}
             >
               <Eye className="h-4 w-4 mr-2" />
-              Ver todas as notificações
+              Voir toutes les notifications
             </Button>
           </div>
         )}
