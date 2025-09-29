@@ -467,14 +467,14 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         <span className="text-muted-foreground">{t('tickets.technician')}:</span>
                         {user?.role === UserRole.ADMIN && editMode ? (
                           <Select 
-                            value={selectedTechnician} 
-                            onValueChange={setSelectedTechnician}
+                            value={selectedTechnician || "unassigned"} 
+                            onValueChange={(value) => setSelectedTechnician(value === "unassigned" ? "" : value)}
                           >
                             <SelectTrigger className="h-7 w-[180px]">
                               <SelectValue placeholder={t('tickets.selectTechnician')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">
+                              <SelectItem value="unassigned">
                                 {t('tickets.noTechnician')}
                               </SelectItem>
                               {technicians.map((tech) => (
