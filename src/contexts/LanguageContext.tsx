@@ -205,8 +205,8 @@ const translations = {
     
     // Roles
     'role.admin': 'Administrateur',
-    'role.technician': 'Técnico',
-    'role.reception': 'Recepção',
+    'role.technician': 'Technicien',
+    'role.reception': 'Réception',
     
     // Users
     'user.name': 'Nome',
