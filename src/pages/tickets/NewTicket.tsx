@@ -188,6 +188,24 @@ export default function NewTicket() {
         videoFiles: [...prev.videoFiles, ...videoFiles]
       }));
       
+      // Show success message in French
+      if (videoFiles.length > 0 && imageFiles.length > 0) {
+        toast({
+          title: "Médias téléchargés",
+          description: "Les vidéos et images ont été téléchargées avec succès",
+        });
+      } else if (videoFiles.length > 0) {
+        toast({
+          title: "Vidéo téléchargée",
+          description: "La vidéo a été téléchargée avec succès",
+        });
+      } else if (imageFiles.length > 0) {
+        toast({
+          title: "Image téléchargée",
+          description: "L'image a été téléchargée avec succès",
+        });
+      }
+      
       // Reset the input value to allow re-selection of the same file if needed
       e.target.value = '';
     }

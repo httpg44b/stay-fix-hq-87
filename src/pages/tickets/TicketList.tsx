@@ -399,7 +399,11 @@ export default function TicketList() {
                   filteredTickets.map((ticket: any) => {
                     const hotelName = hotels.find(h => h.id === ticket.hotel_id)?.name || '-';
                     return (
-                      <TableRow key={ticket.id}>
+                      <TableRow 
+                        key={ticket.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleTicketClick(ticket.id)}
+                      >
                         <TableCell className="font-medium">
                           {ticket.room_number}
                         </TableCell>
@@ -422,7 +426,10 @@ export default function TicketList() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleTicketClick(ticket.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTicketClick(ticket.id);
+                              }}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -430,7 +437,10 @@ export default function TicketList() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDeleteClick(ticket.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(ticket.id);
+                                }}
                                 className="text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />

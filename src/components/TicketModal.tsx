@@ -191,10 +191,26 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
         await ticketsService.update(ticketId, { images: updatedImages });
       }
 
-      toast({
-        title: t('common.imagesUploaded'),
-        description: `${uploadedUrls.length} ${t('common.imagesUploadedDesc')}`,
-      });
+      // Show success message in French
+      const hasVideos = Array.from(files).some(f => f.type.startsWith('video/'));
+      const hasImages = Array.from(files).some(f => f.type.startsWith('image/'));
+      
+      if (hasVideos && hasImages) {
+        toast({
+          title: "Médias téléchargés",
+          description: "Les vidéos et images ont été téléchargées avec succès",
+        });
+      } else if (hasVideos) {
+        toast({
+          title: "Vidéo téléchargée",
+          description: "La vidéo a été téléchargée avec succès",
+        });
+      } else {
+        toast({
+          title: "Image téléchargée",
+          description: "L'image a été téléchargée avec succès",
+        });
+      }
     } catch (error: any) {
       console.error('Error uploading images:', error);
       toast({
@@ -417,10 +433,13 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                 <div className="space-y-6">
                   {/* Ticket Details */}
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{t('common.room_area')}:</span>
+                    {/* Mobile layout for ticket details */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{t('common.room_area')}:</span>
+                        </div>
                         {user?.role === UserRole.ADMIN && editMode ? (
                           <Input
                             value={editRoomNumber}
@@ -431,16 +450,18 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           <span className="font-medium">{ticket.room_number}</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Building className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{t('tickets.hotel')}:</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <Building className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{t('tickets.hotel')}:</span>
+                        </div>
                         {user?.role === UserRole.ADMIN && editMode ? (
                           <Select value={editHotelId} onValueChange={(value) => {
                             setEditHotelId(value);
                             // Reload technicians for new hotel
                             loadTechniciansForHotel(value);
                           }}>
-                            <SelectTrigger className="h-7 w-[180px]">
+                            <SelectTrigger className="h-7 w-full sm:w-[180px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -455,16 +476,20 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           <span className="font-medium">{hotel?.name || '-'}</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{t('tickets.createdAt')}:</span>
-                        <span className="font-medium">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{t('tickets.createdAt')}:</span>
+                        </div>
+                        <span className="font-medium text-sm sm:text-base">
                           {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: language === 'fr' ? fr : ptBR })}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{t('tickets.technician')}:</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{t('tickets.technician')}:</span>
+                        </div>
                         {user?.role === UserRole.ADMIN && editMode ? (
                           <Select 
                             value={selectedTechnician || "unassigned"} 
