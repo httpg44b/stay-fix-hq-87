@@ -524,16 +524,19 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           
                           {ticketImages.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
-                              {ticketImages.map((media, index) => {
+                                {ticketImages.map((media, index) => {
                                 const isVideo = media.includes('.mp4') || media.includes('.webm') || media.includes('.ogg') || media.includes('.mov');
                                 
                                 return (
-                                  <div key={index} className="relative group">
+                                  <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
                                     {isVideo ? (
                                       <video
                                         src={media}
-                                        className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                        className="w-full h-80 object-contain bg-black rounded-lg border"
                                         controls
+                                        controlsList="nodownload"
+                                        playsInline
+                                        onClick={(e) => e.stopPropagation()}
                                       />
                                     ) : (
                                       <>
@@ -693,7 +696,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                               <input
                                 id="solution-image-upload"
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,video/*"
                                 multiple
                                 className="hidden"
                                 onChange={(e) => handleImageUpload(e, true)}
@@ -709,25 +712,40 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
                         {solutionImages.length > 0 && (
                           <div className="grid grid-cols-3 gap-2">
-                            {solutionImages.map((img, index) => (
-                              <div key={index} className="relative group">
-                                <img
-                                  src={img}
-                                  alt={`Solução ${index + 1}`}
-                                  className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => openImageViewer(img)}
-                                />
-                                {canEdit && (
-                                  <button
-                                    type="button"
-                                    onClick={() => removeImage(img, true)}
-                                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                )}
-                              </div>
-                            ))}
+                            {solutionImages.map((media, index) => {
+                              const isVideo = media.includes('.mp4') || media.includes('.webm') || media.includes('.ogg') || media.includes('.mov');
+                              
+                              return (
+                                <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
+                                  {isVideo ? (
+                                    <video
+                                      src={media}
+                                      className="w-full h-80 object-contain bg-black rounded-lg border"
+                                      controls
+                                      controlsList="nodownload"
+                                      playsInline
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  ) : (
+                                    <img
+                                      src={media}
+                                      alt={`Solução ${index + 1}`}
+                                      className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                      onClick={() => openImageViewer(media)}
+                                    />
+                                  )}
+                                  {canEdit && (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(media, true)}
+                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </>

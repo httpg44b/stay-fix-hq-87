@@ -187,6 +187,9 @@ export default function NewTicket() {
         videos: [...prev.videos, ...videoUrls],
         videoFiles: [...prev.videoFiles, ...videoFiles]
       }));
+      
+      // Reset the input value to allow re-selection of the same file if needed
+      e.target.value = '';
     }
   };
 
