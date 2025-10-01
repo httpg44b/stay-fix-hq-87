@@ -550,19 +550,68 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           {ticketImages.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
                                 {ticketImages.map((media, index) => {
-                                const isVideo = media.includes('.mp4') || media.includes('.webm') || media.includes('.ogg') || media.includes('.mov');
+                                const isVideo = media.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
                                 
                                 return (
                                   <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
                                     {isVideo ? (
-                                      <video
-                                        src={media}
-                                        className="w-full h-80 object-contain bg-black rounded-lg border"
-                                        controls
-                                        controlsList="nodownload"
-                                        playsInline
-                                        onClick={(e) => e.stopPropagation()}
-                                      />
+                                      <div className="relative">
+                                        <video
+                                          key={media}
+                                          className="w-full h-80 object-contain bg-black rounded-lg border"
+                                          controls
+                                          playsInline
+                                          muted={false}
+                                          preload="metadata"
+                                          onClick={(e) => e.stopPropagation()}
+                                          onError={(e) => {
+                                            console.error('Video playback error:', e);
+                                            const video = e.currentTarget;
+                                            // Try alternative loading method
+                                            video.load();
+                                          }}
+                                        >
+                                          <source src={media} type="video/mp4" />
+                                          <source src={media} type="video/webm" />
+                                          <source src={media} type="video/ogg" />
+                                          <source src={media} />
+                                          Seu navegador não suporta a reprodução de vídeos.
+                                        </video>
+                                        <div className="absolute top-2 right-2 flex gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              window.open(media, '_blank');
+                                            }}
+                                            className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            title="Abrir em nova aba"
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </button>
+                                          <a
+                                            href={media}
+                                            download
+                                            className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={(e) => e.stopPropagation()}
+                                            title="Baixar vídeo"
+                                          >
+                                            <Download className="h-4 w-4" />
+                                          </a>
+                                        </div>
+                                        {canEdit && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              removeImage(media, false);
+                                            }}
+                                            className="absolute top-2 left-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </button>
+                                        )}
+                                      </div>
                                     ) : (
                                       <>
                                         <img
@@ -617,10 +666,16 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                               <input
                                 id="ticket-image-upload"
                                 type="file"
-                                accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime"
+                                accept="image/*,video/*"
                                 multiple
                                 className="hidden"
-                                onChange={(e) => handleImageUpload(e, false)}
+                                onChange={(e) => {
+                                  handleImageUpload(e, false);
+                                  // Reset input to allow uploading the same file again
+                                  if (e.target) {
+                                    e.target.value = '';
+                                  }
+                                }}
                               />
                             </div>
                           )}
@@ -724,7 +779,13 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                 accept="image/*,video/*"
                                 multiple
                                 className="hidden"
-                                onChange={(e) => handleImageUpload(e, true)}
+                                onChange={(e) => {
+                                  handleImageUpload(e, true);
+                                  // Reset input to allow uploading the same file again
+                                  if (e.target) {
+                                    e.target.value = '';
+                                  }
+                                }}
                               />
                               {solutionImages.length > 0 && (
                                 <span className="text-sm text-muted-foreground">
@@ -738,19 +799,67 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         {solutionImages.length > 0 && (
                           <div className="grid grid-cols-3 gap-2">
                             {solutionImages.map((media, index) => {
-                              const isVideo = media.includes('.mp4') || media.includes('.webm') || media.includes('.ogg') || media.includes('.mov');
+                              const isVideo = media.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
                               
                               return (
                                 <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
                                   {isVideo ? (
-                                    <video
-                                      src={media}
-                                      className="w-full h-80 object-contain bg-black rounded-lg border"
-                                      controls
-                                      controlsList="nodownload"
-                                      playsInline
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
+                                    <div className="relative">
+                                      <video
+                                        key={media}
+                                        className="w-full h-80 object-contain bg-black rounded-lg border"
+                                        controls
+                                        playsInline
+                                        muted={false}
+                                        preload="metadata"
+                                        onClick={(e) => e.stopPropagation()}
+                                        onError={(e) => {
+                                          console.error('Solution video playback error:', e);
+                                          const video = e.currentTarget;
+                                          video.load();
+                                        }}
+                                      >
+                                        <source src={media} type="video/mp4" />
+                                        <source src={media} type="video/webm" />
+                                        <source src={media} type="video/ogg" />
+                                        <source src={media} />
+                                        Seu navegador não suporta a reprodução de vídeos.
+                                      </video>
+                                      <div className="absolute top-2 right-2 flex gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(media, '_blank');
+                                          }}
+                                          className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          title="Abrir em nova aba"
+                                        >
+                                          <Eye className="h-4 w-4" />
+                                        </button>
+                                        <a
+                                          href={media}
+                                          download
+                                          className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          onClick={(e) => e.stopPropagation()}
+                                          title="Baixar vídeo"
+                                        >
+                                          <Download className="h-4 w-4" />
+                                        </a>
+                                      </div>
+                                      {canEdit && (
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeImage(media, true);
+                                          }}
+                                          className="absolute top-2 left-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      )}
+                                    </div>
                                   ) : (
                                     <img
                                       src={media}
