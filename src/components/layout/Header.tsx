@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { roleLabels, UserRole } from '@/lib/constants';
+import { UserRole } from '@/lib/constants';
 import { Bell, User, Sun, Moon, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,7 +58,9 @@ export const Header = () => {
             {user.hotels.length > 0 ? user.hotels[0].name : 'MAJ DESK'}
           </h2>
           <Badge variant="secondary">
-            {roleLabels[user.role]}
+            {user.role === UserRole.ADMIN ? t('role.admin') : 
+             user.role === UserRole.TECNICO ? t('role.technician') :
+             t('role.reception')}
           </Badge>
         </div>
 
