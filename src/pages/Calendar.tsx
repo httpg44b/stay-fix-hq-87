@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -13,22 +12,33 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { CalendarDays, Plus, Clock, MapPin, User } from 'lucide-react';
+import { CalendarDays, Plus, ChevronLeft, ChevronRight, User, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { TicketCategory, TicketPriority } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+
+interface CalendarTicket {
+  id: string;
+  title: string;
+  hotel_name: string;
+  technician_name: string;
+  scheduled_date: string;
+  priority: TicketPriority;
+}
 
 export default function Calendar() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedHotel, setSelectedHotel] = useState<string>('all');
   const [hotels, setHotels] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
-  const [filteredTickets, setFilteredTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [viewingDate, setViewingDate] = useState<Date | null>(null);
   
   // Form state for new scheduled ticket
   const [newTicket, setNewTicket] = useState<{
@@ -53,10 +63,6 @@ export default function Calendar() {
     loadData();
   }, [user]);
 
-  useEffect(() => {
-    filterTickets();
-  }, [tickets, selectedHotel, date]);
-
   const loadData = async () => {
     if (!user) return;
     
@@ -69,10 +75,6 @@ export default function Calendar() {
       
       setHotels(hotelsData);
       setTickets(ticketsData);
-      
-      if (hotelsData.length > 0 && selectedHotel === 'all') {
-        setSelectedHotel(hotelsData[0].id);
-      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -83,25 +85,6 @@ export default function Calendar() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const filterTickets = () => {
-    let filtered = tickets;
-    
-    if (selectedHotel !== 'all') {
-      filtered = filtered.filter(t => t.hotel_id === selectedHotel);
-    }
-    
-    if (date) {
-      const dateStr = format(date, 'yyyy-MM-dd');
-      filtered = filtered.filter(t => {
-        if (!t.scheduled_date) return false;
-        const ticketDate = format(new Date(t.scheduled_date), 'yyyy-MM-dd');
-        return ticketDate === dateStr;
-      });
-    }
-    
-    setFilteredTickets(filtered);
   };
 
   const handleCreateScheduledTicket = async () => {
@@ -139,271 +122,383 @@ export default function Calendar() {
     }
   };
 
-  const getDatesWithTickets = () => {
-    const datesSet = new Set<string>();
-    tickets.forEach(ticket => {
-      if (ticket.scheduled_date) {
-        if (selectedHotel === 'all' || ticket.hotel_id === selectedHotel) {
-          datesSet.add(format(new Date(ticket.scheduled_date), 'yyyy-MM-dd'));
-        }
-      }
-    });
-    return datesSet;
+  const getTicketsForDate = (date: Date): CalendarTicket[] => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return tickets
+      .filter(ticket => {
+        if (!ticket.scheduled_date) return false;
+        const ticketDate = format(new Date(ticket.scheduled_date), 'yyyy-MM-dd');
+        if (selectedHotel !== 'all' && ticket.hotel_id !== selectedHotel) return false;
+        return ticketDate === dateStr;
+      })
+      .map(ticket => ({
+        id: ticket.id,
+        title: ticket.title,
+        hotel_name: ticket.hotel?.name || '',
+        technician_name: ticket.technician?.display_name || 'Non attribué',
+        scheduled_date: ticket.scheduled_date,
+        priority: ticket.priority
+      }));
   };
 
-  const datesWithTickets = getDatesWithTickets();
+  const getDaysInMonth = () => {
+    const start = startOfMonth(currentMonth);
+    const end = endOfMonth(currentMonth);
+    const days = eachDayOfInterval({ start, end });
+    
+    // Add padding days from previous month
+    const startDay = getDay(start);
+    const paddingDays = [];
+    for (let i = startDay - 1; i >= 0; i--) {
+      const day = new Date(start);
+      day.setDate(day.getDate() - i - 1);
+      paddingDays.push(day);
+    }
+    
+    // Add padding days from next month
+    const endDay = getDay(end);
+    const remainingDays = [];
+    for (let i = 1; i <= (6 - endDay); i++) {
+      const day = new Date(end);
+      day.setDate(day.getDate() + i);
+      remainingDays.push(day);
+    }
+    
+    return [...paddingDays, ...days, ...remainingDays];
+  };
+
+  const weekDays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  const days = getDaysInMonth();
+
+  const getTicketsForSelectedDate = () => {
+    if (!viewingDate) return [];
+    return getTicketsForDate(viewingDate);
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth(subMonths(currentMonth, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
+
+  const handleToday = () => {
+    setCurrentMonth(new Date());
+    setSelectedDate(new Date());
+  };
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="h-full flex flex-col space-y-4 p-4">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <CalendarDays className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">Calendrier des Chamados</h1>
+            <h1 className="text-3xl font-bold">Calendrier</h1>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePreviousMonth}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              
+              <h2 className="text-xl font-semibold w-48 text-center">
+                {format(currentMonth, 'MMMM yyyy', { locale: fr })}
+              </h2>
+              
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleNextMonth}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleToday}
+                className="ml-2"
+              >
+                Aujourd'hui
+              </Button>
+            </div>
           </div>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Planifier un appel
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Agendar Novo Chamado</DialogTitle>
-                <DialogDescription>
-                  Créez un nouveau chamado agendado pour une date spécifique.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="hotel">Hôtel</Label>
-                  <Select value={newTicket.hotel_id} onValueChange={(value) => setNewTicket({...newTicket, hotel_id: value})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un hôtel" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {hotels.map(hotel => (
-                        <SelectItem key={hotel.id} value={hotel.id}>
-                          {hotel.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="scheduled_date">Date Agendada</Label>
-                  <Input
-                    type="date"
-                    value={newTicket.scheduled_date}
-                    onChange={(e) => setNewTicket({...newTicket, scheduled_date: e.target.value})}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="title">Titre</Label>
-                  <Input
-                    value={newTicket.title}
-                    onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
-                    placeholder="Titre du chamado"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="room_number">Numéro de Chambre</Label>
-                  <Input
-                    value={newTicket.room_number}
-                    onChange={(e) => setNewTicket({...newTicket, room_number: e.target.value})}
-                    placeholder="Ex: 101"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="category">Catégorie</Label>
-                  <Select value={newTicket.category} onValueChange={(value) => setNewTicket({...newTicket, category: value as TicketCategory})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(TicketCategory).map(cat => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="priority">Priorité</Label>
-                  <Select value={newTicket.priority} onValueChange={(value) => setNewTicket({...newTicket, priority: value as TicketPriority})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(TicketPriority).map(priority => (
-                        <SelectItem key={priority} value={priority}>
-                          {priority}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    value={newTicket.description}
-                    onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
-                    placeholder="Description du problème"
-                    rows={3}
-                  />
-                </div>
-                
-                <Button 
-                  onClick={handleCreateScheduledTicket}
-                  disabled={!newTicket.title || !newTicket.hotel_id || !newTicket.scheduled_date}
-                  className="w-full"
-                >
-                  Créer Chamado Agendado
+          <div className="flex items-center gap-4">
+            <Select value={selectedHotel} onValueChange={setSelectedHotel}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les hôtels</SelectItem>
+                {hotels.map(hotel => (
+                  <SelectItem key={hotel.id} value={hotel.id}>
+                    {hotel.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Planifier un appel
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Agendar Novo Chamado</DialogTitle>
+                  <DialogDescription>
+                    Créez un nouveau chamado agendado pour une date spécifique.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="hotel">Hôtel</Label>
+                    <Select value={newTicket.hotel_id} onValueChange={(value) => setNewTicket({...newTicket, hotel_id: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner un hôtel" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {hotels.map(hotel => (
+                          <SelectItem key={hotel.id} value={hotel.id}>
+                            {hotel.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="scheduled_date">Date Agendada</Label>
+                    <Input
+                      type="date"
+                      value={newTicket.scheduled_date}
+                      onChange={(e) => setNewTicket({...newTicket, scheduled_date: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="title">Titre</Label>
+                    <Input
+                      value={newTicket.title}
+                      onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
+                      placeholder="Titre du chamado"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="room_number">Numéro de Chambre</Label>
+                    <Input
+                      value={newTicket.room_number}
+                      onChange={(e) => setNewTicket({...newTicket, room_number: e.target.value})}
+                      placeholder="Ex: 101"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="category">Catégorie</Label>
+                    <Select value={newTicket.category} onValueChange={(value) => setNewTicket({...newTicket, category: value as TicketCategory})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(TicketCategory).map(cat => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="priority">Priorité</Label>
+                    <Select value={newTicket.priority} onValueChange={(value) => setNewTicket({...newTicket, priority: value as TicketPriority})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(TicketPriority).map(priority => (
+                          <SelectItem key={priority} value={priority}>
+                            {priority}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      value={newTicket.description}
+                      onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
+                      placeholder="Description du problème"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handleCreateScheduledTicket}
+                    disabled={!newTicket.title || !newTicket.hotel_id || !newTicket.scheduled_date}
+                    className="w-full"
+                  >
+                    Créer Chamado Agendado
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle>Sélectionner Hôtel</CardTitle>
-              <CardDescription>
-                Filtrer les chamados par hôtel
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select value={selectedHotel} onValueChange={setSelectedHotel}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les hôtels</SelectItem>
-                  {hotels.map(hotel => (
-                    <SelectItem key={hotel.id} value={hotel.id}>
-                      {hotel.name}
-                    </SelectItem>
+        {/* Calendar Grid */}
+        <div className="flex-1 flex gap-4">
+          <Card className="flex-1">
+            <CardContent className="p-0 h-full">
+              <div className="h-full flex flex-col">
+                {/* Week days header */}
+                <div className="grid grid-cols-7 border-b">
+                  {weekDays.map((day, index) => (
+                    <div
+                      key={index}
+                      className="p-3 text-center font-semibold text-sm text-muted-foreground border-r last:border-r-0"
+                    >
+                      {day}
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-              
-              <div className="mt-6">
-                <CalendarComponent
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-md border pointer-events-auto"
-                  modifiers={{
-                    hasTickets: (date) => {
-                      const dateStr = format(date, 'yyyy-MM-dd');
-                      return datesWithTickets.has(dateStr);
-                    }
-                  }}
-                  modifiersStyles={{
-                    hasTickets: {
-                      fontWeight: 'bold',
-                      backgroundColor: 'hsl(var(--primary) / 0.1)',
-                      color: 'hsl(var(--primary))'
-                    }
-                  }}
-                />
+                </div>
+                
+                {/* Calendar days */}
+                <div className="flex-1 grid grid-cols-7 grid-rows-6">
+                  {days.map((day, index) => {
+                    const dayTickets = getTicketsForDate(day);
+                    const isCurrentMonth = isSameMonth(day, currentMonth);
+                    const isToday = isSameDay(day, new Date());
+                    const isSelected = selectedDate && isSameDay(day, selectedDate);
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          "min-h-[100px] p-2 border-r border-b last:border-r-0 cursor-pointer hover:bg-muted/50 transition-colors",
+                          !isCurrentMonth && "bg-muted/20",
+                          isToday && "bg-primary/5",
+                          isSelected && "bg-primary/10 ring-2 ring-primary ring-inset"
+                        )}
+                        onClick={() => {
+                          setSelectedDate(day);
+                          setViewingDate(day);
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={cn(
+                            "text-sm font-medium",
+                            !isCurrentMonth && "text-muted-foreground",
+                            isToday && "text-primary font-bold"
+                          )}>
+                            {format(day, 'd')}
+                          </span>
+                          {dayTickets.length > 0 && (
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                              {dayTickets.length}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-1">
+                          {dayTickets.slice(0, 3).map((ticket, i) => (
+                            <div
+                              key={ticket.id}
+                              className={cn(
+                                "text-xs p-1 rounded truncate",
+                                ticket.priority === TicketPriority.URGENT ? "bg-destructive/10 text-destructive" :
+                                ticket.priority === TicketPriority.HIGH ? "bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400" :
+                                "bg-primary/10 text-primary"
+                              )}
+                              title={`${ticket.technician_name} - ${ticket.hotel_name}`}
+                            >
+                              <div className="flex items-center gap-1">
+                                <User className="h-3 w-3" />
+                                <span className="truncate font-medium">{ticket.technician_name}</span>
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <Building className="h-3 w-3" />
+                                <span className="truncate">{ticket.hotel_name}</span>
+                              </div>
+                            </div>
+                          ))}
+                          {dayTickets.length > 3 && (
+                            <div className="text-xs text-muted-foreground text-center">
+                              +{dayTickets.length - 3} plus...
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>
-                Chamados Agendados
-                {date && (
-                  <span className="ml-2 text-muted-foreground">
-                    - {format(date, 'dd MMMM yyyy', { locale: fr })}
-                  </span>
-                )}
-              </CardTitle>
-              <CardDescription>
-                {filteredTickets.length} chamado(s) agendado(s)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[600px]">
-                <div className="space-y-4">
-                  {loading ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Chargement...
-                    </div>
-                  ) : filteredTickets.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Aucun chamado agendado pour cette date
-                    </div>
-                  ) : (
-                    filteredTickets.map(ticket => (
-                      <Card key={ticket.id} className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-2 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{ticket.title}</h3>
+          {/* Side panel for selected date */}
+          {viewingDate && (
+            <Card className="w-96">
+              <CardHeader>
+                <CardTitle className="text-lg">
+                  {format(viewingDate, 'dd MMMM yyyy', { locale: fr })}
+                </CardTitle>
+                <CardDescription>
+                  {getTicketsForSelectedDate().length} chamado(s) agendado(s)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[600px]">
+                  <div className="space-y-3">
+                    {getTicketsForSelectedDate().length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        Aucun chamado pour cette date
+                      </div>
+                    ) : (
+                      getTicketsForSelectedDate().map(ticket => (
+                        <Card key={ticket.id} className="p-3">
+                          <div className="space-y-2">
+                            <div className="flex items-start justify-between">
+                              <h4 className="font-medium text-sm">{ticket.title}</h4>
                               <Badge variant={
-                                ticket.priority === TicketPriority.HIGH ? 'destructive' :
-                                ticket.priority === TicketPriority.MEDIUM ? 'default' :
+                                ticket.priority === TicketPriority.URGENT ? 'destructive' :
+                                ticket.priority === TicketPriority.HIGH ? 'default' :
                                 'secondary'
-                              }>
+                              } className="text-xs">
                                 {ticket.priority}
                               </Badge>
                             </div>
                             
-                            <p className="text-sm text-muted-foreground">
-                              {ticket.description}
-                            </p>
-                            
-                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                            <div className="space-y-1 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                <span>{ticket.hotel?.name}</span>
+                                <User className="h-3 w-3" />
+                                <span>{ticket.technician_name}</span>
                               </div>
-                              
-                              {ticket.room_number && (
-                                <div className="flex items-center gap-1">
-                                  <span>Chambre {ticket.room_number}</span>
-                                </div>
-                              )}
-                              
-                              {ticket.scheduled_date && (
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  <span>
-                                    {format(new Date(ticket.scheduled_date), 'dd/MM/yyyy')}
-                                  </span>
-                                </div>
-                              )}
-                              
-                              {ticket.technician && (
-                                <div className="flex items-center gap-1">
-                                  <User className="h-3 w-3" />
-                                  <span>{ticket.technician.display_name}</span>
-                                </div>
-                              )}
+                              <div className="flex items-center gap-1">
+                                <Building className="h-3 w-3" />
+                                <span>{ticket.hotel_name}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </AppLayout>
