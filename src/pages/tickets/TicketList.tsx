@@ -86,8 +86,8 @@ export default function TicketList() {
       if (user.role === UserRole.ADMIN) {
         // Admin can see all tickets
         ticketData = await ticketsService.getAll();
-      } else if (user.role === UserRole.TECNICO) {
-        // Technicians see all tickets from their hotels
+      } else if (user.role === UserRole.TECNICO || user.role === UserRole.RECEPCAO) {
+        // Technicians and Reception see all tickets from their hotels
         const userHotels = await hotelsService.getUserHotels(user.id);
         const hotelIds = userHotels.map((uh: any) => uh.hotel_id);
         
