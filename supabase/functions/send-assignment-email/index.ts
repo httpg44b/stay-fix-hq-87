@@ -147,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
               Este é um email automático do sistema MAJ TECH.
             </p>
             <div class="company-info">
-              MAJ TECH - Sistema de Gestão de Manutenção Hoteleira<br>
+              MAJ TECH - Système de Gestion de Maintenance Hoteleira<br>
               Tecnologia para Hotelaria Eficiente
             </div>
           </div>
