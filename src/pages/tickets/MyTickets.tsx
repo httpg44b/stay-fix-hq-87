@@ -24,7 +24,7 @@ export default function MyTickets() {
   const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  if (!user || user.role !== UserRole.TECNICO) {
+  if (!user || (user.role !== UserRole.TECNICO && user.role !== UserRole.RECEPCAO)) {
     navigate('/dashboard');
     return null;
   }

@@ -74,8 +74,13 @@ export default function Dashboard() {
           ticketData = await ticketsService.getHotelTickets(hotelIds);
         }
       } else if (user.role === UserRole.RECEPCAO) {
-        // Reception sees only their created tickets
-        ticketData = await ticketsService.getMyTickets(user.id);
+        // Reception sees all tickets from their hotels (like technicians)
+        const userHotels = await hotelsService.getUserHotels(user.id);
+        const hotelIds = userHotels.map((uh: any) => uh.hotel_id);
+        
+        if (hotelIds.length > 0) {
+          ticketData = await ticketsService.getHotelTickets(hotelIds);
+        }
       }
       
       setTickets(ticketData);
