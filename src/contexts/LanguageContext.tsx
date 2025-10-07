@@ -105,7 +105,7 @@ const translations = {
     'ticket.statusInProgress': 'En service',
     'ticket.statusWaitingParts': 'En attente Pièces',
     'ticket.statusCompleted': 'Terminé',
-    'ticket.statusCancelled': 'Annulé',
+    'ticket.statusScheduled': 'Programado',
     
     // Settings
     'settings.profile': 'Perfil',
@@ -139,7 +139,7 @@ const translations = {
     'status.in_progress': 'En service',
     'status.waiting_parts': 'En attente Pièces',
     'status.completed': 'Terminé',
-    'status.cancelled': 'Annulé',
+    'status.scheduled': 'Programado',
     
     // Priority
     'priority.low': 'Baixa',
@@ -341,7 +341,7 @@ const translations = {
     'ticket.statusInProgress': 'In Progress',
     'ticket.statusWaitingParts': 'Waiting Parts',
     'ticket.statusCompleted': 'Completed',
-    'ticket.statusCancelled': 'Cancelled',
+    'ticket.statusScheduled': 'Scheduled',
     
     // Settings
     'settings.profile': 'Profile',
@@ -375,7 +375,7 @@ const translations = {
     'status.in_progress': 'In Progress',
     'status.waiting_parts': 'Waiting Parts',
     'status.completed': 'Completed',
-    'status.cancelled': 'Cancelled',
+    'status.scheduled': 'Scheduled',
     
     // Priority
     'priority.low': 'Low',
@@ -587,7 +587,7 @@ const translations = {
     'ticket.statusInProgress': 'En Cours',
     'ticket.statusWaitingParts': 'En Attente de Pièces',
     'ticket.statusCompleted': 'Terminé',
-    'ticket.statusCancelled': 'Annulé',
+    'ticket.statusScheduled': 'Programmé',
     
     // Settings
     'settings.profile': 'Profil',
@@ -624,7 +624,7 @@ const translations = {
     'status.in_progress': 'En Cours',
     'status.waiting_parts': 'En Attente de Pièces',
     'status.completed': 'Terminé',
-    'status.cancelled': 'Annulé',
+    'status.scheduled': 'Programmé',
     
     // Priority
     'priority.low': 'Basse',

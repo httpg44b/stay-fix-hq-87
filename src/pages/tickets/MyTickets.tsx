@@ -68,10 +68,10 @@ export default function MyTickets() {
   // My assigned tickets
   const myTickets = tickets.filter(t => t.assignee_id === user.id);
   const activeTickets = myTickets.filter(
-    t => t.status !== TicketStatus.COMPLETED && t.status !== TicketStatus.CANCELLED
+    t => t.status !== TicketStatus.COMPLETED && t.status !== TicketStatus.SCHEDULED
   );
   const completedTickets = myTickets.filter(
-    t => t.status === TicketStatus.COMPLETED || t.status === TicketStatus.CANCELLED
+    t => t.status === TicketStatus.COMPLETED || t.status === TicketStatus.SCHEDULED
   );
 
   const handleAssignTicket = async (ticketId: string) => {

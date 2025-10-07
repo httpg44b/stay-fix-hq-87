@@ -11,7 +11,7 @@ export const TicketStatus = {
   IN_PROGRESS: 'IN_PROGRESS',
   WAITING_PARTS: 'WAITING_PARTS',
   COMPLETED: 'COMPLETED',
-  CANCELLED: 'CANCELLED'
+  SCHEDULED: 'SCHEDULED'
 } as const;
 
 export type TicketStatus = typeof TicketStatus[keyof typeof TicketStatus];
@@ -41,7 +41,7 @@ export const statusLabels: Record<TicketStatus, string> = {
   [TicketStatus.IN_PROGRESS]: 'En service',
   [TicketStatus.WAITING_PARTS]: 'En attente Pièce',
   [TicketStatus.COMPLETED]: 'Terminé',
-  [TicketStatus.CANCELLED]: 'Annulé'
+  [TicketStatus.SCHEDULED]: 'Programmé'
 };
 
 export const priorityLabels: Record<TicketPriority, string> = {

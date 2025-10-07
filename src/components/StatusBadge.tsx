@@ -21,8 +21,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) =
         return 'bg-status-waiting/10 text-status-waiting border-status-waiting/20';
       case TicketStatus.COMPLETED:
         return 'bg-status-completed/10 text-status-completed border-status-completed/20';
-      case TicketStatus.CANCELLED:
-        return 'bg-status-cancelled/10 text-status-cancelled border-status-cancelled/20';
+      case TicketStatus.SCHEDULED:
+        return 'bg-status-scheduled/10 text-status-scheduled border-status-scheduled/20';
       default:
         return '';
     }
@@ -34,7 +34,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) =
       [TicketStatus.IN_PROGRESS]: 'status.in_progress',
       [TicketStatus.WAITING_PARTS]: 'status.waiting_parts',
       [TicketStatus.COMPLETED]: 'status.completed',
-      [TicketStatus.CANCELLED]: 'status.cancelled',
+      [TicketStatus.SCHEDULED]: 'status.scheduled',
     };
     return t(statusKeys[status]);
   };
