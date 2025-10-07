@@ -53,9 +53,34 @@ export default function NewTicket() {
           if (user.role === UserRole.ADMIN) {
             // For admin, we'll get all hotels and use the first one as default
             const allHotels = await hotelsService.getAll();
-            setAvailableHotels(allHotels);
-            if (allHotels.length > 0) {
-              setUserHotelId(allHotels[0].id);
+            
+            // Ordenar hotéis na ordem específica
+            const hotelOrder = [
+              'Hotel du Danube',
+              'Hotel Vandome Saint-Germain',
+              'Fauchon l\'hotel paris',
+              'Hotel L de Lutèce'
+            ];
+            
+            const sortedHotels = allHotels.sort((a, b) => {
+              const indexA = hotelOrder.indexOf(a.name);
+              const indexB = hotelOrder.indexOf(b.name);
+              
+              // Se ambos estão na lista, ordenar pela posição
+              if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+              }
+              // Se apenas A está na lista, vem primeiro
+              if (indexA !== -1) return -1;
+              // Se apenas B está na lista, vem primeiro
+              if (indexB !== -1) return 1;
+              // Se nenhum está na lista, ordenar alfabeticamente
+              return a.name.localeCompare(b.name);
+            });
+            
+            setAvailableHotels(sortedHotels);
+            if (sortedHotels.length > 0) {
+              setUserHotelId(sortedHotels[0].id);
             }
           } else {
             const hotels = await hotelsService.getUserHotels(user.id);
