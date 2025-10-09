@@ -26,7 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { 
   Upload, X, Save, CheckCircle, Loader2, Calendar, User, MapPin, 
-  FileText, Building, ImageIcon, Eye, Download, UserCheck 
+  FileText, Building, ImageIcon, Eye, Download, UserCheck, ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import { TicketStatus, statusLabels, categoryLabels, UserRole, TicketPriority, priorityLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
@@ -64,6 +64,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [allImages, setAllImages] = useState<string[]>([]);
   // States for editing all fields (admin only)
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -334,8 +336,26 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   };
 
   const openImageViewer = (imageUrl: string) => {
+    const images = [...ticketImages, ...solutionImages];
+    setAllImages(images);
+    const index = images.findIndex(img => img === imageUrl);
+    setCurrentImageIndex(index >= 0 ? index : 0);
     setSelectedImage(imageUrl);
     setImageViewerOpen(true);
+  };
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (allImages.length === 0) return;
+    
+    let newIndex = currentImageIndex;
+    if (direction === 'prev') {
+      newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1;
+    } else {
+      newIndex = currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0;
+    }
+    
+    setCurrentImageIndex(newIndex);
+    setSelectedImage(allImages[newIndex]);
   };
 
   const canEdit = user?.role === UserRole.ADMIN || 
@@ -960,14 +980,24 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Visualizar Imagem</DialogTitle>
+            <DialogTitle>
+              Visualizar Imagem {allImages.length > 1 && `(${currentImageIndex + 1}/${allImages.length})`}
+            </DialogTitle>
           </DialogHeader>
           <div className="relative">
-            <img
-              src={selectedImage}
-              alt="Imagem ampliada"
-              className="w-full h-auto rounded-lg"
-            />
+            {selectedImage.includes('.mp4') || selectedImage.includes('.webm') || selectedImage.includes('.ogg') || selectedImage.includes('.mov') ? (
+              <video
+                src={selectedImage}
+                controls
+                className="w-full h-auto rounded-lg"
+              />
+            ) : (
+              <img
+                src={selectedImage}
+                alt="Imagem ampliada"
+                className="w-full h-auto rounded-lg"
+              />
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -977,6 +1007,28 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
               <Download className="mr-2 h-4 w-4" />
               Abrir Original
             </Button>
+            
+            {/* Navigation Arrows */}
+            {allImages.length > 1 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                  onClick={() => navigateImage('prev')}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                  onClick={() => navigateImage('next')}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
