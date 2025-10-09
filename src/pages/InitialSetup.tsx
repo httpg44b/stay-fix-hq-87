@@ -28,7 +28,7 @@ export function InitialSetup() {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: 'https://vesffhlaeycsulblwxsa.supabase.co/auth/v1/callback'
+          emailRedirectTo: 'https://majdesk.fr'
         }
       });
 
