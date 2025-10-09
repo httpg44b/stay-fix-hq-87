@@ -153,7 +153,7 @@ export function Users() {
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`
+            emailRedirectTo: 'https://vesffhlaeycsulblwxsa.supabase.co/auth/v1/callback'
           }
         });
 
