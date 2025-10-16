@@ -6,15 +6,13 @@ class StorageService {
 
   async uploadTicketMedia(file: File, ticketId: string): Promise<string> {
     try {
-      // Check if it's a video file
       const isVideo = file.type.startsWith('video/');
       
       if (isVideo) {
-        // For videos, upload directly without compression
         return await this.uploadVideo(file, ticketId);
       } else {
-        // For images, use compression
-        return await this.uploadImage(file, ticketId);
+        // Compress image on client side for faster upload
+        return await this.uploadImageDirect(file, ticketId);
       }
     } catch (error) {
       console.error('Error uploading media:', error);
@@ -22,36 +20,75 @@ class StorageService {
     }
   }
 
-  private async uploadImage(file: File, ticketId: string): Promise<string> {
+  private async uploadImageDirect(file: File, ticketId: string): Promise<string> {
     try {
-      // Convert file to base64
-      const base64 = await this.fileToBase64(file);
+      let fileToUpload = file;
       
-      // Call compression edge function
-      const { data, error } = await supabase.functions.invoke('compress-image', {
-        body: {
-          file: base64,
-          fileName: file.name,
-          ticketId: ticketId,
-          quality: 70,
-          maxWidth: 1200,
-          maxHeight: 1200
-        }
-      });
-
-      if (error) throw error;
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to compress and upload image');
+      // Compress image on client side if larger than 1MB
+      if (file.size > 1024 * 1024) {
+        fileToUpload = await this.compressImageClient(file, 0.7, 1200, 1200);
       }
 
-      console.log(`Image compressed: ${data.compressionRatio}% reduction (${data.originalSize} → ${data.compressedSize} bytes)`);
-      
-      return data.url;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${ticketId}/${uuidv4()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from(this.bucketName)
+        .upload(fileName, fileToUpload, {
+          contentType: file.type,
+          cacheControl: '3600',
+        });
+
+      if (error) throw error;
+
+      return this.getImageUrl(fileName);
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;
     }
+  }
+
+  private async compressImageClient(file: File, quality: number, maxWidth: number, maxHeight: number): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      img.onload = () => {
+        let { width, height } = img;
+
+        // Calculate new dimensions
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: file.type,
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('Failed to compress image'));
+            }
+          },
+          file.type,
+          quality
+        );
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   private async uploadVideo(file: File, ticketId: string): Promise<string> {
@@ -84,15 +121,6 @@ class StorageService {
   // Backward compatibility
   async uploadTicketImage(file: File, ticketId: string): Promise<string> {
     return this.uploadTicketMedia(file, ticketId);
-  }
-
-  private fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   }
 
   async deleteTicketImage(imageUrl: string): Promise<void> {

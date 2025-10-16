@@ -164,11 +164,12 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
     try {
       setUploading(true);
-      const uploadedUrls: string[] = [];
-
-      for (const file of Array.from(files)) {
+      
+      // Validate file sizes
+      const filesArray = Array.from(files);
+      const validFiles = filesArray.filter(file => {
         const isVideo = file.type.startsWith('video/');
-        const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for images
+        const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
         
         if (file.size > maxSize) {
           toast({
@@ -176,12 +177,22 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
             description: `${file.name} ${t('errors.exceedsLimit')}`,
             variant: 'destructive',
           });
-          continue;
+          return false;
         }
+        return true;
+      });
 
-        const url = await storageService.uploadTicketImage(file, ticketId);
-        uploadedUrls.push(url);
-      }
+      // Upload all files in parallel
+      const uploadPromises = validFiles.map(file =>
+        storageService.uploadTicketImage(file, ticketId)
+          .catch(error => {
+            console.error('Error uploading file:', error);
+            return null;
+          })
+      );
+
+      const uploadResults = await Promise.all(uploadPromises);
+      const uploadedUrls = uploadResults.filter((url): url is string => url !== null);
 
       if (isSolution) {
         setSolutionImages(prev => [...prev, ...uploadedUrls]);
