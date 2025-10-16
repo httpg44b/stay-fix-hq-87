@@ -22,6 +22,8 @@ const translations = {
     'nav.tickets': 'Chamados',
     'nav.myTickets': 'Meus Chamados',
     'nav.newTicket': 'Novo Chamado',
+    'nav.calendar': 'Calendário',
+    'nav.checklists': 'Listas de Controle',
     
     // Auth
     'auth.login': 'Entrar',
@@ -256,6 +258,8 @@ const translations = {
     'nav.tickets': 'Tickets',
     'nav.myTickets': 'My Tickets',
     'nav.newTicket': 'New Ticket',
+    'nav.calendar': 'Calendar',
+    'nav.checklists': 'Checklists',
     
     // Auth
     'auth.login': 'Login',
@@ -487,6 +491,7 @@ const translations = {
     'nav.myTickets': 'Mes Appels',
     'nav.newTicket': 'Nouvel Appel',
     'nav.calendar': 'Calendrier',
+    'nav.checklists': 'Listes de contrôle',
     
     // Auth
     'auth.login': 'Se connecter',
