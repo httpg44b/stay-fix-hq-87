@@ -6,13 +6,13 @@ import { hotelsService, Hotel } from '@/services/hotels.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Edit, CheckCircle2, Clock, Circle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ChecklistCard } from '@/components/checklist/ChecklistCard';
 
 export const Checklists = () => {
   const { t } = useLanguage();
@@ -173,27 +173,6 @@ export const Checklists = () => {
     setIsDialogOpen(true);
   };
 
-  const getStatusIcon = (status: ChecklistStatus) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case 'in_progress':
-        return <Clock className="h-5 w-5 text-yellow-500" />;
-      default:
-        return <Circle className="h-5 w-5 text-gray-400" />;
-    }
-  };
-
-  const getStatusLabel = (status: ChecklistStatus) => {
-    switch (status) {
-      case 'completed':
-        return 'Terminée';
-      case 'in_progress':
-        return 'En cours';
-      default:
-        return 'En attente';
-    }
-  };
 
   if (loading) {
     return (
@@ -205,19 +184,19 @@ export const Checklists = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Listes de contrôle</h1>
           <p className="text-muted-foreground">Gérez vos listes de tâches</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openNewDialog}>
+            <Button onClick={openNewDialog} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Nouvelle liste
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
                 {editingChecklist ? 'Modifier la liste' : 'Nouvelle liste de contrôle'}
@@ -231,6 +210,7 @@ export const Checklists = () => {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
+                  placeholder="Ex: Maintenance hebdomadaire"
                 />
               </div>
 
@@ -241,6 +221,7 @@ export const Checklists = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
+                  placeholder="Description optionnelle..."
                 />
               </div>
 
@@ -266,24 +247,7 @@ export const Checklists = () => {
                 </div>
               )}
 
-              <div>
-                <Label htmlFor="status">Statut</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value as ChecklistStatus })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">En attente</SelectItem>
-                    <SelectItem value="in_progress">En cours</SelectItem>
-                    <SelectItem value="completed">Terminée</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Annuler
                 </Button>
@@ -296,82 +260,42 @@ export const Checklists = () => {
         </Dialog>
       </div>
 
-      <div className="flex gap-4">
-        <Select value={selectedHotel} onValueChange={setSelectedHotel}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les hôtels</SelectItem>
-            {hotels.map((hotel) => (
-              <SelectItem key={hotel.id} value={hotel.id}>
-                {hotel.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Select value={selectedHotel} onValueChange={setSelectedHotel}>
+        <SelectTrigger className="w-full sm:w-[250px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Tous les hôtels</SelectItem>
+          {hotels.map((hotel) => (
+            <SelectItem key={hotel.id} value={hotel.id}>
+              {hotel.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {checklists.map((checklist) => {
           const hotel = hotels.find((h) => h.id === checklist.hotel_id);
           return (
-            <Card key={checklist.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{checklist.title}</CardTitle>
-                    <CardDescription className="mt-1">{hotel?.name}</CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEditDialog(checklist)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteChecklistId(checklist.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {checklist.description && (
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {checklist.description}
-                  </p>
-                )}
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(checklist.status)}
-                  <Select
-                    value={checklist.status}
-                    onValueChange={(value) => handleStatusChange(checklist.id, value as ChecklistStatus)}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">En attente</SelectItem>
-                      <SelectItem value="in_progress">En cours</SelectItem>
-                      <SelectItem value="completed">Terminée</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+            <ChecklistCard
+              key={checklist.id}
+              checklist={checklist}
+              hotel={hotel}
+              onEdit={() => openEditDialog(checklist)}
+              onDelete={() => setDeleteChecklistId(checklist.id)}
+              onUpdate={loadData}
+            />
           );
         })}
       </div>
 
       {checklists.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Aucune liste de contrôle trouvée</p>
+        <div className="text-center py-12 border-2 border-dashed rounded-lg">
+          <p className="text-muted-foreground text-lg">Aucune liste de contrôle trouvée</p>
+          <p className="text-muted-foreground text-sm mt-2">
+            Créez votre première liste pour commencer
+          </p>
         </div>
       )}
 
@@ -380,12 +304,14 @@ export const Checklists = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette liste ? Cette action est irréversible.
+              Êtes-vous sûr de vouloir supprimer cette liste et toutes ses tâches ? Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Supprimer</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
