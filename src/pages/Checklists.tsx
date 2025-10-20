@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ChecklistCard } from '@/components/checklist/ChecklistCard';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 export const Checklists = () => {
   const { t } = useLanguage();
@@ -183,138 +184,140 @@ export const Checklists = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Listes de contrôle</h1>
-          <p className="text-muted-foreground">Gérez vos listes de tâches</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={openNewDialog} className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouvelle liste
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {editingChecklist ? 'Modifier la liste' : 'Nouvelle liste de contrôle'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Titre *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  placeholder="Ex: Maintenance hebdomadaire"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                  placeholder="Description optionnelle..."
-                />
-              </div>
-
-              {!editingChecklist && (
+    <AppLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Listes de contrôle</h1>
+            <p className="text-muted-foreground">Gérez vos listes de tâches</p>
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={openNewDialog} className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                Nouvelle liste
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingChecklist ? 'Modifier la liste' : 'Nouvelle liste de contrôle'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="hotel">Hôtel *</Label>
-                  <Select
-                    value={formData.hotel_id}
-                    onValueChange={(value) => setFormData({ ...formData, hotel_id: value })}
+                  <Label htmlFor="title">Titre *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez un hôtel" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {hotels.map((hotel) => (
-                        <SelectItem key={hotel.id} value={hotel.id}>
-                          {hotel.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Ex: Maintenance hebdomadaire"
+                  />
                 </div>
-              )}
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Annuler
-                </Button>
-                <Button type="submit">
-                  {editingChecklist ? 'Mettre à jour' : 'Créer'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                    placeholder="Description optionnelle..."
+                  />
+                </div>
 
-      <Select value={selectedHotel} onValueChange={setSelectedHotel}>
-        <SelectTrigger className="w-full sm:w-[250px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tous les hôtels</SelectItem>
-          {hotels.map((hotel) => (
-            <SelectItem key={hotel.id} value={hotel.id}>
-              {hotel.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+                {!editingChecklist && (
+                  <div>
+                    <Label htmlFor="hotel">Hôtel *</Label>
+                    <Select
+                      value={formData.hotel_id}
+                      onValueChange={(value) => setFormData({ ...formData, hotel_id: value })}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un hôtel" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {hotels.map((hotel) => (
+                          <SelectItem key={hotel.id} value={hotel.id}>
+                            {hotel.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {checklists.map((checklist) => {
-          const hotel = hotels.find((h) => h.id === checklist.hotel_id);
-          return (
-            <ChecklistCard
-              key={checklist.id}
-              checklist={checklist}
-              hotel={hotel}
-              onEdit={() => openEditDialog(checklist)}
-              onDelete={() => setDeleteChecklistId(checklist.id)}
-              onUpdate={loadData}
-            />
-          );
-        })}
-      </div>
-
-      {checklists.length === 0 && (
-        <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <p className="text-muted-foreground text-lg">Aucune liste de contrôle trouvée</p>
-          <p className="text-muted-foreground text-sm mt-2">
-            Créez votre première liste pour commencer
-          </p>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Annuler
+                  </Button>
+                  <Button type="submit">
+                    {editingChecklist ? 'Mettre à jour' : 'Créer'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-      )}
 
-      <AlertDialog open={!!deleteChecklistId} onOpenChange={() => setDeleteChecklistId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette liste et toutes ses tâches ? Cette action est irréversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        <Select value={selectedHotel} onValueChange={setSelectedHotel}>
+          <SelectTrigger className="w-full sm:w-[250px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les hôtels</SelectItem>
+            {hotels.map((hotel) => (
+              <SelectItem key={hotel.id} value={hotel.id}>
+                {hotel.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {checklists.map((checklist) => {
+            const hotel = hotels.find((h) => h.id === checklist.hotel_id);
+            return (
+              <ChecklistCard
+                key={checklist.id}
+                checklist={checklist}
+                hotel={hotel}
+                onEdit={() => openEditDialog(checklist)}
+                onDelete={() => setDeleteChecklistId(checklist.id)}
+                onUpdate={loadData}
+              />
+            );
+          })}
+        </div>
+
+        {checklists.length === 0 && (
+          <div className="text-center py-12 border-2 border-dashed rounded-lg">
+            <p className="text-muted-foreground text-lg">Aucune liste de contrôle trouvée</p>
+            <p className="text-muted-foreground text-sm mt-2">
+              Créez votre première liste pour commencer
+            </p>
+          </div>
+        )}
+
+        <AlertDialog open={!!deleteChecklistId} onOpenChange={() => setDeleteChecklistId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+              <AlertDialogDescription>
+                Êtes-vous sûr de vouloir supprimer cette liste et toutes ses tâches ? Cette action est irréversible.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                Supprimer
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </AppLayout>
   );
 };
