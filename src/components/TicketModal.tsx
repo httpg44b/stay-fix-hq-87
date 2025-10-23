@@ -518,6 +518,15 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="flex items-center gap-2">
+                          <UserCheck className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{t('tickets.createdBy')}:</span>
+                        </div>
+                        <span className="font-medium">
+                          <TechnicianName assigneeId={ticket.creator_id} inline />
+                        </span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
                           <span className="text-muted-foreground">{t('tickets.technician')}:</span>
                         </div>
