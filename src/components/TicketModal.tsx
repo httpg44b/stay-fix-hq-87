@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR, fr } from 'date-fns/locale';
 import { TechnicianName } from '@/components/TechnicianName';
+import { usersService } from '@/services/users.service';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -75,6 +76,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [editPriority, setEditPriority] = useState<TicketPriority>(TicketPriority.MEDIUM);
   const [editHotelId, setEditHotelId] = useState('');
   const [hotels, setHotels] = useState<any[]>([]);
+  const [creatorInfo, setCreatorInfo] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
     if (ticketId && isOpen) {
@@ -144,6 +146,17 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
           setHotels(hotelsList);
         } catch (error) {
           console.error('Error loading hotels:', error);
+        }
+      }
+      
+      // Fetch creator info
+      if (data.creator_id) {
+        try {
+          const creatorUser = await usersService.getById(data.creator_id);
+          setCreatorInfo({ name: creatorUser.display_name, email: creatorUser.email });
+        } catch (error) {
+          console.error('Error loading creator info:', error);
+          setCreatorInfo(null);
         }
       }
     } catch (error: any) {
@@ -522,7 +535,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           <span className="text-muted-foreground">{t('tickets.createdBy')}:</span>
                         </div>
                         <span className="font-medium">
-                          <TechnicianName assigneeId={ticket.creator_id} inline />
+                          {creatorInfo ? `${creatorInfo.name} (${creatorInfo.email})` : t('common.loading')}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
