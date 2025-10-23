@@ -108,6 +108,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     
     try {
       setLoading(true);
+      setCreatorInfo(null); // Reset creator info
       const data = await ticketsService.getById(ticketId);
       setTicket(data);
       setSolution(data.solution || '');
@@ -158,6 +159,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
           console.error('Error loading creator info:', error);
           setCreatorInfo(null);
         }
+      } else {
+        setCreatorInfo(null);
       }
     } catch (error: any) {
       console.error('Error loading ticket:', error);
