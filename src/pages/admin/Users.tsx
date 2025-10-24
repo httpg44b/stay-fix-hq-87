@@ -153,7 +153,7 @@ export function Users() {
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`
+            emailRedirectTo: 'https://majdesk.fr'
           }
         });
 

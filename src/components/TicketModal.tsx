@@ -26,7 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { 
   Upload, X, Save, CheckCircle, Loader2, Calendar, User, MapPin, 
-  FileText, Building, ImageIcon, Eye, Download, UserCheck 
+  FileText, Building, ImageIcon, Eye, Download, UserCheck, ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import { TicketStatus, statusLabels, categoryLabels, UserRole, TicketPriority, priorityLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR, fr } from 'date-fns/locale';
 import { TechnicianName } from '@/components/TechnicianName';
+import { usersService } from '@/services/users.service';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -64,6 +65,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [allImages, setAllImages] = useState<string[]>([]);
   // States for editing all fields (admin only)
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -73,6 +76,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [editPriority, setEditPriority] = useState<TicketPriority>(TicketPriority.MEDIUM);
   const [editHotelId, setEditHotelId] = useState('');
   const [hotels, setHotels] = useState<any[]>([]);
+  const [creatorInfo, setCreatorInfo] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
     if (ticketId && isOpen) {
@@ -104,6 +108,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     
     try {
       setLoading(true);
+      setCreatorInfo(null); // Reset creator info
       const data = await ticketsService.getById(ticketId);
       setTicket(data);
       setSolution(data.solution || '');
@@ -144,6 +149,19 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
           console.error('Error loading hotels:', error);
         }
       }
+      
+      // Fetch creator info
+      if (data.creator_id) {
+        try {
+          const creatorUser = await usersService.getById(data.creator_id);
+          setCreatorInfo({ name: creatorUser.display_name, email: creatorUser.email });
+        } catch (error) {
+          console.error('Error loading creator info:', error);
+          setCreatorInfo(null);
+        }
+      } else {
+        setCreatorInfo(null);
+      }
     } catch (error: any) {
       console.error('Error loading ticket:', error);
       toast({
@@ -162,11 +180,12 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
     try {
       setUploading(true);
-      const uploadedUrls: string[] = [];
-
-      for (const file of Array.from(files)) {
+      
+      // Validate file sizes
+      const filesArray = Array.from(files);
+      const validFiles = filesArray.filter(file => {
         const isVideo = file.type.startsWith('video/');
-        const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB for videos, 5MB for images
+        const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
         
         if (file.size > maxSize) {
           toast({
@@ -174,12 +193,22 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
             description: `${file.name} ${t('errors.exceedsLimit')}`,
             variant: 'destructive',
           });
-          continue;
+          return false;
         }
+        return true;
+      });
 
-        const url = await storageService.uploadTicketImage(file, ticketId);
-        uploadedUrls.push(url);
-      }
+      // Upload all files in parallel
+      const uploadPromises = validFiles.map(file =>
+        storageService.uploadTicketImage(file, ticketId)
+          .catch(error => {
+            console.error('Error uploading file:', error);
+            return null;
+          })
+      );
+
+      const uploadResults = await Promise.all(uploadPromises);
+      const uploadedUrls = uploadResults.filter((url): url is string => url !== null);
 
       if (isSolution) {
         setSolutionImages(prev => [...prev, ...uploadedUrls]);
@@ -334,8 +363,26 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   };
 
   const openImageViewer = (imageUrl: string) => {
+    const images = [...ticketImages, ...solutionImages];
+    setAllImages(images);
+    const index = images.findIndex(img => img === imageUrl);
+    setCurrentImageIndex(index >= 0 ? index : 0);
     setSelectedImage(imageUrl);
     setImageViewerOpen(true);
+  };
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (allImages.length === 0) return;
+    
+    let newIndex = currentImageIndex;
+    if (direction === 'prev') {
+      newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1;
+    } else {
+      newIndex = currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0;
+    }
+    
+    setCurrentImageIndex(newIndex);
+    setSelectedImage(allImages[newIndex]);
   };
 
   const canEdit = user?.role === UserRole.ADMIN || 
@@ -483,6 +530,15 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         </div>
                         <span className="font-medium text-sm sm:text-base">
                           {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: language === 'fr' ? fr : ptBR })}
+                        </span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <UserCheck className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{t('tickets.createdBy')}:</span>
+                        </div>
+                        <span className="font-medium">
+                          {creatorInfo ? `${creatorInfo.name} (${creatorInfo.email})` : t('common.loading')}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -960,14 +1016,24 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Visualizar Imagem</DialogTitle>
+            <DialogTitle>
+              Visualizar Imagem {allImages.length > 1 && `(${currentImageIndex + 1}/${allImages.length})`}
+            </DialogTitle>
           </DialogHeader>
           <div className="relative">
-            <img
-              src={selectedImage}
-              alt="Imagem ampliada"
-              className="w-full h-auto rounded-lg"
-            />
+            {selectedImage.includes('.mp4') || selectedImage.includes('.webm') || selectedImage.includes('.ogg') || selectedImage.includes('.mov') ? (
+              <video
+                src={selectedImage}
+                controls
+                className="w-full h-auto rounded-lg"
+              />
+            ) : (
+              <img
+                src={selectedImage}
+                alt="Imagem ampliada"
+                className="w-full h-auto rounded-lg"
+              />
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -977,6 +1043,28 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
               <Download className="mr-2 h-4 w-4" />
               Abrir Original
             </Button>
+            
+            {/* Navigation Arrows */}
+            {allImages.length > 1 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                  onClick={() => navigateImage('prev')}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                  onClick={() => navigateImage('next')}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

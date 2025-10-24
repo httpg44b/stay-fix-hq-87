@@ -14,6 +14,88 @@ export type Database = {
   }
   public: {
     Tables: {
+      checklist_items: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_completed: boolean
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checklists: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          hotel_id: string
+          id: string
+          status: Database["public"]["Enums"]["checklist_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          hotel_id: string
+          id?: string
+          status?: Database["public"]["Enums"]["checklist_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          hotel_id?: string
+          id?: string
+          status?: Database["public"]["Enums"]["checklist_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklists_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hotels: {
         Row: {
           address: string | null
@@ -352,13 +434,14 @@ export type Database = {
       }
     }
     Enums: {
+      checklist_status: "pending" | "in_progress" | "completed"
       ticket_priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
       ticket_status:
         | "NEW"
         | "IN_PROGRESS"
         | "WAITING_PARTS"
         | "COMPLETED"
-        | "CANCELLED"
+        | "SCHEDULED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -486,13 +569,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      checklist_status: ["pending", "in_progress", "completed"],
       ticket_priority: ["LOW", "MEDIUM", "HIGH", "URGENT"],
       ticket_status: [
         "NEW",
         "IN_PROGRESS",
         "WAITING_PARTS",
         "COMPLETED",
-        "CANCELLED",
+        "SCHEDULED",
       ],
     },
   },

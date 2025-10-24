@@ -18,6 +18,7 @@ import { InitialSetup } from "./pages/InitialSetup";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword";
 import { SupabaseSetup } from "./pages/SupabaseSetup";
+import { Checklists } from "./pages/Checklists";
 import React from "react";
 
 const Calendar = React.lazy(() => import("./pages/Calendar"));
@@ -68,6 +69,12 @@ const App = () => (
                 <React.Suspense fallback={<div>Loading...</div>}>
                   <Calendar />
                 </React.Suspense>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/checklists" element={
+              <ProtectedRoute>
+                <Checklists />
               </ProtectedRoute>
             } />
             

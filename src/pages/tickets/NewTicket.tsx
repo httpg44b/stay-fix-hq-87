@@ -53,9 +53,34 @@ export default function NewTicket() {
           if (user.role === UserRole.ADMIN) {
             // For admin, we'll get all hotels and use the first one as default
             const allHotels = await hotelsService.getAll();
-            setAvailableHotels(allHotels);
-            if (allHotels.length > 0) {
-              setUserHotelId(allHotels[0].id);
+            
+            // Ordenar hotéis na ordem específica
+            const hotelOrder = [
+              'Hotel du Danube',
+              'Hotel Vandome Saint-Germain',
+              'Fauchon l\'hotel paris',
+              'Hotel L de Lutèce'
+            ];
+            
+            const sortedHotels = allHotels.sort((a, b) => {
+              const indexA = hotelOrder.indexOf(a.name);
+              const indexB = hotelOrder.indexOf(b.name);
+              
+              // Se ambos estão na lista, ordenar pela posição
+              if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+              }
+              // Se apenas A está na lista, vem primeiro
+              if (indexA !== -1) return -1;
+              // Se apenas B está na lista, vem primeiro
+              if (indexB !== -1) return 1;
+              // Se nenhum está na lista, ordenar alfabeticamente
+              return a.name.localeCompare(b.name);
+            });
+            
+            setAvailableHotels(sortedHotels);
+            if (sortedHotels.length > 0) {
+              setUserHotelId(sortedHotels[0].id);
             }
           } else {
             const hotels = await hotelsService.getUserHotels(user.id);
@@ -94,41 +119,27 @@ export default function NewTicket() {
       // Generate a temporary ticket ID for image uploads
       const tempTicketId = uuidv4();
       
-      // Upload images and videos first if any
-      const uploadedMediaUrls: string[] = [];
-      
-      // Upload images
-      if (formData.imageFiles.length > 0) {
-        for (const file of formData.imageFiles) {
-          try {
-            const imageUrl = await storageService.uploadTicketMedia(file, tempTicketId);
-            uploadedMediaUrls.push(imageUrl);
-          } catch (uploadError) {
-            console.error('Error uploading image:', uploadError);
-            toast({
-              title: t('errors.error'),
-              description: t('errors.uploadingImage'),
-              variant: 'destructive',
-            });
-          }
-        }
-      }
-      
-      // Upload videos
-      if (formData.videoFiles.length > 0) {
-        for (const file of formData.videoFiles) {
-          try {
-            const videoUrl = await storageService.uploadTicketMedia(file, tempTicketId);
-            uploadedMediaUrls.push(videoUrl);
-          } catch (uploadError: any) {
-            console.error('Error uploading video:', uploadError);
-            toast({
-              title: t('errors.error'),
-              description: uploadError.message || t('errors.uploadingVideo'),
-              variant: 'destructive',
-            });
-          }
-        }
+      // Upload all media files in parallel for faster processing
+      const allFiles = [...formData.imageFiles, ...formData.videoFiles];
+      const uploadPromises = allFiles.map(file =>
+        storageService.uploadTicketMedia(file, tempTicketId)
+          .catch(error => {
+            console.error('Error uploading file:', error);
+            return null;
+          })
+      );
+
+      const uploadResults = await Promise.all(uploadPromises);
+      const uploadedMediaUrls = uploadResults.filter((url): url is string => url !== null);
+
+      if (allFiles.length > 0 && uploadedMediaUrls.length === 0) {
+        toast({
+          title: t('errors.error'),
+          description: t('errors.uploadingImage'),
+          variant: 'destructive',
+        });
+        setIsSubmitting(false);
+        return;
       }
 
       await ticketsService.create({

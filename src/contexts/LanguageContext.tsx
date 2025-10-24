@@ -22,6 +22,8 @@ const translations = {
     'nav.tickets': 'Chamados',
     'nav.myTickets': 'Meus Chamados',
     'nav.newTicket': 'Novo Chamado',
+    'nav.calendar': 'Calendário',
+    'nav.checklists': 'Listas de Controle',
     
     // Auth
     'auth.login': 'Entrar',
@@ -62,6 +64,7 @@ const translations = {
     'tickets.hotel': 'Hotel',
     'tickets.room': 'Quarto',
     'tickets.technician': 'Técnico',
+    'tickets.createdBy': 'Aberto por',
     'tickets.created_at': 'Criado em',
     'tickets.updated_at': 'Atualizado em',
     'tickets.actions': 'Ações',
@@ -105,7 +108,7 @@ const translations = {
     'ticket.statusInProgress': 'En service',
     'ticket.statusWaitingParts': 'En attente Pièces',
     'ticket.statusCompleted': 'Terminé',
-    'ticket.statusCancelled': 'Annulé',
+    'ticket.statusScheduled': 'Programado',
     
     // Settings
     'settings.profile': 'Perfil',
@@ -139,7 +142,7 @@ const translations = {
     'status.in_progress': 'En service',
     'status.waiting_parts': 'En attente Pièces',
     'status.completed': 'Terminé',
-    'status.cancelled': 'Annulé',
+    'status.scheduled': 'Programado',
     
     // Priority
     'priority.low': 'Baixa',
@@ -256,6 +259,8 @@ const translations = {
     'nav.tickets': 'Tickets',
     'nav.myTickets': 'My Tickets',
     'nav.newTicket': 'New Ticket',
+    'nav.calendar': 'Calendar',
+    'nav.checklists': 'Checklists',
     
     // Auth
     'auth.login': 'Login',
@@ -296,6 +301,7 @@ const translations = {
     'tickets.hotel': 'Hotel',
     'tickets.room': 'Room',
     'tickets.technician': 'Technician',
+    'tickets.createdBy': 'Opened by',
     'tickets.created_at': 'Created at',
     'tickets.updated_at': 'Updated at',
     'tickets.actions': 'Actions',
@@ -341,7 +347,7 @@ const translations = {
     'ticket.statusInProgress': 'In Progress',
     'ticket.statusWaitingParts': 'Waiting Parts',
     'ticket.statusCompleted': 'Completed',
-    'ticket.statusCancelled': 'Cancelled',
+    'ticket.statusScheduled': 'Scheduled',
     
     // Settings
     'settings.profile': 'Profile',
@@ -375,7 +381,7 @@ const translations = {
     'status.in_progress': 'In Progress',
     'status.waiting_parts': 'Waiting Parts',
     'status.completed': 'Completed',
-    'status.cancelled': 'Cancelled',
+    'status.scheduled': 'Scheduled',
     
     // Priority
     'priority.low': 'Low',
@@ -487,6 +493,7 @@ const translations = {
     'nav.myTickets': 'Mes Appels',
     'nav.newTicket': 'Nouvel Appel',
     'nav.calendar': 'Calendrier',
+    'nav.checklists': 'Listes de contrôle',
     
     // Auth
     'auth.login': 'Se connecter',
@@ -531,6 +538,7 @@ const translations = {
     'tickets.hotel': 'Hôtel',
     'tickets.room': 'Chambre',
     'tickets.technician': 'Technicien',
+    'tickets.createdBy': 'Ouvert par',
     'tickets.created_at': 'Créé le',
     'tickets.createdAt': 'Créé le',
     'tickets.updated_at': 'Mis à jour le',
@@ -587,7 +595,7 @@ const translations = {
     'ticket.statusInProgress': 'En Cours',
     'ticket.statusWaitingParts': 'En Attente de Pièces',
     'ticket.statusCompleted': 'Terminé',
-    'ticket.statusCancelled': 'Annulé',
+    'ticket.statusScheduled': 'Programmé',
     
     // Settings
     'settings.profile': 'Profil',
@@ -624,7 +632,7 @@ const translations = {
     'status.in_progress': 'En Cours',
     'status.waiting_parts': 'En Attente de Pièces',
     'status.completed': 'Terminé',
-    'status.cancelled': 'Annulé',
+    'status.scheduled': 'Programmé',
     
     // Priority
     'priority.low': 'Basse',

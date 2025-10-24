@@ -28,7 +28,7 @@ export function InitialSetup() {
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: 'https://majdesk.fr'
         }
       });
 
