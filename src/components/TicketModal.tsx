@@ -77,6 +77,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [editHotelId, setEditHotelId] = useState('');
   const [hotels, setHotels] = useState<any[]>([]);
   const [creatorInfo, setCreatorInfo] = useState<{ name: string; email: string } | null>(null);
+  const [priority, setPriority] = useState<TicketPriority>(TicketPriority.MEDIUM);
 
   useEffect(() => {
     if (ticketId && isOpen) {
@@ -116,6 +117,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       setSelectedTechnician(data.assignee_id || '');
       setSolutionImages(data.solution_images || []);
       setTicketImages(data.images || []);
+      setPriority(data.priority || TicketPriority.MEDIUM);
       // Initialize edit fields
       setEditTitle(data.title || '');
       setEditDescription(data.description || '');
@@ -320,6 +322,11 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
         ...(status === TicketStatus.COMPLETED && { closed_at: new Date().toISOString() })
       };
       
+      // Admin and Reception can change priority
+      if ((user?.role === UserRole.ADMIN || user?.role === UserRole.RECEPCAO) && priority !== ticket.priority) {
+        updateData.priority = priority;
+      }
+      
       // Admin can change all fields
       if (user?.role === UserRole.ADMIN && editMode) {
         updateData.title = editTitle;
@@ -390,6 +397,8 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                    (user?.role === UserRole.RECEPCAO && ticket?.creator_id === user?.id);
 
   const canChangeTechnician = user?.role === UserRole.ADMIN;
+  
+  const canChangePriority = user?.role === UserRole.ADMIN || user?.role === UserRole.RECEPCAO;
 
   return (
     <>
@@ -759,6 +768,24 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                               </SelectContent>
                             </Select>
                           </div>
+                          
+                          {canChangePriority && (
+                            <div className="space-y-2">
+                              <Label htmlFor="priority">{t('ticket.priority')}</Label>
+                              <Select value={priority} onValueChange={(value) => setPriority(value as TicketPriority)}>
+                                <SelectTrigger id="priority">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(priorityLabels).map(([value, label]) => (
+                                    <SelectItem key={value} value={value}>
+                                      {label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                           
                           {canChangeTechnician && (
                             <div className="space-y-2">
