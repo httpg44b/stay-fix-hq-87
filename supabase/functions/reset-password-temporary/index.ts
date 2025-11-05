@@ -64,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email with temporary password
     const emailResponse = await resend.emails.send({
-      from: "MAJ TECH <noreply@majtech.app>",
+      from: "MAJ TECH <onboarding@resend.dev>",
       to: [email],
       subject: "🔐 Votre mot de passe temporaire - MAJ TECH",
       html: `
