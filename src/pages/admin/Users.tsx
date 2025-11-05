@@ -524,7 +524,7 @@ export function Users() {
                     <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
                     <SelectItem value="en-US">English (US)</SelectItem>
                     <SelectItem value="es-ES">Español</SelectItem>
-                    <SelectItem value="es-ES">France</SelectItem>
+                    <SelectItem value="fr-FR">Français</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
