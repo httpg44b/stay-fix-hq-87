@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { usersService, type User, type CreateUserInput, type UpdateUserInput, type UserRole } from '@/services/users.service';
-import { Plus, Pencil, Trash2, Search, UserCheck, UserX, KeyRound } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, UserCheck, UserX, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -41,6 +41,7 @@ export function Users() {
   const [selectedUserForPassword, setSelectedUserForPassword] = useState<User | null>(null);
   const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -65,6 +66,7 @@ export function Users() {
   const openPasswordDialog = (user: User) => {
     setSelectedUserForPassword(user);
     setPasswordForm({ newPassword: '', confirmPassword: '' });
+    setShowPasswords(false);
     setIsPasswordDialogOpen(true);
   };
 
@@ -407,27 +409,45 @@ export function Users() {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="newPassword">{t('settings.newPassword')}</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={passwordForm.newPassword}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                  required
-                  minLength={6}
-                  placeholder={t('user.minimumCharacters')}
-                />
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showPasswords ? "text" : "password"}
+                    value={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                    required
+                    minLength={6}
+                    placeholder={t('user.minimumCharacters')}
+                    className="pr-10"
+                  />
+                </div>
               </div>
               
               <div>
                 <Label htmlFor="confirmPassword">{t('settings.confirmPassword')}</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                  required
-                  placeholder={t('user.retypePassword')}
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showPasswords ? "text" : "password"}
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                    required
+                    placeholder={t('user.retypePassword')}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(!showPasswords)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPasswords ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
             
