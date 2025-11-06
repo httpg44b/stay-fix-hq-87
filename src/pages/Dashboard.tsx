@@ -114,6 +114,9 @@ export default function Dashboard() {
     completed: tickets.filter(t => t.status === TicketStatus.COMPLETED).length,
   };
 
+  // Filter out completed tickets for display
+  const activeTickets = tickets.filter(t => t.status !== TicketStatus.COMPLETED);
+
   const myTickets = user.role === UserRole.TECNICO 
     ? tickets.filter(t => t.assignee_id === user.id)
     : [];
@@ -239,7 +242,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {tickets.slice(0, 5).map((ticket) => (
+              {activeTickets.slice(0, 5).map((ticket) => (
                 <div
                   key={ticket.id}
                   className="p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
@@ -269,7 +272,7 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {tickets.length > 5 && (
+            {activeTickets.length > 5 && (
               <div className="mt-4">
                 <Button 
                   variant="outline" 
@@ -298,12 +301,12 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {tickets.length === 0 ? (
+                {activeTickets.length === 0 ? (
                   <p className="text-center py-8 text-muted-foreground">
                     {t('tickets.noTickets')}
                   </p>
                 ) : (
-                  tickets.slice(0, 10).map((ticket: any) => (
+                  activeTickets.slice(0, 10).map((ticket: any) => (
                     <div
                       key={ticket.id}
                       className="p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
