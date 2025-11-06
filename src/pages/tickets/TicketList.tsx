@@ -58,7 +58,7 @@ export default function TicketList() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('not_completed');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [hotelFilter, setHotelFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -128,7 +128,12 @@ export default function TicketList() {
       (ticket.room_number?.includes(searchTerm) || false) ||
       (ticket.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
-    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    const matchesStatus = 
+      statusFilter === 'all' 
+        ? true 
+        : statusFilter === 'not_completed' 
+        ? ticket.status !== TicketStatus.COMPLETED 
+        : ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
     const matchesHotel = hotelFilter === 'all' || ticket.hotel_id === hotelFilter;
     
@@ -251,6 +256,7 @@ export default function TicketList() {
                     <SelectValue placeholder={t('common.all')} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="not_completed">Tous (sauf terminé)</SelectItem>
                     <SelectItem value="all">{t('common.all')}</SelectItem>
                     {Object.entries(statusLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
