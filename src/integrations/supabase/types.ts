@@ -368,14 +368,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_admin_user_directly: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      create_initial_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      create_admin_user_directly: { Args: never; Returns: Json }
+      create_initial_admin: { Args: never; Returns: undefined }
       create_notification: {
         Args: {
           _message: string
@@ -408,10 +402,7 @@ export type Database = {
         }
         Returns: Json
       }
-      fix_admin_user_id: {
-        Args: { new_auth_id: string }
-        Returns: Json
-      }
+      fix_admin_user_id: { Args: { new_auth_id: string }; Returns: Json }
       get_hotel_technicians: {
         Args: { _hotel_id: string }
         Returns: {
@@ -420,18 +411,9 @@ export type Database = {
           id: string
         }[]
       }
-      get_user_display_name: {
-        Args: { _user_id: string }
-        Returns: string
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      setup_auth_for_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_user_display_name: { Args: { _user_id: string }; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
+      setup_auth_for_admin: { Args: never; Returns: Json }
     }
     Enums: {
       checklist_status: "pending" | "in_progress" | "completed"
