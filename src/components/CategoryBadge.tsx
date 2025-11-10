@@ -33,7 +33,16 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({ category, classNam
   };
 
   const getCategoryLabel = (category: TicketCategory) => {
-    return t(`category.${category.toLowerCase()}`);
+    const labels: Record<TicketCategory, string> = {
+      [TicketCategory.PLUMBING]: 'Plomberie & Joints',
+      [TicketCategory.ELECTRICAL]: 'Électricité',
+      [TicketCategory.PAINTING]: 'Peinture & Finitions',
+      [TicketCategory.CARPENTRY]: 'Menuiserie',
+      [TicketCategory.FLOORING]: 'Moquette & Revêtements',
+      [TicketCategory.FIRE_SAFETY]: 'Sécurité incendie',
+      [TicketCategory.OTHER]: 'Autres'
+    };
+    return labels[category] || category;
   };
 
   return (
