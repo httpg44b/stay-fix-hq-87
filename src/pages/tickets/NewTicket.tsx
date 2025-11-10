@@ -291,61 +291,69 @@ export default function NewTicket() {
 
                 <div className="space-y-2">
                   <Label htmlFor="category">{t('ticket.category')}*</Label>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={formData.category}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as TicketCategory }))}
-                      disabled={isSubmitting}
-                    >
-                      <SelectTrigger id="category" className="flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={TicketCategory.CARPENTRY}>
-                          {t('category.carpentry')}
-                        </SelectItem>
-                        <SelectItem value={TicketCategory.PAINTING}>
-                          {t('category.painting')}
-                        </SelectItem>
-                        <SelectItem value={TicketCategory.FLOORING}>
-                          {t('category.flooring')}
-                        </SelectItem>
-                        <SelectItem value={TicketCategory.PLUMBING}>
-                          {t('category.plumbing')}
-                        </SelectItem>
-                        <SelectItem value={TicketCategory.ELECTRICAL}>
-                          {t('category.electrical')}
-                        </SelectItem>
-                        <SelectItem value={TicketCategory.OTHER}>
-                          {t('category.other')}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <CategoryBadge category={formData.category} />
-                  </div>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as TicketCategory }))}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger id="category">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={TicketCategory.CARPENTRY}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.CARPENTRY} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.PAINTING}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.PAINTING} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.FLOORING}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.FLOORING} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.PLUMBING}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.PLUMBING} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.ELECTRICAL}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.ELECTRICAL} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.OTHER}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.OTHER} />
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="priority">{t('ticket.priority')}*</Label>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={formData.priority}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value as TicketPriority }))}
-                      disabled={isSubmitting}
-                    >
-                      <SelectTrigger id="priority" className="flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(priorityLabels).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {t(`priority.${value.toLowerCase()}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <PriorityBadge priority={formData.priority} />
-                  </div>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value as TicketPriority }))}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger id="priority">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(priorityLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          <div className="flex items-center gap-2">
+                            <PriorityBadge priority={value as TicketPriority} />
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
