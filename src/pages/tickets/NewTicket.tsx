@@ -300,21 +300,6 @@ export default function NewTicket() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={TicketCategory.CARPENTRY}>
-                        <div className="flex items-center gap-2">
-                          <CategoryBadge category={TicketCategory.CARPENTRY} />
-                        </div>
-                      </SelectItem>
-                      <SelectItem value={TicketCategory.PAINTING}>
-                        <div className="flex items-center gap-2">
-                          <CategoryBadge category={TicketCategory.PAINTING} />
-                        </div>
-                      </SelectItem>
-                      <SelectItem value={TicketCategory.FLOORING}>
-                        <div className="flex items-center gap-2">
-                          <CategoryBadge category={TicketCategory.FLOORING} />
-                        </div>
-                      </SelectItem>
                       <SelectItem value={TicketCategory.PLUMBING}>
                         <div className="flex items-center gap-2">
                           <CategoryBadge category={TicketCategory.PLUMBING} />
@@ -323,6 +308,26 @@ export default function NewTicket() {
                       <SelectItem value={TicketCategory.ELECTRICAL}>
                         <div className="flex items-center gap-2">
                           <CategoryBadge category={TicketCategory.ELECTRICAL} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.PAINTING}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.PAINTING} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.CARPENTRY}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.CARPENTRY} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.FLOORING}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.FLOORING} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.FIRE_SAFETY}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.FIRE_SAFETY} />
                         </div>
                       </SelectItem>
                       <SelectItem value={TicketCategory.OTHER}>

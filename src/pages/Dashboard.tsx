@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { UserRole } from '@/lib/constants';
+import { UserRole, TicketCategory } from '@/lib/constants';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Ticket, Clock, CheckCircle, AlertCircle, Users, Building, Loader2 } from 'lucide-react';
 import { TicketStatus } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
+import { CategoryBadge } from '@/components/CategoryBadge';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { ticketsService } from '@/services/tickets.service';
 import { usersService } from '@/services/users.service';
@@ -17,6 +26,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TicketModal } from '@/components/TicketModal';
 import { TechnicianName } from '@/components/TechnicianName';
+import { categoryLabels } from '@/lib/constants';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -29,6 +39,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   if (!user) return null;
 
@@ -115,7 +126,9 @@ export default function Dashboard() {
   };
 
   // Filter out completed tickets for display
-  const activeTickets = tickets.filter(t => t.status !== TicketStatus.COMPLETED);
+  const activeTickets = tickets
+    .filter(t => t.status !== TicketStatus.COMPLETED)
+    .filter(t => categoryFilter === 'all' || t.category === categoryFilter);
 
   const myTickets = user.role === UserRole.TECNICO 
     ? tickets.filter(t => t.assignee_id === user.id)
@@ -234,6 +247,39 @@ export default function Dashboard() {
             </Card>
           )}
         </div>
+
+        {/* Category Filter */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <Label htmlFor="categoryFilter" className="whitespace-nowrap">{t('ticket.category')}</Label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger id="categoryFilter" className="w-[250px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('common.all')}</SelectItem>
+                  {Object.entries(categoryLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      <div className="flex items-center gap-2">
+                        <CategoryBadge category={value as TicketCategory} />
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {categoryFilter !== 'all' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCategoryFilter('all')}
+                >
+                  {t('tickets.clearFilter')}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Recent Tickets */}
         <Card>
