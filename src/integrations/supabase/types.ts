@@ -208,7 +208,7 @@ export type Database = {
       tickets: {
         Row: {
           assignee_id: string | null
-          category: string | null
+          category: Database["public"]["Enums"]["ticket_category"]
           closed_at: string | null
           created_at: string
           creator_id: string | null
@@ -228,7 +228,7 @@ export type Database = {
         }
         Insert: {
           assignee_id?: string | null
-          category?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
           closed_at?: string | null
           created_at?: string
           creator_id?: string | null
@@ -248,7 +248,7 @@ export type Database = {
         }
         Update: {
           assignee_id?: string | null
-          category?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
           closed_at?: string | null
           created_at?: string
           creator_id?: string | null
@@ -417,6 +417,14 @@ export type Database = {
     }
     Enums: {
       checklist_status: "pending" | "in_progress" | "completed"
+      ticket_category:
+        | "PLUMBING"
+        | "ELECTRICAL"
+        | "PAINTING"
+        | "CARPENTRY"
+        | "FLOORING"
+        | "FIRE_SAFETY"
+        | "OTHER"
       ticket_priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
       ticket_status:
         | "NEW"
@@ -552,6 +560,15 @@ export const Constants = {
   public: {
     Enums: {
       checklist_status: ["pending", "in_progress", "completed"],
+      ticket_category: [
+        "PLUMBING",
+        "ELECTRICAL",
+        "PAINTING",
+        "CARPENTRY",
+        "FLOORING",
+        "FIRE_SAFETY",
+        "OTHER",
+      ],
       ticket_priority: ["LOW", "MEDIUM", "HIGH", "URGENT"],
       ticket_status: [
         "NEW",
