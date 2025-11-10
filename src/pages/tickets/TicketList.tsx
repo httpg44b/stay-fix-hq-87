@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { UserRole, TicketStatus, TicketPriority } from '@/lib/constants';
+import { UserRole, TicketStatus, TicketPriority, TicketCategory } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
+import { CategoryBadge } from '@/components/CategoryBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +27,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { statusLabels, priorityLabels } from '@/lib/constants';
+import { statusLabels, priorityLabels, categoryLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
 import { useToast } from '@/hooks/use-toast';
@@ -60,6 +61,7 @@ export default function TicketList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('not_completed');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [hotelFilter, setHotelFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
@@ -135,6 +137,7 @@ export default function TicketList() {
         ? ticket.status !== TicketStatus.COMPLETED 
         : ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+    const matchesCategory = categoryFilter === 'all' || ticket.category === categoryFilter;
     const matchesHotel = hotelFilter === 'all' || ticket.hotel_id === hotelFilter;
     
     // Date filter
@@ -142,7 +145,7 @@ export default function TicketList() {
     const matchesDateFrom = !dateFrom || ticketDate >= dateFrom;
     const matchesDateTo = !dateTo || ticketDate <= new Date(dateTo.getTime() + 86400000 - 1); // Include entire day
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesHotel && matchesDateFrom && matchesDateTo;
+    return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesHotel && matchesDateFrom && matchesDateTo;
   });
 
   const handleTicketClick = (ticketId: string) => {
@@ -278,6 +281,25 @@ export default function TicketList() {
                     {Object.entries(priorityLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t('ticket.category')}</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('common.all')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('common.all')}</SelectItem>
+                    {Object.entries(categoryLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={value as TicketCategory} />
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
