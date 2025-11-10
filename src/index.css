@@ -56,6 +56,15 @@ All colors MUST be HSL.
     --priority-high: 35 91% 55%;
     --priority-urgent: 0 84% 60%;
 
+    /* Category colors */
+    --category-plumbing: 200 85% 45%;
+    --category-electrical: 45 93% 45%;
+    --category-painting: 280 65% 50%;
+    --category-carpentry: 30 80% 45%;
+    --category-flooring: 160 60% 42%;
+    --category-fire-safety: 0 75% 50%;
+    --category-other: 215 20% 50%;
+
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(0 0% 35%), hsl(0 0% 45%));
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 96%));
@@ -129,6 +138,15 @@ All colors MUST be HSL.
     --priority-medium: 45 93% 47%;
     --priority-high: 35 91% 55%;
     --priority-urgent: 0 84% 60%;
+
+    /* Category colors (adjusted for dark mode) */
+    --category-plumbing: 200 85% 50%;
+    --category-electrical: 45 93% 50%;
+    --category-painting: 280 65% 55%;
+    --category-carpentry: 30 80% 50%;
+    --category-flooring: 160 60% 47%;
+    --category-fire-safety: 0 75% 55%;
+    --category-other: 215 20% 55%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(0 0% 35%), hsl(0 0% 25%));

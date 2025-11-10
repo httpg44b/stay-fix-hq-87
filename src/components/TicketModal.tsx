@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
+import { CategoryBadge } from '@/components/CategoryBadge';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -477,9 +478,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                     <>
                       <StatusBadge status={ticket.status} />
                       <PriorityBadge priority={ticket.priority} />
-                      <Badge variant="outline">
-                        {t(`category.${ticket.category.toLowerCase()}`)}
-                      </Badge>
+                      <CategoryBadge category={ticket.category} />
                     </>
                   )}
                 </DialogDescription>

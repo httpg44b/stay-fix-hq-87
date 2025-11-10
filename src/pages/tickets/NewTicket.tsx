@@ -96,7 +96,7 @@ export default function NewTicket() {
     loadUserHotel();
   }, [user]);
 
-  if (!user || (user.role !== UserRole.RECEPCAO && user.role !== UserRole.ADMIN)) {
+  if (!user || (user.role !== UserRole.RECEPCAO && user.role !== UserRole.ADMIN && user.role !== UserRole.TECNICO)) {
     navigate('/dashboard');
     return null;
   }

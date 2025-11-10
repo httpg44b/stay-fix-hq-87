@@ -76,6 +76,15 @@ export default {
 					medium: 'hsl(var(--priority-medium))',
 					high: 'hsl(var(--priority-high))',
 					urgent: 'hsl(var(--priority-urgent))'
+				},
+				category: {
+					plumbing: 'hsl(var(--category-plumbing))',
+					electrical: 'hsl(var(--category-electrical))',
+					painting: 'hsl(var(--category-painting))',
+					carpentry: 'hsl(var(--category-carpentry))',
+					flooring: 'hsl(var(--category-flooring))',
+					'fire-safety': 'hsl(var(--category-fire-safety))',
+					other: 'hsl(var(--category-other))'
 				}
 			},
 			backgroundImage: {
