@@ -97,7 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div class="container">
             <div class="header">
               <div class="logo">
-                <img src="https://vesffhlaeycsulblwxsa.supabase.co/storage/v1/object/public/maj-desk-logo.jpg" alt="MAJ Desk Logo" />
+                <img src="https://vesffhlaeycsulblwxsa.supabase.co/storage/v1/object/public/email-assets/maj-desk-logo.jpg" alt="MAJ Desk Logo" />
               </div>
               <h1>MAJ Desk</h1>
               <p>Système de Gestion de Maintenance</p>
