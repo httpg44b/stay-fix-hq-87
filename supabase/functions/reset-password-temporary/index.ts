@@ -9,13 +9,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function generateTemporaryPassword(): string {
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let password = '';
-  for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
+function getDefaultPassword(): string {
+  return 'welcomeparis2026';
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -48,8 +43,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Generate temporary password
-    const tempPassword = generateTemporaryPassword();
+    // Use default password
+    const tempPassword = getDefaultPassword();
 
     // Update user password in auth
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -64,9 +59,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email with temporary password
     const emailResponse = await resend.emails.send({
-      from: "MAJ TECH <onboarding@resend.dev>",
+      from: "MAJ Desk <onboarding@resend.dev>",
       to: [email],
-      subject: "🔐 Votre mot de passe temporaire - MAJ TECH",
+      subject: "🔐 Votre mot de passe temporaire - MAJ Desk",
       html: `
         <!DOCTYPE html>
         <html>
@@ -78,8 +73,8 @@ const handler = async (req: Request): Promise<Response> => {
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
             .container { max-width: 600px; margin: 0 auto; background-color: white; }
             .header { background: linear-gradient(135deg, #1e293b, #334155); padding: 40px 20px; text-align: center; }
-            .logo { width: 80px; height: 80px; margin: 0 auto 20px; background-color: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .logo-text { color: white; font-size: 24px; font-weight: bold; }
+            .logo { margin: 0 auto 20px; }
+            .logo img { width: 120px; height: auto; }
             .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 700; }
             .header p { color: #cbd5e1; margin: 10px 0 0; font-size: 16px; }
             .content { padding: 40px 30px; }
@@ -102,9 +97,9 @@ const handler = async (req: Request): Promise<Response> => {
           <div class="container">
             <div class="header">
               <div class="logo">
-                <div class="logo-text">MJ</div>
+                <img src="https://vesffhlaeycsulblwxsa.supabase.co/storage/v1/object/public/maj-desk-logo.jpg" alt="MAJ Desk Logo" />
               </div>
-              <h1>MAJ TECH</h1>
+              <h1>MAJ Desk</h1>
               <p>Système de Gestion de Maintenance</p>
             </div>
             
@@ -129,7 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="instructions">
                 <div class="instructions-title">Comment utiliser ce mot de passe :</div>
                 <ol class="instructions-list">
-                  <li>Rendez-vous sur la page de connexion de MAJ TECH</li>
+                  <li>Rendez-vous sur la page de connexion de MAJ Desk</li>
                   <li>Entrez votre adresse email : <strong>${email}</strong></li>
                   <li>Utilisez le mot de passe temporaire ci-dessus</li>
                   <li>Une fois connecté, accédez aux paramètres pour changer votre mot de passe</li>
@@ -143,10 +138,10 @@ const handler = async (req: Request): Promise<Response> => {
             
             <div class="footer">
               <p class="footer-text">
-                Cet email a été envoyé automatiquement par le système MAJ TECH.
+                Cet email a été envoyé automatiquement par le système MAJ Desk.
               </p>
               <div class="company-info">
-                MAJ TECH - Système de Gestion de Maintenance<br>
+                MAJ Desk - Système de Gestion de Maintenance<br>
                 Technologie pour l'Hôtellerie Efficace
               </div>
             </div>
