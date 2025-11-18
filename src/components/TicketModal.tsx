@@ -393,6 +393,15 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     setSelectedImage(allImages[newIndex]);
   };
 
+  // Helper to determine if current image is in "before" or "after" section
+  const getCurrentImageSection = () => {
+    if (currentImageIndex < ticketImages.length) {
+      return 'Avant';
+    } else {
+      return 'Après';
+    }
+  };
+
   const canEdit = user?.role === UserRole.ADMIN || 
                    user?.role === UserRole.TECNICO ||
                    (user?.role === UserRole.RECEPCAO && ticket?.creator_id === user?.id);
@@ -601,14 +610,14 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       )}
                     </div>
 
-                    {/* Ticket Images */}
+                    {/* Images: Avant */}
                     {(ticketImages.length > 0 || canEdit) && (
                       <>
                         <Separator />
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <ImageIcon className="h-4 w-4" />
-                            {t('ticket.ticketImages')}
+                            Médias - Avant
                           </Label>
                           
                           {ticketImages.length > 0 && (
@@ -839,7 +848,10 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         {/* Solution Images */}
                         {canEdit && (
                           <div className="space-y-2">
-                            <Label>Joindre des images de la solution</Label>
+                            <Label className="flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              Médias - Après
+                            </Label>
                             <div className="flex items-center gap-4">
                               <Button
                                 type="button"
@@ -879,8 +891,13 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         )}
 
                         {solutionImages.length > 0 && (
-                          <div className="grid grid-cols-3 gap-2">
-                            {solutionImages.map((media, index) => {
+                          <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              Médias - Après
+                            </Label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {solutionImages.map((media, index) => {
                               const isVideo = media.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
                               
                               return (
@@ -962,6 +979,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                 </div>
                               );
                             })}
+                            </div>
                           </div>
                         )}
                       </>
@@ -1042,8 +1060,19 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>
-              Visualizar Imagem {allImages.length > 1 && `(${currentImageIndex + 1}/${allImages.length})`}
+            <DialogTitle className="flex items-center gap-2">
+              <span>Visualizar Mídia</span>
+              {allImages.length > 1 && (
+                <>
+                  <span>-</span>
+                  <Badge variant="secondary" className="font-normal">
+                    {getCurrentImageSection()}
+                  </Badge>
+                  <span className="text-muted-foreground">
+                    ({currentImageIndex + 1}/{allImages.length})
+                  </span>
+                </>
+              )}
             </DialogTitle>
           </DialogHeader>
           <div className="relative">
