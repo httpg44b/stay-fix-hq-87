@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Loader2, ArrowLeft, X } from 'lucide-react';
+import { Upload, Loader2, ArrowLeft, X, ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CategoryBadge } from '@/components/CategoryBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
@@ -388,7 +388,10 @@ export default function NewTicket() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="media">{t('ticket.photosVideos')} ({t('common.optional')})</Label>
+                <Label htmlFor="media" className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  Médias - Avant ({t('common.optional')})
+                </Label>
                 <div className="flex items-center gap-4">
                   <Button
                     type="button"
