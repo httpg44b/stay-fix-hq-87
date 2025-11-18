@@ -51,6 +51,9 @@ export default function NewTicket() {
     const loadUserHotel = async () => {
       if (user) {
         try {
+          // Tentar restaurar hotel selecionado do sessionStorage
+          const savedHotelId = sessionStorage.getItem('newTicket_selectedHotelId');
+          
           // Admin can choose any hotel, so we'll need to handle this differently
           if (user.role === UserRole.ADMIN) {
             // For admin, we'll get all hotels and use the first one as default
@@ -81,13 +84,22 @@ export default function NewTicket() {
             });
             
             setAvailableHotels(sortedHotels);
-            if (sortedHotels.length > 0) {
+            
+            // Restaurar hotel salvo se existir e for válido, caso contrário usar o primeiro
+            if (savedHotelId && sortedHotels.some(h => h.id === savedHotelId)) {
+              setUserHotelId(savedHotelId);
+            } else if (sortedHotels.length > 0) {
               setUserHotelId(sortedHotels[0].id);
             }
           } else {
             const hotels = await hotelsService.getUserHotels(user.id);
             if (hotels.length > 0) {
-              setUserHotelId(hotels[0].hotel_id);
+              // Restaurar hotel salvo se existir, caso contrário usar o primeiro
+              if (savedHotelId) {
+                setUserHotelId(savedHotelId);
+              } else {
+                setUserHotelId(hotels[0].hotel_id);
+              }
             }
           }
         } catch (error) {
@@ -159,6 +171,9 @@ export default function NewTicket() {
         title: t('ticket.createdSuccess'),
         description: `${t('ticket.createdForRoom')} ${formData.roomNumber} ${t('ticket.wasCreated')}.`,
       });
+      
+      // Limpar hotel salvo do sessionStorage após criação bem-sucedida
+      sessionStorage.removeItem('newTicket_selectedHotelId');
       
       navigate('/tickets');
     } catch (error: any) {
@@ -260,7 +275,10 @@ export default function NewTicket() {
                     <Label htmlFor="hotel">{t('hotel.hotel')}*</Label>
                     <Select
                       value={userHotelId || ''}
-                      onValueChange={(value) => setUserHotelId(value)}
+                      onValueChange={(value) => {
+                        setUserHotelId(value);
+                        sessionStorage.setItem('newTicket_selectedHotelId', value);
+                      }}
                       disabled={isSubmitting}
                     >
                       <SelectTrigger id="hotel">
