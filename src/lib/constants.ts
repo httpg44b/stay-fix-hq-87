@@ -41,8 +41,8 @@ export const statusLabels: Record<TicketStatus, string> = {
   [TicketStatus.NEW]: 'Nouveau',
   [TicketStatus.IN_PROGRESS]: 'Pris en charge',
   [TicketStatus.WAITING_PARTS]: 'En attente de livraison',
-  [TicketStatus.COMPLETED]: 'Terminé',
-  [TicketStatus.SCHEDULED]: 'À planifier'
+  [TicketStatus.SCHEDULED]: 'À planifier',
+  [TicketStatus.COMPLETED]: 'Terminé'
 };
 
 export const priorityLabels: Record<TicketPriority, string> = {
