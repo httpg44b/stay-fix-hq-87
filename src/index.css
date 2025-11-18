@@ -52,8 +52,8 @@ All colors MUST be HSL.
 
     /* Priority colors */
     --priority-low: 142 71% 45%;
-    --priority-medium: 45 93% 47%;
-    --priority-high: 35 91% 55%;
+    --priority-medium: 48 96% 53%;
+    --priority-high: 25 95% 53%;
     --priority-urgent: 0 84% 60%;
 
     /* Category colors */
@@ -135,8 +135,8 @@ All colors MUST be HSL.
 
     /* Priority colors (adjusted for dark mode) */
     --priority-low: 142 71% 45%;
-    --priority-medium: 45 93% 47%;
-    --priority-high: 35 91% 55%;
+    --priority-medium: 48 96% 56%;
+    --priority-high: 25 95% 58%;
     --priority-urgent: 0 84% 60%;
 
     /* Category colors (adjusted for dark mode) */
