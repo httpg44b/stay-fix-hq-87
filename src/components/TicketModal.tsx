@@ -757,25 +757,27 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                     )}
 
                     {/* Status and Technician Update */}
-                    {canEdit && (
+                    {(canEdit || canChangePriority) && (
                       <>
                         <Separator />
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="status">{t('ticket.status')}</Label>
-                            <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
-                              <SelectTrigger id="status">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(statusLabels).map(([value, label]) => (
-                                  <SelectItem key={value} value={value}>
-                                    {label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          {canEdit && (
+                            <div className="space-y-2">
+                              <Label htmlFor="status">{t('ticket.status')}</Label>
+                              <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
+                                <SelectTrigger id="status">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(statusLabels).map(([value, label]) => (
+                                    <SelectItem key={value} value={value}>
+                                      {label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                           
                           {canChangePriority && (
                             <div className="space-y-2">
@@ -795,7 +797,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                             </div>
                           )}
                           
-                          {canChangeTechnician && (
+                          {canChangeTechnician && canEdit && (
                             <div className="space-y-2">
                               <Label htmlFor="technician">
                                 <UserCheck className="inline h-4 w-4 mr-1" />
