@@ -35,6 +35,7 @@ import { TicketModal } from '@/components/TicketModal';
 import { TechnicianName } from '@/components/TechnicianName';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -191,8 +192,47 @@ export default function TicketList() {
   };
 
   const exportToCSV = () => {
-    // Implement CSV export
-    console.log('Exporting to CSV...');
+    try {
+      // Prepare data for export
+      const exportData = filteredTickets.map(ticket => ({
+        'Chamado': ticket.title || '',
+        'Quarto': ticket.room_number || '',
+        'Hotel': hotels.find(h => h.id === ticket.hotel_id)?.name || '',
+        'Categoria': categoryLabels[ticket.category as TicketCategory] || ticket.category,
+        'Prioridade': priorityLabels[ticket.priority as TicketPriority] || ticket.priority,
+        'Status': statusLabels[ticket.status as TicketStatus] || ticket.status,
+        'Técnico': ticket.assignee_id || 'Não atribuído',
+        'Descrição': ticket.description || '',
+        'Solução': ticket.solution || '',
+        'Data de Criação': ticket.created_at ? format(new Date(ticket.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
+        'Data de Conclusão': ticket.closed_at ? format(new Date(ticket.closed_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
+      }));
+
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Chamados');
+      
+      // Generate filename with current date
+      const filename = `chamados_${format(new Date(), 'dd-MM-yyyy_HH-mm')}.xlsx`;
+      
+      // Save file
+      XLSX.writeFile(wb, filename);
+      
+      toast({
+        title: 'Exportação concluída',
+        description: `${filteredTickets.length} chamado(s) exportado(s) com sucesso.`,
+      });
+    } catch (error: any) {
+      console.error('Error exporting to Excel:', error);
+      toast({
+        title: 'Erro ao exportar',
+        description: error.message || 'Não foi possível exportar os dados.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
