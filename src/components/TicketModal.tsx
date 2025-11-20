@@ -371,9 +371,21 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   };
 
   const openImageViewer = (imageUrl: string) => {
-    const images = [...ticketImages, ...solutionImages];
-    setAllImages(images);
-    const index = images.findIndex(img => img === imageUrl);
+    // Intercala imagens antes/depois para pareamento
+    const pairedImages: string[] = [];
+    const maxLength = Math.max(ticketImages.length, solutionImages.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      if (i < ticketImages.length) {
+        pairedImages.push(ticketImages[i]);
+      }
+      if (i < solutionImages.length) {
+        pairedImages.push(solutionImages[i]);
+      }
+    }
+    
+    setAllImages(pairedImages);
+    const index = pairedImages.findIndex(img => img === imageUrl);
     setCurrentImageIndex(index >= 0 ? index : 0);
     setSelectedImage(imageUrl);
     setImageViewerOpen(true);
@@ -395,11 +407,9 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
   // Helper to determine if current image is in "before" or "after" section
   const getCurrentImageSection = () => {
-    if (currentImageIndex < ticketImages.length) {
-      return 'Avant';
-    } else {
-      return 'Après';
-    }
+    // Com o pareamento, índices pares são "avant", ímpares são "après"
+    const imageInTicketImages = ticketImages.includes(allImages[currentImageIndex]);
+    return imageInTicketImages ? 'Avant' : 'Après';
   };
 
   const canEdit = user?.role === UserRole.ADMIN || 
