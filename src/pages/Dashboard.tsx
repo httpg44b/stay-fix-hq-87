@@ -412,12 +412,12 @@ export default function Dashboard() {
               </Popover>
 
               {/* Hotel */}
-              <Select onValueChange={(value) => setSelectedHotels(value ? [value] : [])}>
+              <Select onValueChange={(value) => setSelectedHotels(value === 'all' ? [] : [value])}>
                 <SelectTrigger>
                   <SelectValue placeholder="Hôtel" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous</SelectItem>
+                  <SelectItem value="all">Tous</SelectItem>
                   {hotels.map(h => (
                     <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>
                   ))}
@@ -425,12 +425,12 @@ export default function Dashboard() {
               </Select>
 
               {/* Priority */}
-              <Select onValueChange={(value) => setSelectedPriorities(value ? [value] : [])}>
+              <Select onValueChange={(value) => setSelectedPriorities(value === 'all' ? [] : [value])}>
                 <SelectTrigger>
                   <SelectValue placeholder="Priorité" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes</SelectItem>
+                  <SelectItem value="all">Toutes</SelectItem>
                   {Object.entries(priorityLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
@@ -438,12 +438,12 @@ export default function Dashboard() {
               </Select>
 
               {/* Status */}
-              <Select onValueChange={(value) => setSelectedStatuses(value ? [value] : [])}>
+              <Select onValueChange={(value) => setSelectedStatuses(value === 'all' ? [] : [value])}>
                 <SelectTrigger>
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous</SelectItem>
+                  <SelectItem value="all">Tous</SelectItem>
                   {Object.entries(statusLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
@@ -451,12 +451,12 @@ export default function Dashboard() {
               </Select>
 
               {/* Category */}
-              <Select onValueChange={(value) => setSelectedCategories(value ? [value] : [])}>
+              <Select onValueChange={(value) => setSelectedCategories(value === 'all' ? [] : [value])}>
                 <SelectTrigger>
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes</SelectItem>
+                  <SelectItem value="all">Toutes</SelectItem>
                   {Object.entries(categoryLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
@@ -464,12 +464,12 @@ export default function Dashboard() {
               </Select>
 
               {/* Technician */}
-              <Select onValueChange={(value) => setSelectedTechnicians(value ? [value] : [])}>
+              <Select onValueChange={(value) => setSelectedTechnicians(value === 'all' ? [] : [value])}>
                 <SelectTrigger>
                   <SelectValue placeholder="Technicien" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tous</SelectItem>
+                  <SelectItem value="all">Tous</SelectItem>
                   {users.filter(u => u.role === UserRole.TECNICO).map(u => (
                     <SelectItem key={u.id} value={u.id}>{u.display_name}</SelectItem>
                   ))}
