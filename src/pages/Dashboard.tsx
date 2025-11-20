@@ -342,7 +342,7 @@ export default function Dashboard() {
       return {
         ...ticket,
         hotelName: hotels.find(h => h.id === ticket.hotel_id)?.name || '',
-        technicianName: users.find(u => u.id === ticket.assignee_id)?.display_name || 'Non attribué',
+        technicianName: users.find(u => u.id === ticket.assignee_id)?.display_name || 'Non assigné',
         resolutionTimeFormatted: resolutionTime ? `${Math.floor(resolutionTime / 24)}j ${resolutionTime % 24}h` : '-',
         withinSLA: withinSLA === null ? '-' : withinSLA ? 'Oui' : 'Non'
       };
@@ -369,10 +369,10 @@ export default function Dashboard() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">
-            Tableau de bord – Manutenção Hotéis
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+            Tableau de bord – Maintenance Hôtels
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             Vue d'ensemble complète des opérations de maintenance
           </p>
         </div>
@@ -386,11 +386,11 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
               {/* Date Range */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <Button variant="outline" className="w-full justify-start text-left font-normal text-xs md:text-sm">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {dateRange.from ? (
                       dateRange.to ? (
@@ -496,82 +496,81 @@ export default function Dashboard() {
         </Card>
 
         {/* KPIs */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total chamados</CardTitle>
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Total</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpis.total}</div>
-              <p className="text-xs text-muted-foreground">no período</p>
+              <div className="text-xl md:text-2xl font-bold">{kpis.total}</div>
+              <p className="text-xs text-muted-foreground">tickets</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Backlog aberto</CardTitle>
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">En cours</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpis.open}</div>
-              <p className="text-xs text-muted-foreground">chamados em aberto</p>
+              <div className="text-xl md:text-2xl font-bold">{kpis.open}</div>
+              <p className="text-xs text-muted-foreground">ouverts</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Tempo médio</CardTitle>
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Temps moy.</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpis.avgResolutionTime}h</div>
-              <p className="text-xs text-muted-foreground">de resolução</p>
+              <div className="text-xl md:text-2xl font-bold">{kpis.avgResolutionTime}h</div>
+              <p className="text-xs text-muted-foreground">résolution</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">SLA</CardTitle>
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">SLA</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpis.slaPercentage}%</div>
-              <p className="text-xs text-muted-foreground">dentro do SLA</p>
+              <div className="text-xl md:text-2xl font-bold">{kpis.slaPercentage}%</div>
+              <p className="text-xs text-muted-foreground">respecté</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Alta prioridade</CardTitle>
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">Priorité haute</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpis.highPriorityPercentage}%</div>
+              <div className="text-xl md:text-2xl font-bold">{kpis.highPriorityPercentage}%</div>
               <p className="text-xs text-muted-foreground">urgent + haute</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">À planifier</CardTitle>
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">À planifier</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpis.scheduledCount}</div>
-              <p className="text-xs text-muted-foreground">chamados agendados</p>
+              <div className="text-xl md:text-2xl font-bold">{kpis.scheduledCount}</div>
+              <p className="text-xs text-muted-foreground">tickets</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Visão por Hotel & Categoria */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Chamados por Hotel</CardTitle>
+              <CardTitle className="text-base md:text-lg">Tickets par hôtel</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData.byHotel}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
-                  <Bar dataKey="tickets" fill="hsl(var(--primary))" />
+                  <Bar dataKey="tickets" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -579,18 +578,17 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Categorias por Hotel</CardTitle>
+              <CardTitle className="text-base md:text-lg">Catégories par hôtel</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData.categoriesByHotel}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
                   {Object.values(categoryLabels).map((label, i) => (
-                    <Bar key={label} dataKey={label} stackId="a" fill={`hsl(${(i * 360) / 7}, 70%, 50%)`} />
+                    <Bar key={label} dataKey={label} stackId="a" fill={`hsl(${(i * 360) / 7}, 65%, 55%)`} />
                   ))}
                 </BarChart>
               </ResponsiveContainer>
@@ -599,19 +597,18 @@ export default function Dashboard() {
         </div>
 
         {/* Tempo & SLA */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle>Tempo médio por prioridade</CardTitle>
+              <CardTitle className="text-base md:text-lg">Temps moy. par priorité</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={chartData.avgByPriority}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="hours" fill="hsl(var(--status-in-progress))" />
+                  <Bar dataKey="hours" fill="hsl(var(--status-in-progress))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -619,16 +616,15 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>% SLA por prioridade</CardTitle>
+              <CardTitle className="text-base md:text-lg">% SLA par priorité</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={chartData.slaByPriority}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="percentage" fill="hsl(var(--status-completed))" />
+                  <Bar dataKey="percentage" fill="hsl(var(--status-completed))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -636,16 +632,15 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Tempo médio por hotel</CardTitle>
+              <CardTitle className="text-base md:text-lg">Temps moy. par hôtel</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={chartData.avgByHotel}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="hours" fill="hsl(var(--primary))" />
+                  <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -653,21 +648,20 @@ export default function Dashboard() {
         </div>
 
         {/* Backlog & Fluxo */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Criados x Concluídos</CardTitle>
+              <CardTitle className="text-base md:text-lg">Créés vs Terminés</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData.flowData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="created" stroke="hsl(var(--status-new))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="completed" stroke="hsl(var(--status-completed))" strokeWidth={2} />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <Line type="monotone" dataKey="created" name="Créés" stroke="hsl(var(--status-new))" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="completed" name="Terminés" stroke="hsl(var(--status-completed))" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -675,16 +669,15 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Backlog por idade</CardTitle>
+              <CardTitle className="text-base md:text-lg">Backlog par ancienneté</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData.backlogByAge}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
                   <Bar dataKey="0-24h" stackId="a" fill="hsl(142, 71%, 45%)" />
                   <Bar dataKey="1-3j" stackId="a" fill="hsl(48, 96%, 53%)" />
                   <Bar dataKey="3-7j" stackId="a" fill="hsl(25, 95%, 53%)" />
@@ -698,35 +691,33 @@ export default function Dashboard() {
         {/* Top 10 Quartos */}
         <Card>
           <CardHeader>
-            <CardTitle>Top 10 Quartos/Áreas com mais chamados</CardTitle>
+            <CardTitle className="text-base md:text-lg">Top 10 chambres/zones</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData.topRooms} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={100} />
+                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Bar dataKey="tickets" fill="hsl(var(--primary))" />
+                <Bar dataKey="tickets" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         {/* Produtividade Técnicos */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Chamados concluídos por técnico</CardTitle>
+              <CardTitle className="text-base md:text-lg">Tickets terminés par technicien</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData.technicianTickets}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="completed" fill="hsl(var(--status-completed))" />
+                  <Bar dataKey="completed" name="Terminés" fill="hsl(var(--status-completed))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -734,16 +725,15 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Tempo médio por técnico</CardTitle>
+              <CardTitle className="text-base md:text-lg">Temps moy. par technicien</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData.technicianAvgTime}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
-                  <Bar dataKey="hours" fill="hsl(var(--status-in-progress))" />
+                  <Bar dataKey="hours" name="Heures" fill="hsl(var(--status-in-progress))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -753,30 +743,30 @@ export default function Dashboard() {
         {/* Tabela Detalhada */}
         <Card>
           <CardHeader>
-            <CardTitle>Lista detalhada de chamados</CardTitle>
+            <CardTitle className="text-base md:text-lg">Liste détaillée des tickets</CardTitle>
             <Input
-              placeholder="Buscar por número de quarto..."
+              placeholder="Rechercher par numéro de chambre..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="max-w-sm"
+              className="max-w-sm text-sm"
             />
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-2 md:mx-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Chamado</TableHead>
-                    <TableHead>Hotel</TableHead>
-                    <TableHead>Quarto</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Prioridade</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Técnico</TableHead>
-                    <TableHead>Criado</TableHead>
-                    <TableHead>Concluído</TableHead>
-                    <TableHead>Tempo</TableHead>
-                    <TableHead>SLA</TableHead>
+                    <TableHead className="text-xs md:text-sm">Ticket</TableHead>
+                    <TableHead className="text-xs md:text-sm">Hôtel</TableHead>
+                    <TableHead className="text-xs md:text-sm">Chambre</TableHead>
+                    <TableHead className="text-xs md:text-sm">Catégorie</TableHead>
+                    <TableHead className="text-xs md:text-sm">Priorité</TableHead>
+                    <TableHead className="text-xs md:text-sm">Statut</TableHead>
+                    <TableHead className="text-xs md:text-sm">Technicien</TableHead>
+                    <TableHead className="text-xs md:text-sm">Créé</TableHead>
+                    <TableHead className="text-xs md:text-sm">Terminé</TableHead>
+                    <TableHead className="text-xs md:text-sm">Temps</TableHead>
+                    <TableHead className="text-xs md:text-sm">SLA</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -786,20 +776,20 @@ export default function Dashboard() {
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => handleTicketClick(ticket.id)}
                     >
-                      <TableCell className="font-medium">{ticket.title}</TableCell>
-                      <TableCell>{ticket.hotelName}</TableCell>
-                      <TableCell>{ticket.room_number}</TableCell>
+                      <TableCell className="font-medium text-xs md:text-sm">{ticket.title}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{ticket.hotelName}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{ticket.room_number}</TableCell>
                       <TableCell><CategoryBadge category={ticket.category} /></TableCell>
                       <TableCell><PriorityBadge priority={ticket.priority} /></TableCell>
                       <TableCell><StatusBadge status={ticket.status} /></TableCell>
-                      <TableCell>{ticket.technicianName}</TableCell>
-                      <TableCell>{format(new Date(ticket.created_at), 'dd/MM/yy HH:mm')}</TableCell>
-                      <TableCell>{ticket.closed_at ? format(new Date(ticket.closed_at), 'dd/MM/yy HH:mm') : '-'}</TableCell>
-                      <TableCell>{ticket.resolutionTimeFormatted}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{ticket.technicianName}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{format(new Date(ticket.created_at), 'dd/MM/yy HH:mm')}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{ticket.closed_at ? format(new Date(ticket.closed_at), 'dd/MM/yy HH:mm') : '-'}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{ticket.resolutionTimeFormatted}</TableCell>
                       <TableCell>
-                        {ticket.withinSLA === 'Oui' && <Badge variant="outline" className="bg-status-completed/10">Oui</Badge>}
-                        {ticket.withinSLA === 'Non' && <Badge variant="outline" className="bg-destructive/10">Non</Badge>}
-                        {ticket.withinSLA === '-' && '-'}
+                        {ticket.withinSLA === 'Oui' && <Badge variant="outline" className="bg-status-completed/10 text-xs">Oui</Badge>}
+                        {ticket.withinSLA === 'Non' && <Badge variant="outline" className="bg-destructive/10 text-xs">Non</Badge>}
+                        {ticket.withinSLA === '-' && <span className="text-xs">-</span>}
                       </TableCell>
                     </TableRow>
                   ))}
