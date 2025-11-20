@@ -34,7 +34,7 @@ export const Sidebar = () => {
       key: 'nav.dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
-      roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
+      roles: [UserRole.ADMIN, UserRole.TECNICO]
     },
     {
       key: 'nav.newTicket',
