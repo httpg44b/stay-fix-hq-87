@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Room, roomsService, RoomsByFloor } from '@/services/rooms.service';
 import { RoomStatus } from '@/services/checklists.service';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface RoomSelectorProps {
   hotelId: string;
@@ -10,10 +11,9 @@ interface RoomSelectorProps {
 }
 
 const STATUS_CONFIG = {
-  ok: { color: 'bg-green-500' },
-  warning: { color: 'bg-orange-500' },
-  error: { color: 'bg-red-500' },
-  pending: { color: 'bg-muted' },
+  ok: { color: 'bg-green-500', label: 'Vert' },
+  warning: { color: 'bg-orange-500', label: 'Orange' },
+  error: { color: 'bg-red-500', label: 'Rouge' },
 };
 
 export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: RoomSelectorProps) => {
@@ -38,11 +38,8 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
     }
   };
 
-  const handleStatusClick = (roomId: string, currentStatus?: RoomStatus) => {
-    const statusCycle: RoomStatus[] = ['pending', 'ok', 'warning', 'error'];
-    const currentIndex = statusCycle.indexOf(currentStatus || 'pending');
-    const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
-    onRoomStatusChange(roomId, nextStatus);
+  const handleStatusSelect = (roomId: string, status: RoomStatus) => {
+    onRoomStatusChange(roomId, status);
   };
 
   if (loading) {
@@ -76,25 +73,44 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
             <h3 className="text-sm font-semibold text-foreground mb-3">{floor}</h3>
             <div className="space-y-2">
               {floorRooms.map((room) => {
-                const status = selectedRooms[room.id] || 'pending';
-                const config = STATUS_CONFIG[status];
+                const status = selectedRooms[room.id] || 'error';
+                const config = STATUS_CONFIG[status] || STATUS_CONFIG.error;
                 
                 return (
-                  <button
-                    key={room.id}
-                    type="button"
-                    onClick={() => handleStatusClick(room.id, status)}
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
-                    aria-label={`Changer le statut de la chambre ${room.number}`}
-                  >
-                    <div className={`w-6 h-6 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
-                      <div className="w-2 h-2 rounded-full bg-white" />
-                    </div>
-                    
-                    <span className="text-sm font-medium">
-                      Chambre {room.number}
-                    </span>
-                  </button>
+                  <Popover key={room.id}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
+                        aria-label={`Changer le statut de la chambre ${room.number}`}
+                      >
+                        <div className={`w-6 h-6 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
+                          <div className="w-2 h-2 rounded-full bg-white" />
+                        </div>
+                        
+                        <span className="text-sm font-medium">
+                          Chambre {room.number}
+                        </span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-2" align="start">
+                      <div className="space-y-1">
+                        {(Object.entries(STATUS_CONFIG) as [RoomStatus, { color: string; label: string }][]).map(([statusKey, statusConfig]) => (
+                          <button
+                            key={statusKey}
+                            type="button"
+                            onClick={() => handleStatusSelect(room.id, statusKey)}
+                            className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
+                          >
+                            <div className={`w-5 h-5 rounded-md ${statusConfig.color} flex items-center justify-center flex-shrink-0`}>
+                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                            </div>
+                            <span className="text-sm">{statusConfig.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 );
               })}
             </div>
