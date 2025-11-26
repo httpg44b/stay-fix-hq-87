@@ -405,6 +405,11 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     setSelectedImage(allImages[newIndex]);
   };
 
+  // Helper to determine if current media is a video
+  const isVideoFile = (url: string) => {
+    return url.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
+  };
+
   // Helper to determine if current image is in "before" or "after" section
   const getCurrentImageSection = () => {
     // Com o pareamento, índices pares são "avant", ímpares são "après"
@@ -633,7 +638,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                           {ticketImages.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
                                 {ticketImages.map((media, index) => {
-                                const isVideo = media.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
+                                const isVideo = isVideoFile(media);
                                 
                                 return (
                                   <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
@@ -641,16 +646,16 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                       <div className="relative">
                                         <video
                                           key={media}
-                                          className="w-full h-80 object-contain bg-black rounded-lg border"
+                                          className="w-full h-80 object-contain bg-black rounded-lg border cursor-pointer"
                                           controls
                                           playsInline
                                           muted={false}
                                           preload="metadata"
                                           onClick={(e) => e.stopPropagation()}
+                                          onDoubleClick={() => openImageViewer(media)}
                                           onError={(e) => {
                                             console.error('Video playback error:', e);
                                             const video = e.currentTarget;
-                                            // Try alternative loading method
                                             video.load();
                                           }}
                                         >
@@ -665,10 +670,10 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                             type="button"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              window.open(media, '_blank');
+                                              openImageViewer(media);
                                             }}
                                             className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            title="Abrir em nova aba"
+                                            title="Abrir em tela cheia"
                                           >
                                             <Eye className="h-4 w-4" />
                                           </button>
@@ -910,7 +915,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                             </Label>
                             <div className="grid grid-cols-3 gap-2">
                               {solutionImages.map((media, index) => {
-                              const isVideo = media.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
+                              const isVideo = isVideoFile(media);
                               
                               return (
                                 <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
@@ -918,12 +923,13 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                     <div className="relative">
                                       <video
                                         key={media}
-                                        className="w-full h-80 object-contain bg-black rounded-lg border"
+                                        className="w-full h-80 object-contain bg-black rounded-lg border cursor-pointer"
                                         controls
                                         playsInline
                                         muted={false}
                                         preload="metadata"
                                         onClick={(e) => e.stopPropagation()}
+                                        onDoubleClick={() => openImageViewer(media)}
                                         onError={(e) => {
                                           console.error('Solution video playback error:', e);
                                           const video = e.currentTarget;
@@ -941,10 +947,10 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                           type="button"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            window.open(media, '_blank');
+                                            openImageViewer(media);
                                           }}
                                           className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                          title="Abrir em nova aba"
+                                          title="Abrir em tela cheia"
                                         >
                                           <Eye className="h-4 w-4" />
                                         </button>
@@ -979,7 +985,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                       onClick={() => openImageViewer(media)}
                                     />
                                   )}
-                                  {canEdit && (
+                                  {canEdit && !isVideo && (
                                     <button
                                       type="button"
                                       onClick={() => removeImage(media, true)}
@@ -1088,12 +1094,26 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
             </DialogTitle>
           </DialogHeader>
           <div className="relative">
-            {selectedImage.includes('.mp4') || selectedImage.includes('.webm') || selectedImage.includes('.ogg') || selectedImage.includes('.mov') ? (
+            {isVideoFile(selectedImage) ? (
               <video
-                src={selectedImage}
+                key={selectedImage}
+                className="w-full h-auto rounded-lg bg-black"
                 controls
-                className="w-full h-auto rounded-lg"
-              />
+                playsInline
+                muted={false}
+                preload="metadata"
+                onError={(e) => {
+                  console.error('Video playback error in viewer:', e);
+                  const video = e.currentTarget;
+                  video.load();
+                }}
+              >
+                <source src={selectedImage} type="video/mp4" />
+                <source src={selectedImage} type="video/webm" />
+                <source src={selectedImage} type="video/ogg" />
+                <source src={selectedImage} />
+                Seu navegador não suporta a reprodução de vídeos.
+              </video>
             ) : (
               <img
                 src={selectedImage}
