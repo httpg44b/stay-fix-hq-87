@@ -93,8 +93,8 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
                           Chambre {room.number}
                         </span>
                         
-                        <div className={`px-2 sm:px-3 py-1 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
-                          <span className="text-xs font-medium text-white whitespace-nowrap">
+                        <div className={`px-2 sm:px-3 py-1.5 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
+                          <span className="text-xs font-medium text-white whitespace-nowrap leading-none">
                             {config.label}
                           </span>
                         </div>
@@ -127,7 +127,7 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
   );
 
   if (isPrinting) {
-    return <div className="p-4">{content}</div>;
+    return <div className="p-4 print:block">{content}</div>;
   }
 
   return (

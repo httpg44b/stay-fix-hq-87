@@ -84,6 +84,8 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
         logging: false,
         useCORS: true,
         windowHeight: printRef.current.scrollHeight,
+        width: printRef.current.scrollWidth,
+        height: printRef.current.scrollHeight,
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -209,7 +211,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
                 </Button>
               </div>
             </DialogHeader>
-            <div className="mt-4">
+            <div className="mt-4" style={isPrinting ? { minHeight: '100%' } : undefined}>
               {hotel && (
                 <RoomSelector
                   hotelId={hotel.id}
