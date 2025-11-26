@@ -45,12 +45,11 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
     try {
       setLoading(true);
       await checklistsService.setRoomStatus(checklist.id, roomId, status);
-      setRoomStatuses({ ...roomStatuses, [roomId]: status });
+      setRoomStatuses((prev) => ({ ...prev, [roomId]: status }));
       toast({
         title: 'Succès',
         description: 'Statut mis à jour',
       });
-      onUpdate();
     } catch (error) {
       console.error('Error updating room status:', error);
       toast({
