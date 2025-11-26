@@ -21,6 +21,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [roomStatuses, setRoomStatuses] = useState<Record<string, RoomStatus>>({});
   const [loading, setLoading] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,10 +67,15 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
     if (!printRef.current) return;
 
     try {
+      setIsPrinting(true);
+      
       toast({
         title: 'Génération du PDF',
         description: 'Veuillez patienter...',
       });
+
+      // Wait for the DOM to update with full content
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const { default: html2canvas } = await import('html2canvas');
       const { default: jsPDF } = await import('jspdf');
@@ -78,6 +84,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
         scale: 2,
         logging: false,
         useCORS: true,
+        windowHeight: printRef.current.scrollHeight,
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -116,6 +123,8 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
         description: 'Erreur lors de la génération du PDF',
         variant: 'destructive',
       });
+    } finally {
+      setIsPrinting(false);
     }
   };
 
@@ -207,6 +216,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
                   hotelId={hotel.id}
                   selectedRooms={roomStatuses}
                   onRoomStatusChange={handleRoomStatusChange}
+                  isPrinting={isPrinting}
                 />
               )}
             </div>

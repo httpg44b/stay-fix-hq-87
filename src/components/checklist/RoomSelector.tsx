@@ -8,6 +8,7 @@ interface RoomSelectorProps {
   hotelId: string;
   selectedRooms: Record<string, RoomStatus>;
   onRoomStatusChange: (roomId: string, status: RoomStatus) => void;
+  isPrinting?: boolean;
 }
 
 const STATUS_CONFIG = {
@@ -16,7 +17,7 @@ const STATUS_CONFIG = {
   error: { color: 'bg-red-500', label: 'Non conforme ou À réparer d\'urgence' },
 };
 
-export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: RoomSelectorProps) => {
+export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPrinting = false }: RoomSelectorProps) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsByFloor, setRoomsByFloor] = useState<RoomsByFloor>({});
   const [loading, setLoading] = useState(true);
@@ -65,9 +66,8 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
     return floorA.localeCompare(floorB);
   });
 
-  return (
-    <ScrollArea className="h-[400px] pr-2">
-      <div className="grid grid-cols-2 gap-6">
+  const content = (
+    <div className="grid grid-cols-2 gap-6">
         {sortedFloors.map(([floor, floorRooms]) => (
           <div key={floor} className="space-y-2">
             <h3 className="text-sm font-semibold text-foreground mb-3">{floor}</h3>
@@ -117,6 +117,15 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
           </div>
         ))}
       </div>
+  );
+
+  if (isPrinting) {
+    return <div className="p-4">{content}</div>;
+  }
+
+  return (
+    <ScrollArea className="h-[400px] pr-2">
+      {content}
     </ScrollArea>
   );
 };
