@@ -174,7 +174,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
             <div className="flex gap-3 text-sm">
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded bg-green-500"></div>
-                <span>{okCount} OK</span>
+                <span>{okCount}</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded bg-orange-500"></div>
@@ -182,7 +182,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded bg-red-500"></div>
-                <span>{errorCount} OC</span>
+                <span>{errorCount}</span>
               </div>
             </div>
           </div>
