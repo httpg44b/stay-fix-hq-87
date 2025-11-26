@@ -13,14 +13,15 @@ interface RoomSelectorProps {
 
 const STATUS_CONFIG = {
   ok: { color: 'bg-green-500', label: 'Bon état' },
-  warning: { color: 'bg-orange-500', label: 'À vérifier ou À corriger' },
-  error: { color: 'bg-red-500', label: 'Non conforme ou À réparer d\'urgence' },
+  warning: { color: 'bg-orange-500', label: 'À vérifier' },
+  error: { color: 'bg-red-500', label: 'Non conforme' },
 };
 
 export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPrinting = false }: RoomSelectorProps) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsByFloor, setRoomsByFloor] = useState<RoomsByFloor>({});
   const [loading, setLoading] = useState(true);
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
 
   useEffect(() => {
     loadRooms();
@@ -41,6 +42,7 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
 
   const handleStatusSelect = (roomId: string, status: RoomStatus) => {
     onRoomStatusChange(roomId, status);
+    setOpenPopoverId(null);
   };
 
   if (loading) {
@@ -77,7 +79,11 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
                 const config = STATUS_CONFIG[status] || STATUS_CONFIG.error;
                 
                 return (
-                  <Popover key={room.id}>
+                  <Popover 
+                    key={room.id}
+                    open={openPopoverId === room.id}
+                    onOpenChange={(open) => setOpenPopoverId(open ? room.id : null)}
+                  >
                     <PopoverTrigger asChild>
                       <button
                         type="button"
