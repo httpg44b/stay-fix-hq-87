@@ -86,16 +86,21 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
+                        className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
                         aria-label={`Changer le statut de la chambre ${room.number}`}
                       >
-                        <div className={`w-4 h-4 rounded-full ${config.color} flex-shrink-0`} />
                         <span className="text-sm font-medium">
-                          {room.number}
+                          Chambre {room.number}
                         </span>
+                        
+                        <div className={`px-3 py-1 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
+                          <span className="text-xs font-medium text-white whitespace-nowrap">
+                            {config.label}
+                          </span>
+                        </div>
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-64 p-2" align="start">
+                    <PopoverContent className="w-64 p-2" align="end">
                       <div className="space-y-1">
                         {(Object.entries(STATUS_CONFIG) as [RoomStatus, { color: string; label: string }][]).map(([statusKey, statusConfig]) => (
                           <button
