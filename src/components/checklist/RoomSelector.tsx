@@ -68,10 +68,10 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
   });
 
   const content = (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {sortedFloors.map(([floor, floorRooms]) => (
           <div key={floor} className="space-y-2">
-            <h3 className="text-sm font-semibold text-foreground mb-3">{floor}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2 sm:mb-3">{floor}</h3>
             <div className="space-y-2">
               {floorRooms.map((room) => {
                 const status = selectedRooms[room.id] || 'error';
@@ -86,21 +86,21 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
+                        className="flex items-center justify-between gap-2 p-2 sm:p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
                         aria-label={`Changer le statut de la chambre ${room.number}`}
                       >
                         <span className="text-sm font-medium">
                           Chambre {room.number}
                         </span>
                         
-                        <div className={`px-3 py-1 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
+                        <div className={`px-2 sm:px-3 py-1 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
                           <span className="text-xs font-medium text-white whitespace-nowrap">
                             {config.label}
                           </span>
                         </div>
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-64 p-2" align="end">
+                    <PopoverContent className="w-64 p-2" align="end" side="bottom">
                       <div className="space-y-1">
                         {(Object.entries(STATUS_CONFIG) as [RoomStatus, { color: string; label: string }][]).map(([statusKey, statusConfig]) => (
                           <button
@@ -131,7 +131,7 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
   }
 
   return (
-    <ScrollArea className="h-[400px] pr-2">
+    <ScrollArea className="h-[50vh] sm:h-[400px] pr-2">
       {content}
     </ScrollArea>
   );

@@ -190,22 +190,22 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh]">
+        <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <div ref={printRef}>
             <DialogHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <DialogTitle>{checklist.title}</DialogTitle>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex-1">
+                  <DialogTitle className="text-lg sm:text-xl">{checklist.title}</DialogTitle>
                   <p className="text-sm text-muted-foreground">{hotel?.name}</p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handlePrintPDF}
-                  className="gap-2"
+                  className="gap-2 w-full sm:w-auto"
                 >
                   <Printer className="h-4 w-4" />
-                  Imprimer PDF
+                  <span className="sm:inline">Imprimer PDF</span>
                 </Button>
               </div>
             </DialogHeader>
