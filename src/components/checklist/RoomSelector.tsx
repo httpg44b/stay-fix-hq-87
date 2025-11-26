@@ -42,7 +42,6 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
 
   const handleStatusSelect = (roomId: string, status: RoomStatus) => {
     onRoomStatusChange(roomId, status);
-    setOpenPopoverId(null);
   };
 
   if (loading) {
