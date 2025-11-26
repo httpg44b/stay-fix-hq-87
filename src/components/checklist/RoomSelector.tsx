@@ -66,8 +66,8 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
   }
 
   return (
-    <ScrollArea className="h-[500px] pr-4">
-      <div className="space-y-6">
+    <ScrollArea className="h-[400px] pr-2">
+      <div className="space-y-4">
         {Object.entries(roomsByFloor)
           .sort(([floorA], [floorB]) => {
             // Sort floors numerically if possible
@@ -77,9 +77,9 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
             return floorA.localeCompare(floorB);
           })
           .map(([floor, floorRooms]) => (
-            <div key={floor} className="space-y-3">
-              <h3 className="text-lg font-semibold text-foreground">{floor}</h3>
-              <div className="space-y-2">
+            <div key={floor} className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">{floor}</h3>
+              <div className="space-y-1.5">
                 {floorRooms.map((room) => {
                   const status = selectedRooms[room.id] || 'pending';
                   const config = STATUS_CONFIG[status];
@@ -87,25 +87,25 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
                   return (
                     <div
                       key={room.id}
-                      className="flex items-center gap-3 p-2"
+                      className="flex items-center gap-2 p-1"
                     >
                       <button
                         type="button"
                         onClick={() => handleStatusClick(room.id, status)}
-                        className={`w-8 h-8 rounded-md ${config.circleColor} flex items-center justify-center transition-colors flex-shrink-0`}
+                        className={`w-6 h-6 rounded-md ${config.circleColor} flex items-center justify-center transition-colors flex-shrink-0`}
                         aria-label={`Changer le statut de la chambre ${room.number}`}
                       >
-                        <div className="w-3 h-3 rounded-full bg-white" />
+                        <div className="w-2 h-2 rounded-full bg-white" />
                       </button>
                       
-                      <span className="text-base font-medium min-w-[120px]">
+                      <span className="text-sm font-medium min-w-[90px]">
                         Chambre {room.number}
                       </span>
                       
                       <button
                         type="button"
                         onClick={() => handleStatusClick(room.id, status)}
-                        className={`min-w-[60px] px-4 py-1.5 rounded-md font-medium text-sm ${config.buttonColor} ${config.textColor} transition-colors`}
+                        className={`min-w-[50px] px-3 py-1 rounded-md font-medium text-xs ${config.buttonColor} ${config.textColor} transition-colors`}
                       >
                         {config.label}
                       </button>
@@ -116,12 +116,12 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
                           placeholder="Note..."
                           value={notes[room.id] || ''}
                           onChange={(e) => setNotes({ ...notes, [room.id]: e.target.value })}
-                          className="flex-1"
+                          className="flex-1 h-7 text-xs"
                         />
                       )}
                       
                       {status === 'ok' && (
-                        <span className="text-base font-medium text-muted-foreground ml-auto">
+                        <span className="text-sm font-medium text-muted-foreground ml-auto">
                           OK
                         </span>
                       )}
