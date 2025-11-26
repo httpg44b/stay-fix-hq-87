@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { checklistsService, Checklist, ChecklistStatus, RoomStatus } from '@/services/checklists.service';
+import { checklistsService, Checklist, ChecklistStatus } from '@/services/checklists.service';
 import { hotelsService, Hotel } from '@/services/hotels.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -14,7 +13,6 @@ import { Plus } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ChecklistCard } from '@/components/checklist/ChecklistCard';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { RoomSelector } from '@/components/checklist/RoomSelector';
 
 export const Checklists = () => {
   const { t } = useLanguage();
@@ -35,7 +33,6 @@ export const Checklists = () => {
     hotel_id: '',
     status: 'pending' as ChecklistStatus,
   });
-  const [roomStatuses, setRoomStatuses] = useState<Record<string, RoomStatus>>({});
 
   useEffect(() => {
     loadData();
@@ -93,9 +90,11 @@ export const Checklists = () => {
           status: formData.status,
         });
         
-        // Save room statuses if any selected
-        const roomStatusPromises = Object.entries(roomStatuses).map(([roomId, status]) =>
-          checklistsService.setRoomStatus(newChecklist.id, roomId, status)
+        // Automatically set all rooms to 'error' status (red)
+        const { roomsService } = await import('@/services/rooms.service');
+        const rooms = await roomsService.getByHotel(formData.hotel_id);
+        const roomStatusPromises = rooms.map(room =>
+          checklistsService.setRoomStatus(newChecklist.id, room.id, 'error')
         );
         await Promise.all(roomStatusPromises);
         
@@ -164,7 +163,6 @@ export const Checklists = () => {
       hotel_id: '',
       status: 'pending',
     });
-    setRoomStatuses({});
     setEditingChecklist(null);
   };
 
@@ -208,14 +206,14 @@ export const Checklists = () => {
                 Nouvelle liste
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh]">
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
                   {editingChecklist ? 'Modifier la liste' : 'Nouvelle liste de contrôle'}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="title">Titre *</Label>
                     <Input
@@ -232,10 +230,7 @@ export const Checklists = () => {
                       <Label htmlFor="hotel">Hôtel *</Label>
                       <Select
                         value={formData.hotel_id}
-                        onValueChange={(value) => {
-                          setFormData({ ...formData, hotel_id: value });
-                          setRoomStatuses({});
-                        }}
+                        onValueChange={(value) => setFormData({ ...formData, hotel_id: value })}
                         required
                       >
                         <SelectTrigger>
@@ -252,32 +247,6 @@ export const Checklists = () => {
                     </div>
                   )}
                 </div>
-
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={2}
-                    placeholder="Description optionnelle..."
-                  />
-                </div>
-
-                {!editingChecklist && formData.hotel_id && (
-                  <div>
-                    <Label>Chambres</Label>
-                    <div className="border rounded-lg p-4 mt-2">
-                      <RoomSelector
-                        hotelId={formData.hotel_id}
-                        selectedRooms={roomStatuses}
-                        onRoomStatusChange={(roomId, status) => {
-                          setRoomStatuses({ ...roomStatuses, [roomId]: status });
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
 
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
