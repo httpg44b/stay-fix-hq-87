@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Room, roomsService, RoomsByFloor } from '@/services/rooms.service';
 import { RoomStatus } from '@/services/checklists.service';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface RoomSelectorProps {
@@ -13,17 +10,16 @@ interface RoomSelectorProps {
 }
 
 const STATUS_CONFIG = {
-  ok: { circleColor: 'bg-green-500', buttonColor: 'bg-green-500 hover:bg-green-600', label: 'OK', textColor: 'text-white' },
-  warning: { circleColor: 'bg-orange-500', buttonColor: 'bg-orange-500 hover:bg-orange-600', label: 'OK', textColor: 'text-white' },
-  error: { circleColor: 'bg-red-500', buttonColor: 'bg-red-500 hover:bg-red-600', label: 'OC', textColor: 'text-white' },
-  pending: { circleColor: 'bg-muted', buttonColor: 'bg-muted hover:bg-muted/80', label: '--', textColor: 'text-muted-foreground' },
+  ok: { color: 'bg-green-500' },
+  warning: { color: 'bg-orange-500' },
+  error: { color: 'bg-red-500' },
+  pending: { color: 'bg-muted' },
 };
 
 export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: RoomSelectorProps) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [roomsByFloor, setRoomsByFloor] = useState<RoomsByFloor>({});
   const [loading, setLoading] = useState(true);
-  const [notes, setNotes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadRooms();
@@ -65,72 +61,45 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
     );
   }
 
+  const sortedFloors = Object.entries(roomsByFloor).sort(([floorA], [floorB]) => {
+    const numA = parseInt(floorA);
+    const numB = parseInt(floorB);
+    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+    return floorA.localeCompare(floorB);
+  });
+
   return (
-    <ScrollArea className="h-[400px] pr-2">
-      <div className="space-y-4">
-        {Object.entries(roomsByFloor)
-          .sort(([floorA], [floorB]) => {
-            // Sort floors numerically if possible
-            const numA = parseInt(floorA);
-            const numB = parseInt(floorB);
-            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-            return floorA.localeCompare(floorB);
-          })
-          .map(([floor, floorRooms]) => (
-            <div key={floor} className="space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">{floor}</h3>
-              <div className="space-y-1.5">
-                {floorRooms.map((room) => {
-                  const status = selectedRooms[room.id] || 'pending';
-                  const config = STATUS_CONFIG[status];
-                  
-                  return (
-                    <div
-                      key={room.id}
-                      className="flex items-center gap-2 p-1"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleStatusClick(room.id, status)}
-                        className={`w-6 h-6 rounded-md ${config.circleColor} flex items-center justify-center transition-colors flex-shrink-0`}
-                        aria-label={`Changer le statut de la chambre ${room.number}`}
-                      >
-                        <div className="w-2 h-2 rounded-full bg-white" />
-                      </button>
-                      
-                      <span className="text-sm font-medium min-w-[90px]">
-                        Chambre {room.number}
-                      </span>
-                      
-                      <button
-                        type="button"
-                        onClick={() => handleStatusClick(room.id, status)}
-                        className={`min-w-[50px] px-3 py-1 rounded-md font-medium text-xs ${config.buttonColor} ${config.textColor} transition-colors`}
-                      >
-                        {config.label}
-                      </button>
-                      
-                      {(status === 'warning' || status === 'error') && (
-                        <Input
-                          type="text"
-                          placeholder="Note..."
-                          value={notes[room.id] || ''}
-                          onChange={(e) => setNotes({ ...notes, [room.id]: e.target.value })}
-                          className="flex-1 h-7 text-xs"
-                        />
-                      )}
-                      
-                      {status === 'ok' && (
-                        <span className="text-sm font-medium text-muted-foreground ml-auto">
-                          OK
-                        </span>
-                      )}
+    <ScrollArea className="h-[500px] pr-2">
+      <div className="grid grid-cols-2 gap-6">
+        {sortedFloors.map(([floor, floorRooms]) => (
+          <div key={floor} className="space-y-2">
+            <h3 className="text-sm font-semibold text-foreground mb-3">{floor}</h3>
+            <div className="space-y-2">
+              {floorRooms.map((room) => {
+                const status = selectedRooms[room.id] || 'pending';
+                const config = STATUS_CONFIG[status];
+                
+                return (
+                  <button
+                    key={room.id}
+                    type="button"
+                    onClick={() => handleStatusClick(room.id, status)}
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
+                    aria-label={`Changer le statut de la chambre ${room.number}`}
+                  >
+                    <div className={`w-6 h-6 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
+                      <div className="w-2 h-2 rounded-full bg-white" />
                     </div>
-                  );
-                })}
-              </div>
+                    
+                    <span className="text-sm font-medium">
+                      Chambre {room.number}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          ))}
+          </div>
+        ))}
       </div>
     </ScrollArea>
   );
