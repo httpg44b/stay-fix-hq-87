@@ -13,10 +13,10 @@ interface RoomSelectorProps {
 }
 
 const STATUS_CONFIG = {
-  ok: { color: 'bg-green-500', label: 'OK' },
-  warning: { color: 'bg-orange-500', label: 'OK' },
-  error: { color: 'bg-red-500', label: 'OC' },
-  pending: { color: 'bg-gray-300', label: '--' },
+  ok: { circleColor: 'bg-green-500', buttonColor: 'bg-green-500 hover:bg-green-600', label: 'OK', textColor: 'text-white' },
+  warning: { circleColor: 'bg-orange-500', buttonColor: 'bg-orange-500 hover:bg-orange-600', label: 'OK', textColor: 'text-white' },
+  error: { circleColor: 'bg-red-500', buttonColor: 'bg-red-500 hover:bg-red-600', label: 'OC', textColor: 'text-white' },
+  pending: { circleColor: 'bg-muted', buttonColor: 'bg-muted hover:bg-muted/80', label: '--', textColor: 'text-muted-foreground' },
 };
 
 export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: RoomSelectorProps) => {
@@ -87,30 +87,28 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
                   return (
                     <div
                       key={room.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-3 p-2"
                     >
                       <button
                         type="button"
                         onClick={() => handleStatusClick(room.id, status)}
-                        className={`w-8 h-8 rounded-full ${config.color} flex items-center justify-center text-white font-medium text-sm hover:opacity-80 transition-opacity`}
+                        className={`w-8 h-8 rounded-md ${config.circleColor} flex items-center justify-center transition-colors flex-shrink-0`}
                         aria-label={`Changer le statut de la chambre ${room.number}`}
                       >
-                        <div className="w-3 h-3 rounded-full border-2 border-white" />
+                        <div className="w-3 h-3 rounded-full bg-white" />
                       </button>
                       
                       <span className="text-base font-medium min-w-[120px]">
                         Chambre {room.number}
                       </span>
                       
-                      <Button
+                      <button
                         type="button"
-                        variant={status === 'ok' ? 'default' : status === 'warning' ? 'secondary' : status === 'error' ? 'destructive' : 'outline'}
-                        size="sm"
                         onClick={() => handleStatusClick(room.id, status)}
-                        className="min-w-[60px]"
+                        className={`min-w-[60px] px-4 py-1.5 rounded-md font-medium text-sm ${config.buttonColor} ${config.textColor} transition-colors`}
                       >
                         {config.label}
-                      </Button>
+                      </button>
                       
                       {(status === 'warning' || status === 'error') && (
                         <Input
@@ -120,6 +118,12 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
                           onChange={(e) => setNotes({ ...notes, [room.id]: e.target.value })}
                           className="flex-1"
                         />
+                      )}
+                      
+                      {status === 'ok' && (
+                        <span className="text-base font-medium text-muted-foreground ml-auto">
+                          OK
+                        </span>
                       )}
                     </div>
                   );
