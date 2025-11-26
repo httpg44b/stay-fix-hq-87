@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export type ChecklistStatus = 'pending' | 'in_progress' | 'completed';
+export type RoomStatus = 'ok' | 'warning' | 'error' | 'pending';
 
 export interface ChecklistItem {
   id: string;
@@ -9,6 +10,16 @@ export interface ChecklistItem {
   description: string | null;
   is_completed: boolean;
   order_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChecklistRoomStatus {
+  id: string;
+  checklist_id: string;
+  room_id: string;
+  status: RoomStatus;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +34,7 @@ export interface Checklist {
   created_at: string;
   updated_at: string;
   items?: ChecklistItem[];
+  room_statuses?: ChecklistRoomStatus[];
 }
 
 export interface CreateChecklistInput {
@@ -189,6 +201,33 @@ class ChecklistsService {
       .eq('id', itemId);
 
     if (error) throw error;
+  }
+
+  // Room Status Operations
+  async setRoomStatus(checklistId: string, roomId: string, status: RoomStatus, notes?: string): Promise<ChecklistRoomStatus> {
+    const { data, error } = await supabase
+      .from('checklist_room_status')
+      .upsert({
+        checklist_id: checklistId,
+        room_id: roomId,
+        status,
+        notes: notes || null,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as ChecklistRoomStatus;
+  }
+
+  async getRoomStatuses(checklistId: string): Promise<ChecklistRoomStatus[]> {
+    const { data, error } = await supabase
+      .from('checklist_room_status')
+      .select('*')
+      .eq('checklist_id', checklistId);
+
+    if (error) throw error;
+    return (data || []) as ChecklistRoomStatus[];
   }
 }
 
