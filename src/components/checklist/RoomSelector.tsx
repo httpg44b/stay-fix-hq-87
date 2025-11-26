@@ -69,7 +69,7 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: Roo
   });
 
   return (
-    <ScrollArea className="h-[500px] pr-2">
+    <ScrollArea className="h-[400px] pr-2">
       <div className="grid grid-cols-2 gap-6">
         {sortedFloors.map(([floor, floorRooms]) => (
           <div key={floor} className="space-y-2">
