@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Checklist, checklistsService, RoomStatus } from '@/services/checklists.service';
 import { Hotel } from '@/services/hotels.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RoomSelector } from './RoomSelector';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface ChecklistCardProps {
   checklist: Checklist;
@@ -21,6 +23,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [roomStatuses, setRoomStatuses] = useState<Record<string, RoomStatus>>({});
   const [loading, setLoading] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadRoomStatuses();
@@ -58,6 +61,60 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePrintPDF = async () => {
+    if (!printRef.current) return;
+
+    try {
+      toast({
+        title: 'Génération du PDF',
+        description: 'Veuillez patienter...',
+      });
+
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`${checklist.title}_${hotel?.name || 'checklist'}.pdf`);
+      
+      toast({
+        title: 'Succès',
+        description: 'PDF généré avec succès',
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la génération du PDF',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -125,18 +182,33 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>{checklist.title}</DialogTitle>
-            <p className="text-sm text-muted-foreground">{hotel?.name}</p>
-          </DialogHeader>
-          <div className="mt-4">
-            {hotel && (
-              <RoomSelector
-                hotelId={hotel.id}
-                selectedRooms={roomStatuses}
-                onRoomStatusChange={handleRoomStatusChange}
-              />
-            )}
+          <div ref={printRef}>
+            <DialogHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <DialogTitle>{checklist.title}</DialogTitle>
+                  <p className="text-sm text-muted-foreground">{hotel?.name}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrintPDF}
+                  className="gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimer PDF
+                </Button>
+              </div>
+            </DialogHeader>
+            <div className="mt-4">
+              {hotel && (
+                <RoomSelector
+                  hotelId={hotel.id}
+                  selectedRooms={roomStatuses}
+                  onRoomStatusChange={handleRoomStatusChange}
+                />
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
