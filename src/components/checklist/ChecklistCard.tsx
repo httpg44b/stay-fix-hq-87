@@ -7,8 +7,6 @@ import { Edit, Trash2, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { RoomSelector } from './RoomSelector';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 interface ChecklistCardProps {
   checklist: Checklist;
@@ -72,6 +70,9 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
         title: 'Génération du PDF',
         description: 'Veuillez patienter...',
       });
+
+      const { default: html2canvas } = await import('html2canvas');
+      const { default: jsPDF } = await import('jspdf');
 
       const canvas = await html2canvas(printRef.current, {
         scale: 2,
