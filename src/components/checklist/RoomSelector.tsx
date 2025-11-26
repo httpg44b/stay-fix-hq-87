@@ -11,9 +11,9 @@ interface RoomSelectorProps {
 }
 
 const STATUS_CONFIG = {
-  ok: { color: 'bg-green-500', label: 'Vert' },
-  warning: { color: 'bg-orange-500', label: 'Orange' },
-  error: { color: 'bg-red-500', label: 'Rouge' },
+  ok: { color: 'bg-green-500', label: 'Bon état' },
+  warning: { color: 'bg-orange-500', label: 'À vérifier ou À corriger' },
+  error: { color: 'bg-red-500', label: 'Non conforme ou À réparer d\'urgence' },
 };
 
 export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange }: RoomSelectorProps) => {
