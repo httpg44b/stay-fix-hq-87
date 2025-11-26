@@ -212,6 +212,8 @@ class ChecklistsService {
         room_id: roomId,
         status,
         notes: notes || null,
+      }, {
+        onConflict: 'checklist_id,room_id'
       })
       .select()
       .single();
