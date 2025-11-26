@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { checklistsService, Checklist, ChecklistStatus } from '@/services/checklists.service';
+import { checklistsService, Checklist, ChecklistStatus, RoomStatus } from '@/services/checklists.service';
 import { hotelsService, Hotel } from '@/services/hotels.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { Plus } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ChecklistCard } from '@/components/checklist/ChecklistCard';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { RoomSelector } from '@/components/checklist/RoomSelector';
 
 export const Checklists = () => {
   const { t } = useLanguage();
@@ -34,6 +35,7 @@ export const Checklists = () => {
     hotel_id: '',
     status: 'pending' as ChecklistStatus,
   });
+  const [roomStatuses, setRoomStatuses] = useState<Record<string, RoomStatus>>({});
 
   useEffect(() => {
     loadData();
@@ -84,12 +86,19 @@ export const Checklists = () => {
           description: "Liste mise à jour avec succès",
         });
       } else {
-        await checklistsService.create({
+        const newChecklist = await checklistsService.create({
           title: formData.title,
           description: formData.description,
           hotel_id: formData.hotel_id,
           status: formData.status,
         });
+        
+        // Save room statuses if any selected
+        const roomStatusPromises = Object.entries(roomStatuses).map(([roomId, status]) =>
+          checklistsService.setRoomStatus(newChecklist.id, roomId, status)
+        );
+        await Promise.all(roomStatusPromises);
+        
         toast({
           title: t('success'),
           description: "Liste créée avec succès",
@@ -155,6 +164,7 @@ export const Checklists = () => {
       hotel_id: '',
       status: 'pending',
     });
+    setRoomStatuses({});
     setEditingChecklist(null);
   };
 
@@ -198,22 +208,49 @@ export const Checklists = () => {
                 Nouvelle liste
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-4xl max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle>
                   {editingChecklist ? 'Modifier la liste' : 'Nouvelle liste de contrôle'}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="title">Titre *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    required
-                    placeholder="Ex: Maintenance hebdomadaire"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="title">Titre *</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      required
+                      placeholder="Ex: Fermeture des portes"
+                    />
+                  </div>
+
+                  {!editingChecklist && (
+                    <div>
+                      <Label htmlFor="hotel">Hôtel *</Label>
+                      <Select
+                        value={formData.hotel_id}
+                        onValueChange={(value) => {
+                          setFormData({ ...formData, hotel_id: value });
+                          setRoomStatuses({});
+                        }}
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez un hôtel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {hotels.map((hotel) => (
+                            <SelectItem key={hotel.id} value={hotel.id}>
+                              {hotel.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -222,34 +259,27 @@ export const Checklists = () => {
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
+                    rows={2}
                     placeholder="Description optionnelle..."
                   />
                 </div>
 
-                {!editingChecklist && (
+                {!editingChecklist && formData.hotel_id && (
                   <div>
-                    <Label htmlFor="hotel">Hôtel *</Label>
-                    <Select
-                      value={formData.hotel_id}
-                      onValueChange={(value) => setFormData({ ...formData, hotel_id: value })}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un hôtel" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {hotels.map((hotel) => (
-                          <SelectItem key={hotel.id} value={hotel.id}>
-                            {hotel.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>Chambres</Label>
+                    <div className="border rounded-lg p-4 mt-2">
+                      <RoomSelector
+                        hotelId={formData.hotel_id}
+                        selectedRooms={roomStatuses}
+                        onRoomStatusChange={(roomId, status) => {
+                          setRoomStatuses({ ...roomStatuses, [roomId]: status });
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
 
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Annuler
                   </Button>
