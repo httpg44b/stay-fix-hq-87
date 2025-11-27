@@ -41,12 +41,19 @@ export const Checklists = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [checklistsData, hotelsData] = await Promise.all([
+      const [checklistsData, allHotelsData] = await Promise.all([
         checklistsService.getAll(selectedHotel !== 'all' ? selectedHotel : undefined),
         hotelsService.getAll(),
       ]);
+      
+      // Filter hotels based on user's linked hotels
+      const userHotels = user?.hotels?.map(h => h.id) || [];
+      const filteredHotels = user?.role === 'ADMIN' 
+        ? allHotelsData 
+        : allHotelsData.filter(hotel => userHotels.includes(hotel.id));
+      
       setChecklists(checklistsData);
-      setHotels(hotelsData);
+      setHotels(filteredHotels);
     } catch (error) {
       console.error('Error loading data:', error);
       toast({

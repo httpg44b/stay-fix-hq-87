@@ -64,7 +64,7 @@ export const Sidebar = () => {
       key: 'nav.checklists',
       href: '/checklists',
       icon: CheckSquare,
-      roles: [UserRole.ADMIN, UserRole.TECNICO]
+      roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
     },
     {
       key: 'nav.users',
