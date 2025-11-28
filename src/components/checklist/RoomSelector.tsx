@@ -12,9 +12,10 @@ interface RoomSelectorProps {
 }
 
 const STATUS_CONFIG = {
-  ok: { color: 'bg-green-500', label: 'Bon état' },
-  warning: { color: 'bg-orange-500', label: 'À vérifier' },
-  error: { color: 'bg-red-500', label: 'Non conforme' },
+  ok: { color: 'bg-green-500', textColor: 'text-white', label: 'Conforme' },
+  warning: { color: 'bg-orange-500', textColor: 'text-white', label: 'À vérifier' },
+  error: { color: 'bg-red-500', textColor: 'text-white', label: 'Non conforme' },
+  not_verified: { color: 'bg-gray-300', textColor: 'text-gray-700', label: 'Non vérifié' },
 };
 
 export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPrinting = false }: RoomSelectorProps) => {
@@ -74,8 +75,8 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
             <h3 className="text-sm font-semibold text-foreground mb-2 sm:mb-3">{floor}</h3>
             <div className="space-y-2">
               {floorRooms.map((room) => {
-                const status = selectedRooms[room.id] || 'error';
-                const config = STATUS_CONFIG[status] || STATUS_CONFIG.error;
+                const status = selectedRooms[room.id] || 'not_verified';
+                const config = STATUS_CONFIG[status] || STATUS_CONFIG.not_verified;
                 
                 return (
                   <Popover 
@@ -94,7 +95,7 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
                         </span>
                         
                         <div className={`px-2 sm:px-3 py-1.5 rounded-md ${config.color} flex items-center justify-center transition-colors flex-shrink-0`}>
-                          <span className="text-xs font-medium text-white whitespace-nowrap leading-none">
+                          <span className={`text-xs font-medium ${config.textColor} whitespace-nowrap leading-none`}>
                             {config.label}
                           </span>
                         </div>
@@ -102,7 +103,7 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
                     </PopoverTrigger>
                     <PopoverContent className="w-64 p-2" align="end" side="bottom">
                       <div className="space-y-1">
-                        {(Object.entries(STATUS_CONFIG) as [RoomStatus, { color: string; label: string }][]).map(([statusKey, statusConfig]) => (
+                        {(Object.entries(STATUS_CONFIG) as [RoomStatus, { color: string; textColor: string; label: string }][]).map(([statusKey, statusConfig]) => (
                           <button
                             key={statusKey}
                             type="button"
@@ -110,7 +111,7 @@ export const RoomSelector = ({ hotelId, selectedRooms, onRoomStatusChange, isPri
                             className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
                           >
                             <div className={`w-5 h-5 rounded-md ${statusConfig.color} flex items-center justify-center flex-shrink-0`}>
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                              <div className={`w-1.5 h-1.5 rounded-full ${statusKey === 'not_verified' ? 'bg-gray-500' : 'bg-white'}`} />
                             </div>
                             <span className="text-sm">{statusConfig.label}</span>
                           </button>
