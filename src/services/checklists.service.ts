@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export type ChecklistStatus = 'pending' | 'in_progress' | 'completed';
-export type RoomStatus = 'ok' | 'warning' | 'error' | 'pending';
+export type RoomStatus = 'ok' | 'warning' | 'error' | 'not_verified';
 
 export interface ChecklistItem {
   id: string;

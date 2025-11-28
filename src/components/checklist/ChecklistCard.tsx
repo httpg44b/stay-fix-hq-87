@@ -133,6 +133,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
   const okCount = Object.values(roomStatuses).filter(s => s === 'ok').length;
   const warningCount = Object.values(roomStatuses).filter(s => s === 'warning').length;
   const errorCount = Object.values(roomStatuses).filter(s => s === 'error').length;
+  const notVerifiedCount = Object.values(roomStatuses).filter(s => s === 'not_verified').length;
   const totalCount = Object.keys(roomStatuses).length;
 
   return (
@@ -174,7 +175,7 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
               <span className="text-muted-foreground">Statut des chambres</span>
               <span className="font-medium">{totalCount} chambres</span>
             </div>
-            <div className="flex gap-3 text-sm">
+            <div className="flex gap-3 text-sm flex-wrap">
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded bg-green-500"></div>
                 <span>{okCount}</span>
@@ -186,6 +187,10 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded bg-red-500"></div>
                 <span>{errorCount}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded bg-gray-300"></div>
+                <span>{notVerifiedCount}</span>
               </div>
             </div>
           </div>
