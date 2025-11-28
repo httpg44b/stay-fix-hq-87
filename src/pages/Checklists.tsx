@@ -97,11 +97,11 @@ export const Checklists = () => {
           status: formData.status,
         });
         
-        // Automatically set all rooms to 'error' status (red)
+        // Automatically set all rooms to 'not_verified' status (default)
         const { roomsService } = await import('@/services/rooms.service');
         const rooms = await roomsService.getByHotel(formData.hotel_id);
         const roomStatusPromises = rooms.map(room =>
-          checklistsService.setRoomStatus(newChecklist.id, room.id, 'error')
+          checklistsService.setRoomStatus(newChecklist.id, room.id, 'not_verified')
         );
         await Promise.all(roomStatusPromises);
         
