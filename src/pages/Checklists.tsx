@@ -46,11 +46,13 @@ export const Checklists = () => {
         hotelsService.getAll(),
       ]);
       
-      // Filter hotels based on user's linked hotels
-      const userHotels = user?.hotels?.map(h => h.id) || [];
-      const filteredHotels = user?.role === 'ADMIN' 
-        ? allHotelsData 
-        : allHotelsData.filter(hotel => userHotels.includes(hotel.id));
+      // Filter hotels based on user's linked hotels for non-admin users
+      let filteredHotels = allHotelsData;
+      if (user?.role !== 'ADMIN' && user?.id) {
+        const userHotelsData = await hotelsService.getUserHotels(user.id);
+        const userHotelIds = userHotelsData.map(h => h.hotel_id);
+        filteredHotels = allHotelsData.filter(hotel => userHotelIds.includes(hotel.id));
+      }
       
       setChecklists(checklistsData);
       setHotels(filteredHotels);
