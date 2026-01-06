@@ -107,6 +107,7 @@ export type Database = {
           description: string | null
           hotel_id: string
           id: string
+          scheduled_date: string | null
           status: Database["public"]["Enums"]["checklist_status"]
           title: string
           updated_at: string
@@ -117,6 +118,7 @@ export type Database = {
           description?: string | null
           hotel_id: string
           id?: string
+          scheduled_date?: string | null
           status?: Database["public"]["Enums"]["checklist_status"]
           title: string
           updated_at?: string
@@ -127,6 +129,7 @@ export type Database = {
           description?: string | null
           hotel_id?: string
           id?: string
+          scheduled_date?: string | null
           status?: Database["public"]["Enums"]["checklist_status"]
           title?: string
           updated_at?: string

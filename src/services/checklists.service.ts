@@ -31,6 +31,7 @@ export interface Checklist {
   status: ChecklistStatus;
   hotel_id: string;
   creator_id: string;
+  scheduled_date: string | null;
   created_at: string;
   updated_at: string;
   items?: ChecklistItem[];
@@ -42,12 +43,14 @@ export interface CreateChecklistInput {
   description?: string;
   hotel_id: string;
   status?: ChecklistStatus;
+  scheduled_date?: string | null;
 }
 
 export interface UpdateChecklistInput {
   title?: string;
   description?: string;
   status?: ChecklistStatus;
+  scheduled_date?: string | null;
 }
 
 export interface CreateChecklistItemData {
@@ -109,6 +112,7 @@ class ChecklistsService {
         description: input.description || null,
         hotel_id: input.hotel_id,
         status: input.status || 'pending',
+        scheduled_date: input.scheduled_date || null,
         creator_id: user.id,
       })
       .select()
