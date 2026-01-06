@@ -3,7 +3,9 @@ import { Checklist, checklistsService, RoomStatus } from '@/services/checklists.
 import { Hotel } from '@/services/hotels.service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Printer } from 'lucide-react';
+import { Edit, Trash2, Printer, CalendarDays } from 'lucide-react';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { RoomSelector } from './RoomSelector';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -147,6 +149,12 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
             <div className="flex-1 min-w-0">
               <CardTitle className="text-lg truncate">{checklist.title}</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">{hotel?.name}</p>
+              {checklist.scheduled_date && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                  <CalendarDays className="h-3 w-3" />
+                  <span>{format(new Date(checklist.scheduled_date), "dd/MM/yyyy", { locale: fr })}</span>
+                </div>
+              )}
             </div>
             <div className="flex gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
               <Button
@@ -205,6 +213,12 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
                 <div className="flex-1">
                   <DialogTitle className="text-lg sm:text-xl">{checklist.title}</DialogTitle>
                   <p className="text-sm text-muted-foreground">{hotel?.name}</p>
+                  {checklist.scheduled_date && (
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                      <CalendarDays className="h-4 w-4" />
+                      <span>{format(new Date(checklist.scheduled_date), "PPP", { locale: fr })}</span>
+                    </div>
+                  )}
                 </div>
                 <Button
                   variant="outline"

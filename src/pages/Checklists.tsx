@@ -9,10 +9,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus } from 'lucide-react';
+import { Plus, CalendarIcon } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ChecklistCard } from '@/components/checklist/ChecklistCard';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 export const Checklists = () => {
   const { t } = useLanguage();
@@ -32,6 +37,7 @@ export const Checklists = () => {
     description: '',
     hotel_id: '',
     status: 'pending' as ChecklistStatus,
+    scheduled_date: null as Date | null,
   });
 
   useEffect(() => {
@@ -86,6 +92,7 @@ export const Checklists = () => {
           title: formData.title,
           description: formData.description,
           status: formData.status,
+          scheduled_date: formData.scheduled_date ? format(formData.scheduled_date, 'yyyy-MM-dd') : null,
         });
         toast({
           title: t('success'),
@@ -97,6 +104,7 @@ export const Checklists = () => {
           description: formData.description,
           hotel_id: formData.hotel_id,
           status: formData.status,
+          scheduled_date: formData.scheduled_date ? format(formData.scheduled_date, 'yyyy-MM-dd') : null,
         });
         
         // Automatically set all rooms to 'not_verified' status (default)
@@ -171,6 +179,7 @@ export const Checklists = () => {
       description: '',
       hotel_id: '',
       status: 'pending',
+      scheduled_date: null,
     });
     setEditingChecklist(null);
   };
@@ -182,6 +191,7 @@ export const Checklists = () => {
       description: checklist.description || '',
       hotel_id: checklist.hotel_id,
       status: checklist.status,
+      scheduled_date: checklist.scheduled_date ? new Date(checklist.scheduled_date) : null,
     });
     setIsDialogOpen(true);
   };
@@ -255,6 +265,38 @@ export const Checklists = () => {
                       </Select>
                     </div>
                   )}
+
+                  <div>
+                    <Label>Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !formData.scheduled_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.scheduled_date ? (
+                            format(formData.scheduled_date, "PPP", { locale: fr })
+                          ) : (
+                            <span>Sélectionnez une date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.scheduled_date || undefined}
+                          onSelect={(date) => setFormData({ ...formData, scheduled_date: date || null })}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                          locale={fr}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4 border-t">
