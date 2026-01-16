@@ -1,7 +1,6 @@
 import { Badge } from '@/components/ui/badge';
-import { TicketStatus } from '@/lib/constants';
+import { TicketStatus, statusLabels } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface StatusBadgeProps {
   status: TicketStatus;
@@ -9,8 +8,6 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
-  const { t } = useLanguage();
-  
   const getStatusStyles = (status: TicketStatus) => {
     switch (status) {
       case TicketStatus.NEW:
@@ -28,23 +25,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) =
     }
   };
 
-  const getStatusLabel = (status: TicketStatus) => {
-    const statusKeys: Record<TicketStatus, string> = {
-      [TicketStatus.NEW]: 'status.new',
-      [TicketStatus.IN_PROGRESS]: 'status.in_progress',
-      [TicketStatus.WAITING_PARTS]: 'status.waiting_parts',
-      [TicketStatus.COMPLETED]: 'status.completed',
-      [TicketStatus.SCHEDULED]: 'status.scheduled',
-    };
-    return t(statusKeys[status]);
-  };
 
   return (
     <Badge 
       variant="outline" 
       className={cn(getStatusStyles(status), 'font-medium', className)}
     >
-      {getStatusLabel(status)}
+      {statusLabels[status]}
     </Badge>
   );
 };

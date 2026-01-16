@@ -55,6 +55,51 @@ export type Database = {
           },
         ]
       }
+      checklist_room_status: {
+        Row: {
+          checklist_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          room_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          checklist_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          room_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          room_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_room_status_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "checklists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_room_status_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklists: {
         Row: {
           created_at: string
@@ -62,6 +107,7 @@ export type Database = {
           description: string | null
           hotel_id: string
           id: string
+          scheduled_date: string | null
           status: Database["public"]["Enums"]["checklist_status"]
           title: string
           updated_at: string
@@ -72,6 +118,7 @@ export type Database = {
           description?: string | null
           hotel_id: string
           id?: string
+          scheduled_date?: string | null
           status?: Database["public"]["Enums"]["checklist_status"]
           title: string
           updated_at?: string
@@ -82,6 +129,7 @@ export type Database = {
           description?: string | null
           hotel_id?: string
           id?: string
+          scheduled_date?: string | null
           status?: Database["public"]["Enums"]["checklist_status"]
           title?: string
           updated_at?: string
@@ -176,6 +224,7 @@ export type Database = {
       rooms: {
         Row: {
           created_at: string
+          floor: string | null
           hotel_id: string
           id: string
           number: string
@@ -183,6 +232,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          floor?: string | null
           hotel_id: string
           id?: string
           number: string
@@ -190,6 +240,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          floor?: string | null
           hotel_id?: string
           id?: string
           number?: string
@@ -208,7 +259,7 @@ export type Database = {
       tickets: {
         Row: {
           assignee_id: string | null
-          category: string | null
+          category: Database["public"]["Enums"]["ticket_category"]
           closed_at: string | null
           created_at: string
           creator_id: string | null
@@ -228,7 +279,7 @@ export type Database = {
         }
         Insert: {
           assignee_id?: string | null
-          category?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
           closed_at?: string | null
           created_at?: string
           creator_id?: string | null
@@ -248,7 +299,7 @@ export type Database = {
         }
         Update: {
           assignee_id?: string | null
-          category?: string | null
+          category?: Database["public"]["Enums"]["ticket_category"]
           closed_at?: string | null
           created_at?: string
           creator_id?: string | null
@@ -368,14 +419,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_admin_user_directly: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      create_initial_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      create_admin_user_directly: { Args: never; Returns: Json }
+      create_initial_admin: { Args: never; Returns: undefined }
       create_notification: {
         Args: {
           _message: string
@@ -408,10 +453,7 @@ export type Database = {
         }
         Returns: Json
       }
-      fix_admin_user_id: {
-        Args: { new_auth_id: string }
-        Returns: Json
-      }
+      fix_admin_user_id: { Args: { new_auth_id: string }; Returns: Json }
       get_hotel_technicians: {
         Args: { _hotel_id: string }
         Returns: {
@@ -420,21 +462,24 @@ export type Database = {
           id: string
         }[]
       }
-      get_user_display_name: {
-        Args: { _user_id: string }
-        Returns: string
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
+      get_user_display_name: { Args: { _user_id: string }; Returns: string }
+      is_admin: { Args: never; Returns: boolean }
+      setup_auth_for_admin: { Args: never; Returns: Json }
+      user_has_hotel_access: {
+        Args: { check_hotel_id: string }
         Returns: boolean
-      }
-      setup_auth_for_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
       }
     }
     Enums: {
       checklist_status: "pending" | "in_progress" | "completed"
+      ticket_category:
+        | "PLUMBING"
+        | "ELECTRICAL"
+        | "PAINTING"
+        | "CARPENTRY"
+        | "FLOORING"
+        | "FIRE_SAFETY"
+        | "OTHER"
       ticket_priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT"
       ticket_status:
         | "NEW"
@@ -570,6 +615,15 @@ export const Constants = {
   public: {
     Enums: {
       checklist_status: ["pending", "in_progress", "completed"],
+      ticket_category: [
+        "PLUMBING",
+        "ELECTRICAL",
+        "PAINTING",
+        "CARPENTRY",
+        "FLOORING",
+        "FIRE_SAFETY",
+        "OTHER",
+      ],
       ticket_priority: ["LOW", "MEDIUM", "HIGH", "URGENT"],
       ticket_status: [
         "NEW",

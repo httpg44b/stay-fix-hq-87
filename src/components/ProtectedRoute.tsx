@@ -18,7 +18,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+    // Redirect RECEPCAO to simple dashboard, others to tickets
+    const redirectPath = user.role === 'RECEPCAO' ? '/simple-dashboard' : '/tickets';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return <>{children}</>;

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { UserRole, TicketStatus, TicketPriority } from '@/lib/constants';
+import { UserRole, TicketStatus, TicketPriority, TicketCategory } from '@/lib/constants';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
+import { CategoryBadge } from '@/components/CategoryBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +27,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { statusLabels, priorityLabels } from '@/lib/constants';
+import { statusLabels, priorityLabels, categoryLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +35,7 @@ import { TicketModal } from '@/components/TicketModal';
 import { TechnicianName } from '@/components/TechnicianName';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -58,8 +60,9 @@ export default function TicketList() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('not_completed');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [hotelFilter, setHotelFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
   const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
@@ -128,8 +131,14 @@ export default function TicketList() {
       (ticket.room_number?.includes(searchTerm) || false) ||
       (ticket.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
-    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    const matchesStatus = 
+      statusFilter === 'all' 
+        ? true 
+        : statusFilter === 'not_completed' 
+        ? ticket.status !== TicketStatus.COMPLETED 
+        : ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
+    const matchesCategory = categoryFilter === 'all' || ticket.category === categoryFilter;
     const matchesHotel = hotelFilter === 'all' || ticket.hotel_id === hotelFilter;
     
     // Date filter
@@ -137,7 +146,7 @@ export default function TicketList() {
     const matchesDateFrom = !dateFrom || ticketDate >= dateFrom;
     const matchesDateTo = !dateTo || ticketDate <= new Date(dateTo.getTime() + 86400000 - 1); // Include entire day
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesHotel && matchesDateFrom && matchesDateTo;
+    return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesHotel && matchesDateFrom && matchesDateTo;
   });
 
   const handleTicketClick = (ticketId: string) => {
@@ -183,8 +192,47 @@ export default function TicketList() {
   };
 
   const exportToCSV = () => {
-    // Implement CSV export
-    console.log('Exporting to CSV...');
+    try {
+      // Prepare data for export
+      const exportData = filteredTickets.map(ticket => ({
+        'Chamado': ticket.title || '',
+        'Quarto': ticket.room_number || '',
+        'Hotel': hotels.find(h => h.id === ticket.hotel_id)?.name || '',
+        'Categoria': categoryLabels[ticket.category as TicketCategory] || ticket.category,
+        'Prioridade': priorityLabels[ticket.priority as TicketPriority] || ticket.priority,
+        'Status': statusLabels[ticket.status as TicketStatus] || ticket.status,
+        'Técnico': ticket.assignee_id || 'Não atribuído',
+        'Descrição': ticket.description || '',
+        'Solução': ticket.solution || '',
+        'Data de Criação': ticket.created_at ? format(new Date(ticket.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
+        'Data de Conclusão': ticket.closed_at ? format(new Date(ticket.closed_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
+      }));
+
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Chamados');
+      
+      // Generate filename with current date
+      const filename = `chamados_${format(new Date(), 'dd-MM-yyyy_HH-mm')}.xlsx`;
+      
+      // Save file
+      XLSX.writeFile(wb, filename);
+      
+      toast({
+        title: 'Exportação concluída',
+        description: `${filteredTickets.length} chamado(s) exportado(s) com sucesso.`,
+      });
+    } catch (error: any) {
+      console.error('Error exporting to Excel:', error);
+      toast({
+        title: 'Erro ao exportar',
+        description: error.message || 'Não foi possível exportar os dados.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -206,7 +254,7 @@ export default function TicketList() {
             </p>
           </div>
           <div className="flex gap-2">
-            {(user.role === UserRole.RECEPCAO || user.role === UserRole.ADMIN) && (
+            {(user.role === UserRole.RECEPCAO || user.role === UserRole.ADMIN || user.role === UserRole.TECNICO) && (
               <Button onClick={() => navigate('/tickets/new')}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('tickets.newTicket')}
@@ -251,6 +299,7 @@ export default function TicketList() {
                     <SelectValue placeholder={t('common.all')} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="not_completed">Tous (sauf terminé)</SelectItem>
                     <SelectItem value="all">{t('common.all')}</SelectItem>
                     {Object.entries(statusLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
@@ -272,6 +321,25 @@ export default function TicketList() {
                     {Object.entries(priorityLabels).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
                         {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t('ticket.category')}</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('common.all')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('common.all')}</SelectItem>
+                    {Object.entries(categoryLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={value as TicketCategory} />
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>

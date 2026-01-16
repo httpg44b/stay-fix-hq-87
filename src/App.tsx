@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import SimpleDashboard from "./pages/SimpleDashboard";
 import TicketList from "./pages/tickets/TicketList";
 import NewTicket from "./pages/tickets/NewTicket";
 import MyTickets from "./pages/tickets/MyTickets";
@@ -41,8 +42,14 @@ const App = () => (
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             <Route path="/dashboard" element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['ADMIN', 'TECNICO']}>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/simple-dashboard" element={
+              <ProtectedRoute allowedRoles={['RECEPCAO']}>
+                <SimpleDashboard />
               </ProtectedRoute>
             } />
             

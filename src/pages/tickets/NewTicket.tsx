@@ -15,8 +15,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Loader2, ArrowLeft, X } from 'lucide-react';
+import { Upload, Loader2, ArrowLeft, X, ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CategoryBadge } from '@/components/CategoryBadge';
+import { PriorityBadge } from '@/components/PriorityBadge';
 import { categoryLabels, priorityLabels } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
 import { ticketsService } from '@/services/tickets.service';
@@ -49,6 +51,9 @@ export default function NewTicket() {
     const loadUserHotel = async () => {
       if (user) {
         try {
+          // Tentar restaurar hotel selecionado do sessionStorage
+          const savedHotelId = sessionStorage.getItem('newTicket_selectedHotelId');
+          
           // Admin can choose any hotel, so we'll need to handle this differently
           if (user.role === UserRole.ADMIN) {
             // For admin, we'll get all hotels and use the first one as default
@@ -79,13 +84,22 @@ export default function NewTicket() {
             });
             
             setAvailableHotels(sortedHotels);
-            if (sortedHotels.length > 0) {
+            
+            // Restaurar hotel salvo se existir e for válido, caso contrário usar o primeiro
+            if (savedHotelId && sortedHotels.some(h => h.id === savedHotelId)) {
+              setUserHotelId(savedHotelId);
+            } else if (sortedHotels.length > 0) {
               setUserHotelId(sortedHotels[0].id);
             }
           } else {
             const hotels = await hotelsService.getUserHotels(user.id);
             if (hotels.length > 0) {
-              setUserHotelId(hotels[0].hotel_id);
+              // Restaurar hotel salvo se existir, caso contrário usar o primeiro
+              if (savedHotelId) {
+                setUserHotelId(savedHotelId);
+              } else {
+                setUserHotelId(hotels[0].hotel_id);
+              }
             }
           }
         } catch (error) {
@@ -96,7 +110,7 @@ export default function NewTicket() {
     loadUserHotel();
   }, [user]);
 
-  if (!user || (user.role !== UserRole.RECEPCAO && user.role !== UserRole.ADMIN)) {
+  if (!user || (user.role !== UserRole.RECEPCAO && user.role !== UserRole.ADMIN && user.role !== UserRole.TECNICO)) {
     navigate('/dashboard');
     return null;
   }
@@ -157,6 +171,9 @@ export default function NewTicket() {
         title: t('ticket.createdSuccess'),
         description: `${t('ticket.createdForRoom')} ${formData.roomNumber} ${t('ticket.wasCreated')}.`,
       });
+      
+      // Limpar hotel salvo do sessionStorage após criação bem-sucedida
+      sessionStorage.removeItem('newTicket_selectedHotelId');
       
       navigate('/tickets');
     } catch (error: any) {
@@ -258,7 +275,10 @@ export default function NewTicket() {
                     <Label htmlFor="hotel">{t('hotel.hotel')}*</Label>
                     <Select
                       value={userHotelId || ''}
-                      onValueChange={(value) => setUserHotelId(value)}
+                      onValueChange={(value) => {
+                        setUserHotelId(value);
+                        sessionStorage.setItem('newTicket_selectedHotelId', value);
+                      }}
                       disabled={isSubmitting}
                     >
                       <SelectTrigger id="hotel">
@@ -298,23 +318,40 @@ export default function NewTicket() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={TicketCategory.CARPENTRY}>
-                        {t('category.carpentry')}
-                      </SelectItem>
-                      <SelectItem value={TicketCategory.PAINTING}>
-                        {t('category.painting')}
-                      </SelectItem>
-                      <SelectItem value={TicketCategory.FLOORING}>
-                        {t('category.flooring')}
-                      </SelectItem>
                       <SelectItem value={TicketCategory.PLUMBING}>
-                        {t('category.plumbing')}
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.PLUMBING} />
+                        </div>
                       </SelectItem>
                       <SelectItem value={TicketCategory.ELECTRICAL}>
-                        {t('category.electrical')}
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.ELECTRICAL} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.PAINTING}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.PAINTING} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.CARPENTRY}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.CARPENTRY} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.FLOORING}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.FLOORING} />
+                        </div>
+                      </SelectItem>
+                      <SelectItem value={TicketCategory.FIRE_SAFETY}>
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.FIRE_SAFETY} />
+                        </div>
                       </SelectItem>
                       <SelectItem value={TicketCategory.OTHER}>
-                        {t('category.other')}
+                        <div className="flex items-center gap-2">
+                          <CategoryBadge category={TicketCategory.OTHER} />
+                        </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -333,7 +370,9 @@ export default function NewTicket() {
                     <SelectContent>
                       {Object.entries(priorityLabels).map(([value, label]) => (
                         <SelectItem key={value} value={value}>
-                          {t(`priority.${value.toLowerCase()}`)}
+                          <div className="flex items-center gap-2">
+                            <PriorityBadge priority={value as TicketPriority} />
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -367,7 +406,10 @@ export default function NewTicket() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="media">{t('ticket.photosVideos')} ({t('common.optional')})</Label>
+                <Label htmlFor="media" className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  Médias - Avant ({t('common.optional')})
+                </Label>
                 <div className="flex items-center gap-4">
                   <Button
                     type="button"

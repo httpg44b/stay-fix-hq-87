@@ -32,7 +32,7 @@ export const Sidebar = () => {
   const navigation = [
     {
       key: 'nav.dashboard',
-      href: '/dashboard',
+      href: user.role === 'RECEPCAO' ? '/simple-dashboard' : '/dashboard',
       icon: LayoutDashboard,
       roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
     },
@@ -64,7 +64,7 @@ export const Sidebar = () => {
       key: 'nav.checklists',
       href: '/checklists',
       icon: CheckSquare,
-      roles: [UserRole.ADMIN, UserRole.TECNICO]
+      roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
     },
     {
       key: 'nav.users',

@@ -1,0 +1,52 @@
+-- Adicionar quartos do Le Damantin Hôtel & Spa
+INSERT INTO rooms (hotel_id, number, floor) VALUES
+-- 1er étage
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '101', '1er étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '102', '1er étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '103', '1er étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '104', '1er étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '105', '1er étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '106', '1er étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '107', '1er étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '108', '1er étage'),
+-- 2e étage
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '201', '2ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '202', '2ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '203', '2ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '204', '2ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '205', '2ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '206', '2ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '207', '2ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '208', '2ème étage'),
+-- 3e étage
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '301', '3ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '302', '3ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '303', '3ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '304', '3ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '305', '3ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '306', '3ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '307', '3ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '308', '3ème étage'),
+-- 4e étage
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '401', '4ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '402', '4ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '403', '4ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '404', '4ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '405', '4ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '406', '4ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '407', '4ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '408', '4ème étage'),
+-- 5e étage
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '501', '5ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '502', '5ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '503', '5ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '504', '5ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '505', '5ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '506', '5ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '507', '5ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '508', '5ème étage'),
+-- 6e étage
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '601', '6ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '602', '6ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '603', '6ème étage'),
+('5ac5e57d-3a9f-4bcc-9010-f8d1641bbb5f', '604', '6ème étage');
