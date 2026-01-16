@@ -116,9 +116,19 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       setSolution(data.solution || '');
       setStatus(data.status);
       setSelectedTechnician(data.assignee_id || '');
-      setSolutionImages(data.solution_images || []);
-      setTicketImages(data.images || []);
       setPriority(data.priority || TicketPriority.MEDIUM);
+      
+      // Refresh signed URLs for images (they expire after 1 hour)
+      const refreshedImages = data.images?.length 
+        ? await storageService.refreshSignedUrls(data.images) 
+        : [];
+      const refreshedSolutionImages = data.solution_images?.length 
+        ? await storageService.refreshSignedUrls(data.solution_images) 
+        : [];
+      
+      setTicketImages(refreshedImages);
+      setSolutionImages(refreshedSolutionImages);
+      
       // Initialize edit fields
       setEditTitle(data.title || '');
       setEditDescription(data.description || '');

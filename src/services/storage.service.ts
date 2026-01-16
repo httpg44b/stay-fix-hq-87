@@ -175,6 +175,54 @@ class StorageService {
     
     return data.signedUrl;
   }
+
+  // Extract file path from a signed URL or storage URL
+  extractPathFromUrl(url: string): string | null {
+    try {
+      // Handle signed URLs with token parameter
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      
+      // Find the bucket name in the path and extract everything after it
+      const bucketIndex = pathname.indexOf(`/${this.bucketName}/`);
+      if (bucketIndex !== -1) {
+        return pathname.substring(bucketIndex + this.bucketName.length + 2);
+      }
+      
+      // Also handle object/sign paths
+      const signIndex = pathname.indexOf('/object/sign/');
+      if (signIndex !== -1) {
+        const afterSign = pathname.substring(signIndex + 13); // '/object/sign/' length
+        const bucketPart = afterSign.indexOf(`${this.bucketName}/`);
+        if (bucketPart !== -1) {
+          return afterSign.substring(bucketPart + this.bucketName.length + 1);
+        }
+      }
+      
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Refresh signed URLs for an array of image URLs
+  async refreshSignedUrls(urls: string[]): Promise<string[]> {
+    const refreshedUrls = await Promise.all(
+      urls.map(async (url) => {
+        try {
+          const path = this.extractPathFromUrl(url);
+          if (path) {
+            return await this.getImageUrl(path);
+          }
+          return url; // Return original if can't extract path
+        } catch (error) {
+          console.error('Error refreshing signed URL:', error);
+          return url; // Return original on error
+        }
+      })
+    );
+    return refreshedUrls;
+  }
 }
 
 export const storageService = new StorageService();
