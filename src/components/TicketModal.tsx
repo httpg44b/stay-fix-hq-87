@@ -20,15 +20,37 @@ import {
 } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
+import { CategoryBadge } from '@/components/CategoryBadge';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { 
-  Upload, X, Save, CheckCircle, Loader2, Calendar, User, MapPin, 
-  FileText, Building, ImageIcon, Eye, Download, UserCheck, ChevronLeft, ChevronRight 
+import {
+  Upload,
+  X,
+  Save,
+  CheckCircle,
+  Loader2,
+  Calendar,
+  User,
+  MapPin,
+  FileText,
+  Building,
+  ImageIcon,
+  Eye,
+  Download,
+  UserCheck,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
-import { TicketStatus, statusLabels, categoryLabels, UserRole, TicketPriority, priorityLabels } from '@/lib/constants';
+import {
+  TicketStatus,
+  statusLabels,
+  categoryLabels,
+  UserRole,
+  TicketPriority,
+  priorityLabels,
+} from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
 import { storageService } from '@/services/storage.service';
@@ -38,7 +60,16 @@ import { ptBR, fr } from 'date-fns/locale';
 import { TechnicianName } from '@/components/TechnicianName';
 import { usersService } from '@/services/users.service';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface TicketModalProps {
   ticketId: string | null;
@@ -47,7 +78,12 @@ interface TicketModalProps {
   onUpdate?: () => void;
 }
 
-export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModalProps) {
+export function TicketModal({
+  ticketId,
+  isOpen,
+  onClose,
+  onUpdate,
+}: TicketModalProps) {
   const { user } = useAuth();
   const { t, language } = useLanguage();
   const { toast } = useToast();
@@ -60,8 +96,15 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [solution, setSolution] = useState('');
   const [status, setStatus] = useState<TicketStatus>(TicketStatus.NEW);
   const [selectedTechnician, setSelectedTechnician] = useState<string>('');
+
+  // paths salvos no banco
+  const [ticketImagePaths, setTicketImagePaths] = useState<string[]>([]);
+  const [solutionImagePaths, setSolutionImagePaths] = useState<string[]>([]);
+
+  // URLs assinadas para exibição
   const [solutionImages, setSolutionImages] = useState<string[]>([]);
   const [ticketImages, setTicketImages] = useState<string[]>([]);
+
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
@@ -73,28 +116,40 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   const [editDescription, setEditDescription] = useState('');
   const [editCategory, setEditCategory] = useState('');
   const [editRoomNumber, setEditRoomNumber] = useState('');
-  const [editPriority, setEditPriority] = useState<TicketPriority>(TicketPriority.MEDIUM);
+  const [editPriority, setEditPriority] =
+    useState<TicketPriority>(TicketPriority.MEDIUM);
   const [editHotelId, setEditHotelId] = useState('');
   const [hotels, setHotels] = useState<any[]>([]);
-  const [creatorInfo, setCreatorInfo] = useState<{ name: string; email: string } | null>(null);
+  const [creatorInfo, setCreatorInfo] = useState<{
+    name: string;
+    email: string;
+  } | null>(null);
+  const [priority, setPriority] =
+    useState<TicketPriority>(TicketPriority.MEDIUM);
 
   useEffect(() => {
     if (ticketId && isOpen) {
       loadTicket();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId, isOpen]);
 
   const loadTechniciansForHotel = async (hotelId: string) => {
     if (!hotelId || user?.role !== UserRole.ADMIN) return;
-    
+
     try {
-      const { data: techData, error: techError } = await supabase
-        .rpc('get_hotel_technicians', { _hotel_id: hotelId });
-      
+      const { data: techData, error: techError } = await supabase.rpc(
+        'get_hotel_technicians',
+        { _hotel_id: hotelId }
+      );
+
       if (!techError && techData) {
         setTechnicians(techData);
         // Reset selected technician if not from this hotel
-        if (selectedTechnician && !techData.find((t: any) => t.id === selectedTechnician)) {
+        if (
+          selectedTechnician &&
+          !techData.find((t: any) => t.id === selectedTechnician)
+        ) {
           setSelectedTechnician('');
         }
       }
@@ -105,7 +160,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
   const loadTicket = async () => {
     if (!ticketId) return;
-    
+
     try {
       setLoading(true);
       setCreatorInfo(null); // Reset creator info
@@ -114,8 +169,28 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       setSolution(data.solution || '');
       setStatus(data.status);
       setSelectedTechnician(data.assignee_id || '');
-      setSolutionImages(data.solution_images || []);
-      setTicketImages(data.images || []);
+      setPriority(data.priority || TicketPriority.MEDIUM);
+
+      // paths vindos do banco
+      const imagePaths: string[] = data.images || [];
+      const solutionPaths: string[] = data.solution_images || [];
+
+      setTicketImagePaths(imagePaths);
+      setSolutionImagePaths(solutionPaths);
+
+      // Gera URLs assinadas a partir dos paths
+      const refreshedImages =
+        imagePaths.length > 0
+          ? await storageService.refreshSignedUrls(imagePaths)
+          : [];
+      const refreshedSolutionImages =
+        solutionPaths.length > 0
+          ? await storageService.refreshSignedUrls(solutionPaths)
+          : [];
+
+      setTicketImages(refreshedImages);
+      setSolutionImages(refreshedSolutionImages);
+
       // Initialize edit fields
       setEditTitle(data.title || '');
       setEditDescription(data.description || '');
@@ -123,23 +198,25 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       setEditRoomNumber(data.room_number || '');
       setEditPriority(data.priority || TicketPriority.MEDIUM);
       setEditHotelId(data.hotel_id || '');
-      
+
       // Load hotel info
       if (data.hotel_id) {
         const hotelData = await hotelsService.getById(data.hotel_id);
         setHotel(hotelData);
-        
+
         // Load technicians for this hotel (admin only)
         if (user?.role === UserRole.ADMIN) {
-          const { data: techData, error: techError } = await supabase
-            .rpc('get_hotel_technicians', { _hotel_id: data.hotel_id });
-          
+          const { data: techData, error: techError } = await supabase.rpc(
+            'get_hotel_technicians',
+            { _hotel_id: data.hotel_id }
+          );
+
           if (!techError && techData) {
             setTechnicians(techData);
           }
         }
       }
-      
+
       // Load all hotels for admin
       if (user?.role === UserRole.ADMIN) {
         try {
@@ -149,12 +226,15 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
           console.error('Error loading hotels:', error);
         }
       }
-      
+
       // Fetch creator info
       if (data.creator_id) {
         try {
           const creatorUser = await usersService.getById(data.creator_id);
-          setCreatorInfo({ name: creatorUser.display_name, email: creatorUser.email });
+          setCreatorInfo({
+            name: creatorUser.display_name,
+            email: creatorUser.email,
+          });
         } catch (error) {
           console.error('Error loading creator info:', error);
           setCreatorInfo(null);
@@ -174,19 +254,22 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isSolution: boolean = false) => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    isSolution: boolean = false
+  ) => {
     const files = e.target.files;
     if (!files || !ticketId) return;
 
     try {
       setUploading(true);
-      
+
       // Validate file sizes
       const filesArray = Array.from(files);
-      const validFiles = filesArray.filter(file => {
+      const validFiles = filesArray.filter((file) => {
         const isVideo = file.type.startsWith('video/');
         const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
-        
+
         if (file.size > maxSize) {
           toast({
             title: t('errors.fileTooLarge'),
@@ -199,44 +282,65 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       });
 
       // Upload all files in parallel
-      const uploadPromises = validFiles.map(file =>
-        storageService.uploadTicketImage(file, ticketId)
-          .catch(error => {
+      const uploadPromises = validFiles.map((file) =>
+        storageService
+          .uploadTicketImage(file, ticketId)
+          .catch((error: any) => {
             console.error('Error uploading file:', error);
             return null;
           })
       );
 
       const uploadResults = await Promise.all(uploadPromises);
-      const uploadedUrls = uploadResults.filter((url): url is string => url !== null);
+      const uploadedPaths = uploadResults.filter(
+        (path): path is string => path !== null
+      );
+
+      // gera URLs assinadas apenas para os novos arquivos
+      const newSignedUrls =
+        uploadedPaths.length > 0
+          ? await storageService.refreshSignedUrls(uploadedPaths)
+          : [];
 
       if (isSolution) {
-        setSolutionImages(prev => [...prev, ...uploadedUrls]);
+        const newPaths = [...solutionImagePaths, ...uploadedPaths];
+        setSolutionImagePaths(newPaths);
+        setSolutionImages((prev) => [...prev, ...newSignedUrls]);
+
+        // Atualiza o ticket com os paths
+        await ticketsService.update(ticketId, {
+          solution_images: newPaths,
+        });
       } else {
-        const updatedImages = [...ticketImages, ...uploadedUrls];
-        setTicketImages(updatedImages);
-        
-        // Update ticket with new images immediately
-        await ticketsService.update(ticketId, { images: updatedImages });
+        const newPaths = [...ticketImagePaths, ...uploadedPaths];
+        setTicketImagePaths(newPaths);
+        setTicketImages((prev) => [...prev, ...newSignedUrls]);
+
+        // Update ticket with new images immediately (paths)
+        await ticketsService.update(ticketId, { images: newPaths });
       }
 
       // Show success message in French
-      const hasVideos = Array.from(files).some(f => f.type.startsWith('video/'));
-      const hasImages = Array.from(files).some(f => f.type.startsWith('image/'));
-      
+      const hasVideos = Array.from(files).some((f) =>
+        f.type.startsWith('video/')
+      );
+      const hasImages = Array.from(files).some((f) =>
+        f.type.startsWith('image/')
+      );
+
       if (hasVideos && hasImages) {
         toast({
-          title: "Médias téléchargés",
-          description: "Les vidéos et images ont été téléchargées avec succès",
+          title: 'Médias téléchargés',
+          description: 'Les vidéos et images ont été téléchargées avec succès',
         });
       } else if (hasVideos) {
         toast({
-          title: "Vidéo téléchargée",
-          description: "La vidéo a été téléchargée avec succès",
+          title: 'Vidéo téléchargée',
+          description: 'La vidéo a été téléchargée avec succès',
         });
       } else {
         toast({
-          title: "Image téléchargée",
+          title: 'Image téléchargée',
           description: "L'image a été téléchargée avec succès",
         });
       }
@@ -254,16 +358,41 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
   const removeImage = async (url: string, isSolution: boolean = false) => {
     try {
-      await storageService.deleteTicketImage(url);
-      
       if (isSolution) {
-        setSolutionImages(prev => prev.filter(img => img !== url));
-      } else {
-        const updatedImages = ticketImages.filter(img => img !== url);
-        setTicketImages(updatedImages);
-        
+        const index = solutionImages.findIndex((img) => img === url);
+        if (index === -1) return;
+
+        const pathToDelete = solutionImagePaths[index];
+
+        await storageService.deleteTicketImage(pathToDelete);
+
+        const newUrls = solutionImages.filter((_, i) => i !== index);
+        const newPaths = solutionImagePaths.filter((_, i) => i !== index);
+
+        setSolutionImages(newUrls);
+        setSolutionImagePaths(newPaths);
+
         if (ticketId) {
-          await ticketsService.update(ticketId, { images: updatedImages });
+          await ticketsService.update(ticketId, {
+            solution_images: newPaths,
+          });
+        }
+      } else {
+        const index = ticketImages.findIndex((img) => img === url);
+        if (index === -1) return;
+
+        const pathToDelete = ticketImagePaths[index];
+
+        await storageService.deleteTicketImage(pathToDelete);
+
+        const newUrls = ticketImages.filter((_, i) => i !== index);
+        const newPaths = ticketImagePaths.filter((_, i) => i !== index);
+
+        setTicketImages(newUrls);
+        setTicketImagePaths(newPaths);
+
+        if (ticketId) {
+          await ticketsService.update(ticketId, { images: newPaths });
         }
       }
     } catch (error) {
@@ -294,32 +423,47 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
           setSelectedTechnician(user.id);
         }
       }
-      
-      if (user?.role === UserRole.TECNICO || (user?.role === UserRole.ADMIN && solution)) {
+
+      if (
+        user?.role === UserRole.TECNICO ||
+        (user?.role === UserRole.ADMIN && solution)
+      ) {
         setShowCloseConfirm(true);
         return;
       }
-      
+
       if (user?.role === UserRole.ADMIN && !solution) {
         setShowCloseConfirm(true);
         return;
       }
     }
-    
+
     performSave();
   };
 
   const performSave = async () => {
     try {
       setSaving(true);
-      
+
       const updateData: any = {
         status,
         solution,
-        solution_images: solutionImages,
-        ...(status === TicketStatus.COMPLETED && { closed_at: new Date().toISOString() })
+        // sempre mandar os paths pro banco
+        solution_images: solutionImagePaths,
+        ...(status === TicketStatus.COMPLETED && {
+          closed_at: new Date().toISOString(),
+        }),
       };
-      
+
+      // Admin and Reception can change priority
+      if (
+        (user?.role === UserRole.ADMIN ||
+          user?.role === UserRole.RECEPCAO) &&
+        priority !== ticket.priority
+      ) {
+        updateData.priority = priority;
+      }
+
       // Admin can change all fields
       if (user?.role === UserRole.ADMIN && editMode) {
         updateData.title = editTitle;
@@ -329,17 +473,24 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
         updateData.priority = editPriority;
         updateData.hotel_id = editHotelId;
       }
-      
+
       // Admin can change technician
-      if (user?.role === UserRole.ADMIN && selectedTechnician !== ticket.assignee_id) {
+      if (
+        user?.role === UserRole.ADMIN &&
+        selectedTechnician !== ticket.assignee_id
+      ) {
         updateData.assignee_id = selectedTechnician || null;
       }
-      
+
       // Se técnico está fechando, atribui automaticamente a ele
-      if (status === TicketStatus.COMPLETED && user?.role === UserRole.TECNICO && user?.id) {
+      if (
+        status === TicketStatus.COMPLETED &&
+        user?.role === UserRole.TECNICO &&
+        user?.id
+      ) {
         updateData.assignee_id = user.id;
       }
-      
+
       await ticketsService.update(ticket.id, updateData);
 
       toast({
@@ -363,9 +514,21 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
   };
 
   const openImageViewer = (imageUrl: string) => {
-    const images = [...ticketImages, ...solutionImages];
-    setAllImages(images);
-    const index = images.findIndex(img => img === imageUrl);
+    // Intercala imagens antes/depois para pareamento
+    const pairedImages: string[] = [];
+    const maxLength = Math.max(ticketImages.length, solutionImages.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      if (i < ticketImages.length) {
+        pairedImages.push(ticketImages[i]);
+      }
+      if (i < solutionImages.length) {
+        pairedImages.push(solutionImages[i]);
+      }
+    }
+
+    setAllImages(pairedImages);
+    const index = pairedImages.findIndex((img) => img === imageUrl);
     setCurrentImageIndex(index >= 0 ? index : 0);
     setSelectedImage(imageUrl);
     setImageViewerOpen(true);
@@ -373,23 +536,44 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
 
   const navigateImage = (direction: 'prev' | 'next') => {
     if (allImages.length === 0) return;
-    
+
     let newIndex = currentImageIndex;
     if (direction === 'prev') {
-      newIndex = currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1;
+      newIndex =
+        currentImageIndex > 0 ? currentImageIndex - 1 : allImages.length - 1;
     } else {
-      newIndex = currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0;
+      newIndex =
+        currentImageIndex < allImages.length - 1 ? currentImageIndex + 1 : 0;
     }
-    
+
     setCurrentImageIndex(newIndex);
     setSelectedImage(allImages[newIndex]);
   };
 
-  const canEdit = user?.role === UserRole.ADMIN || 
-                   user?.role === UserRole.TECNICO ||
-                   (user?.role === UserRole.RECEPCAO && ticket?.creator_id === user?.id);
+  // Helper to determine if current media is a video
+  const isVideoFile = (url: string) => {
+    return url.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
+  };
+
+  // Helper to determine if current image is in "before" or "after" section
+  const getCurrentImageSection = () => {
+    // Com o pareamento, índices pares são "avant", ímpares são "après"
+    const imageInTicketImages = ticketImages.includes(
+      allImages[currentImageIndex]
+    );
+    return imageInTicketImages ? 'Avant' : 'Après';
+  };
+
+  const canEdit =
+    user?.role === UserRole.ADMIN ||
+    user?.role === UserRole.TECNICO ||
+    (user?.role === UserRole.RECEPCAO &&
+      ticket?.creator_id === user?.id);
 
   const canChangeTechnician = user?.role === UserRole.ADMIN;
+
+  const canChangePriority =
+    user?.role === UserRole.ADMIN || user?.role === UserRole.RECEPCAO;
 
   return (
     <>
@@ -411,7 +595,9 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         className="text-xl font-semibold"
                       />
                     ) : (
-                      <DialogTitle className="text-xl">{ticket.title}</DialogTitle>
+                      <DialogTitle className="text-xl">
+                        {ticket.title}
+                      </DialogTitle>
                     )}
                   </div>
                   {user?.role === UserRole.ADMIN && !editMode && (
@@ -427,40 +613,59 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                 <DialogDescription className="flex items-center gap-4 mt-2">
                   {user?.role === UserRole.ADMIN && editMode ? (
                     <div className="flex gap-2 w-full">
-                      <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
+                      <Select
+                        value={status}
+                        onValueChange={(value) =>
+                          setStatus(value as TicketStatus)
+                        }
+                      >
                         <SelectTrigger className="w-[150px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(statusLabels).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ))}
+                          {Object.entries(statusLabels).map(
+                            ([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectContent>
                       </Select>
-                      <Select value={editPriority} onValueChange={(value) => setEditPriority(value as TicketPriority)}>
+                      <Select
+                        value={editPriority}
+                        onValueChange={(value) =>
+                          setEditPriority(value as TicketPriority)
+                        }
+                      >
                         <SelectTrigger className="w-[150px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(priorityLabels).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ))}
+                          {Object.entries(priorityLabels).map(
+                            ([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectContent>
                       </Select>
-                      <Select value={editCategory} onValueChange={setEditCategory}>
+                      <Select
+                        value={editCategory}
+                        onValueChange={setEditCategory}
+                      >
                         <SelectTrigger className="w-[150px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(categoryLabels).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ))}
+                          {Object.entries(categoryLabels).map(
+                            ([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -468,9 +673,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                     <>
                       <StatusBadge status={ticket.status} />
                       <PriorityBadge priority={ticket.priority} />
-                      <Badge variant="outline">
-                        {t(`category.${ticket.category.toLowerCase()}`)}
-                      </Badge>
+                      <CategoryBadge category={ticket.category} />
                     </>
                   )}
                 </DialogDescription>
@@ -485,29 +688,40 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">{t('common.room_area')}:</span>
+                          <span className="text-muted-foreground">
+                            {t('common.room_area')}:
+                          </span>
                         </div>
                         {user?.role === UserRole.ADMIN && editMode ? (
                           <Input
                             value={editRoomNumber}
-                            onChange={(e) => setEditRoomNumber(e.target.value)}
+                            onChange={(e) =>
+                              setEditRoomNumber(e.target.value)
+                            }
                             className="h-7"
                           />
                         ) : (
-                          <span className="font-medium">{ticket.room_number}</span>
+                          <span className="font-medium">
+                            {ticket.room_number}
+                          </span>
                         )}
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="flex items-center gap-2">
                           <Building className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">{t('tickets.hotel')}:</span>
+                          <span className="text-muted-foreground">
+                            {t('tickets.hotel')}:
+                          </span>
                         </div>
                         {user?.role === UserRole.ADMIN && editMode ? (
-                          <Select value={editHotelId} onValueChange={(value) => {
-                            setEditHotelId(value);
-                            // Reload technicians for new hotel
-                            loadTechniciansForHotel(value);
-                          }}>
+                          <Select
+                            value={editHotelId}
+                            onValueChange={(value) => {
+                              setEditHotelId(value);
+                              // Reload technicians for new hotel
+                              loadTechniciansForHotel(value);
+                            }}
+                          >
                             <SelectTrigger className="h-7 w-full sm:w-[180px]">
                               <SelectValue />
                             </SelectTrigger>
@@ -520,39 +734,61 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                             </SelectContent>
                           </Select>
                         ) : (
-                          <span className="font-medium">{hotel?.name || '-'}</span>
+                          <span className="font-medium">
+                            {hotel?.name || '-'}
+                          </span>
                         )}
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">{t('tickets.createdAt')}:</span>
+                          <span className="text-muted-foreground">
+                            {t('tickets.createdAt')}:
+                          </span>
                         </div>
                         <span className="font-medium text-sm sm:text-base">
-                          {format(new Date(ticket.created_at), "dd 'de' MMMM 'às' HH:mm", { locale: language === 'fr' ? fr : ptBR })}
+                          {format(
+                            new Date(ticket.created_at),
+                            "dd 'de' MMMM 'às' HH:mm",
+                            {
+                              locale: language === 'fr' ? fr : ptBR,
+                            }
+                          )}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="flex items-center gap-2">
                           <UserCheck className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">{t('tickets.createdBy')}:</span>
+                          <span className="text-muted-foreground">
+                            {t('tickets.createdBy')}:
+                          </span>
                         </div>
                         <span className="font-medium">
-                          {creatorInfo ? `${creatorInfo.name} (${creatorInfo.email})` : t('common.loading')}
+                          {creatorInfo
+                            ? `${creatorInfo.name} (${creatorInfo.email})`
+                            : t('common.loading')}
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">{t('tickets.technician')}:</span>
+                          <span className="text-muted-foreground">
+                            {t('tickets.technician')}:
+                          </span>
                         </div>
                         {user?.role === UserRole.ADMIN && editMode ? (
-                          <Select 
-                            value={selectedTechnician || "unassigned"} 
-                            onValueChange={(value) => setSelectedTechnician(value === "unassigned" ? "" : value)}
+                          <Select
+                            value={selectedTechnician || 'unassigned'}
+                            onValueChange={(value) =>
+                              setSelectedTechnician(
+                                value === 'unassigned' ? '' : value
+                              )
+                            }
                           >
                             <SelectTrigger className="h-7 w-[180px]">
-                              <SelectValue placeholder={t('tickets.selectTechnician')} />
+                              <SelectValue
+                                placeholder={t('tickets.selectTechnician')}
+                              />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="unassigned">
@@ -583,7 +819,9 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       {user?.role === UserRole.ADMIN && editMode ? (
                         <Textarea
                           value={editDescription}
-                          onChange={(e) => setEditDescription(e.target.value)}
+                          onChange={(e) =>
+                            setEditDescription(e.target.value)
+                          }
                           rows={4}
                         />
                       ) : (
@@ -593,55 +831,75 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       )}
                     </div>
 
-                    {/* Ticket Images */}
+                    {/* Images: Avant */}
                     {(ticketImages.length > 0 || canEdit) && (
                       <>
                         <Separator />
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <ImageIcon className="h-4 w-4" />
-                            {t('ticket.ticketImages')}
+                            Médias - Avant
                           </Label>
-                          
+
                           {ticketImages.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
-                                {ticketImages.map((media, index) => {
-                                const isVideo = media.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
-                                
+                              {ticketImages.map((media, index) => {
+                                const isVideo = isVideoFile(media);
+
                                 return (
-                                  <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
+                                  <div
+                                    key={index}
+                                    className={`relative group ${
+                                      isVideo ? 'col-span-3' : ''
+                                    }`}
+                                  >
                                     {isVideo ? (
                                       <div className="relative">
                                         <video
                                           key={media}
-                                          className="w-full h-80 object-contain bg-black rounded-lg border"
+                                          className="w-full h-80 object-contain bg-black rounded-lg border cursor-pointer"
                                           controls
                                           playsInline
                                           muted={false}
                                           preload="metadata"
                                           onClick={(e) => e.stopPropagation()}
+                                          onDoubleClick={() =>
+                                            openImageViewer(media)
+                                          }
                                           onError={(e) => {
-                                            console.error('Video playback error:', e);
+                                            console.error(
+                                              'Video playback error:',
+                                              e
+                                            );
                                             const video = e.currentTarget;
-                                            // Try alternative loading method
                                             video.load();
                                           }}
                                         >
-                                          <source src={media} type="video/mp4" />
-                                          <source src={media} type="video/webm" />
-                                          <source src={media} type="video/ogg" />
+                                          <source
+                                            src={media}
+                                            type="video/mp4"
+                                          />
+                                          <source
+                                            src={media}
+                                            type="video/webm"
+                                          />
+                                          <source
+                                            src={media}
+                                            type="video/ogg"
+                                          />
                                           <source src={media} />
-                                          Seu navegador não suporta a reprodução de vídeos.
+                                          Seu navegador não suporta a
+                                          reprodução de vídeos.
                                         </video>
                                         <div className="absolute top-2 right-2 flex gap-2">
                                           <button
                                             type="button"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              window.open(media, '_blank');
+                                              openImageViewer(media);
                                             }}
                                             className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            title="Abrir em nova aba"
+                                            title="Abrir em tela cheia"
                                           >
                                             <Eye className="h-4 w-4" />
                                           </button>
@@ -672,9 +930,13 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                       <>
                                         <img
                                           src={media}
-                                          alt={`${t('common.image')} ${index + 1}`}
+                                          alt={`${t('common.image')} ${
+                                            index + 1
+                                          }`}
                                           className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                          onClick={() => openImageViewer(media)}
+                                          onClick={() =>
+                                            openImageViewer(media)
+                                          }
                                         />
                                         <button
                                           type="button"
@@ -691,7 +953,9 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                     {canEdit && (
                                       <button
                                         type="button"
-                                        onClick={() => removeImage(media, false)}
+                                        onClick={() =>
+                                          removeImage(media, false)
+                                        }
                                         className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                       >
                                         <X className="h-3 w-3" />
@@ -702,7 +966,7 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                               })}
                             </div>
                           )}
-                          
+
                           {canEdit && (
                             <div className="flex items-center gap-4">
                               <Button
@@ -710,7 +974,11 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                                 variant="outline"
                                 size="sm"
                                 disabled={uploading}
-                                onClick={() => document.getElementById('ticket-image-upload')?.click()}
+                                onClick={() =>
+                                  document
+                                    .getElementById('ticket-image-upload')
+                                    ?.click()
+                                }
                               >
                                 {uploading ? (
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -740,38 +1008,87 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                     )}
 
                     {/* Status and Technician Update */}
-                    {canEdit && (
+                    {(canEdit || canChangePriority) && (
                       <>
                         <Separator />
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="status">{t('ticket.status')}</Label>
-                            <Select value={status} onValueChange={(value) => setStatus(value as TicketStatus)}>
-                              <SelectTrigger id="status">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(statusLabels).map(([value, label]) => (
-                                  <SelectItem key={value} value={value}>
-                                    {label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          {canChangeTechnician && (
+                          {canEdit && (
+                            <div className="space-y-2">
+                              <Label htmlFor="status">
+                                {t('ticket.status')}
+                              </Label>
+                              <Select
+                                value={status}
+                                onValueChange={(value) =>
+                                  setStatus(value as TicketStatus)
+                                }
+                              >
+                                <SelectTrigger id="status">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(statusLabels).map(
+                                    ([value, label]) => (
+                                      <SelectItem key={value} value={value}>
+                                        {label}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+
+                          {canChangePriority && (
+                            <div className="space-y-2">
+                              <Label htmlFor="priority">
+                                {t('ticket.priority')}
+                              </Label>
+                              <Select
+                                value={priority}
+                                onValueChange={(value) =>
+                                  setPriority(value as TicketPriority)
+                                }
+                              >
+                                <SelectTrigger id="priority">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(priorityLabels).map(
+                                    ([value, label]) => (
+                                      <SelectItem key={value} value={value}>
+                                        {label}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+
+                          {canChangeTechnician && canEdit && (
                             <div className="space-y-2">
                               <Label htmlFor="technician">
                                 <UserCheck className="inline h-4 w-4 mr-1" />
                                 {t('ticket.assignee')}
                               </Label>
-                              <Select value={selectedTechnician || "unassigned"} onValueChange={(value) => setSelectedTechnician(value === "unassigned" ? "" : value)}>
+                              <Select
+                                value={selectedTechnician || 'unassigned'}
+                                onValueChange={(value) =>
+                                  setSelectedTechnician(
+                                    value === 'unassigned' ? '' : value
+                                  )
+                                }
+                              >
                                 <SelectTrigger id="technician">
-                                  <SelectValue placeholder={t('ticket.selectTechnician')} />
+                                  <SelectValue
+                                    placeholder={t('ticket.selectTechnician')}
+                                  />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="unassigned">{t('common.unassigned')}</SelectItem>
+                                  <SelectItem value="unassigned">
+                                    {t('common.unassigned')}
+                                  </SelectItem>
                                   {technicians.map((tech) => (
                                     <SelectItem key={tech.id} value={tech.id}>
                                       {tech.display_name} ({tech.email})
@@ -790,7 +1107,10 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                       <>
                         <Separator />
                         <div className="space-y-2">
-                          <Label htmlFor="solution" className="flex items-center gap-2">
+                          <Label
+                            htmlFor="solution"
+                            className="flex items-center gap-2"
+                          >
                             <CheckCircle className="h-4 w-4" />
                             {t('ticket.solution')}
                           </Label>
@@ -813,14 +1133,21 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         {/* Solution Images */}
                         {canEdit && (
                           <div className="space-y-2">
-                            <Label>Joindre des images de la solution</Label>
+                            <Label className="flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              Médias - Après
+                            </Label>
                             <div className="flex items-center gap-4">
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
                                 disabled={uploading}
-                                onClick={() => document.getElementById('solution-image-upload')?.click()}
+                                onClick={() =>
+                                  document
+                                    .getElementById('solution-image-upload')
+                                    ?.click()
+                                }
                               >
                                 {uploading ? (
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -853,89 +1180,118 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
                         )}
 
                         {solutionImages.length > 0 && (
-                          <div className="grid grid-cols-3 gap-2">
-                            {solutionImages.map((media, index) => {
-                              const isVideo = media.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
-                              
-                              return (
-                                <div key={index} className={`relative group ${isVideo ? 'col-span-3' : ''}`}>
-                                  {isVideo ? (
-                                    <div className="relative">
-                                      <video
-                                        key={media}
-                                        className="w-full h-80 object-contain bg-black rounded-lg border"
-                                        controls
-                                        playsInline
-                                        muted={false}
-                                        preload="metadata"
-                                        onClick={(e) => e.stopPropagation()}
-                                        onError={(e) => {
-                                          console.error('Solution video playback error:', e);
-                                          const video = e.currentTarget;
-                                          video.load();
-                                        }}
-                                      >
-                                        <source src={media} type="video/mp4" />
-                                        <source src={media} type="video/webm" />
-                                        <source src={media} type="video/ogg" />
-                                        <source src={media} />
-                                        Seu navegador não suporta a reprodução de vídeos.
-                                      </video>
-                                      <div className="absolute top-2 right-2 flex gap-2">
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            window.open(media, '_blank');
-                                          }}
-                                          className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                          title="Abrir em nova aba"
-                                        >
-                                          <Eye className="h-4 w-4" />
-                                        </button>
-                                        <a
-                                          href={media}
-                                          download
-                                          className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                              <ImageIcon className="h-4 w-4" />
+                              Médias - Après
+                            </Label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {solutionImages.map((media, index) => {
+                                const isVideo = isVideoFile(media);
+
+                                return (
+                                  <div
+                                    key={index}
+                                    className={`relative group ${
+                                      isVideo ? 'col-span-3' : ''
+                                    }`}
+                                  >
+                                    {isVideo ? (
+                                      <div className="relative">
+                                        <video
+                                          key={media}
+                                          className="w-full h-80 object-contain bg-black rounded-lg border cursor-pointer"
+                                          controls
+                                          playsInline
+                                          muted={false}
+                                          preload="metadata"
                                           onClick={(e) => e.stopPropagation()}
-                                          title="Baixar vídeo"
-                                        >
-                                          <Download className="h-4 w-4" />
-                                        </a>
-                                      </div>
-                                      {canEdit && (
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeImage(media, true);
+                                          onDoubleClick={() =>
+                                            openImageViewer(media)
+                                          }
+                                          onError={(e) => {
+                                            console.error(
+                                              'Solution video playback error:',
+                                              e
+                                            );
+                                            const video = e.currentTarget;
+                                            video.load();
                                           }}
-                                          className="absolute top-2 left-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
-                                          <X className="h-3 w-3" />
-                                        </button>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <img
-                                      src={media}
-                                      alt={`Solução ${index + 1}`}
-                                      className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                      onClick={() => openImageViewer(media)}
-                                    />
-                                  )}
-                                  {canEdit && (
-                                    <button
-                                      type="button"
-                                      onClick={() => removeImage(media, true)}
-                                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  )}
-                                </div>
-                              );
-                            })}
+                                          <source
+                                            src={media}
+                                            type="video/mp4"
+                                          />
+                                          <source
+                                            src={media}
+                                            type="video/webm"
+                                          />
+                                          <source
+                                            src={media}
+                                            type="video/ogg"
+                                          />
+                                          <source src={media} />
+                                          Seu navegador não suporta a
+                                          reprodução de vídeos.
+                                        </video>
+                                        <div className="absolute top-2 right-2 flex gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              openImageViewer(media);
+                                            }}
+                                            className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            title="Abrir em tela cheia"
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </button>
+                                          <a
+                                            href={media}
+                                            download
+                                            className="bg-black/50 text-white rounded p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={(e) => e.stopPropagation()}
+                                            title="Baixar vídeo"
+                                          >
+                                            <Download className="h-4 w-4" />
+                                          </a>
+                                        </div>
+                                        {canEdit && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              removeImage(media, true);
+                                            }}
+                                            className="absolute top-2 left-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <img
+                                        src={media}
+                                        alt={`Solução ${index + 1}`}
+                                        className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() => openImageViewer(media)}
+                                      />
+                                    )}
+                                    {canEdit && !isVideo && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          removeImage(media, true)
+                                        }
+                                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
                       </>
@@ -947,7 +1303,10 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
               {canEdit && (
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   {user?.role === UserRole.ADMIN && editMode && (
-                    <Button variant="outline" onClick={() => setEditMode(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditMode(false)}
+                    >
                       {t('common.cancel')}
                     </Button>
                   )}
@@ -993,7 +1352,10 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       </Dialog>
 
       {/* Close Confirmation Dialog */}
-      <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+      <AlertDialog
+        open={showCloseConfirm}
+        onOpenChange={setShowCloseConfirm}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Fechamento</AlertDialogTitle>
@@ -1013,20 +1375,51 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
       </AlertDialog>
 
       {/* Image Viewer Dialog */}
-      <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
+      <Dialog
+        open={imageViewerOpen}
+        onOpenChange={setImageViewerOpen}
+      >
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>
-              Visualizar Imagem {allImages.length > 1 && `(${currentImageIndex + 1}/${allImages.length})`}
+            <DialogTitle className="flex items-center gap-2">
+              <span>Visualizar Mídia</span>
+              {allImages.length > 1 && (
+                <>
+                  <span>-</span>
+                  <Badge variant="secondary" className="font-normal">
+                    {getCurrentImageSection()}
+                  </Badge>
+                  <span className="text-muted-foreground">
+                    ({currentImageIndex + 1}/{allImages.length})
+                  </span>
+                </>
+              )}
             </DialogTitle>
           </DialogHeader>
           <div className="relative">
-            {selectedImage.includes('.mp4') || selectedImage.includes('.webm') || selectedImage.includes('.ogg') || selectedImage.includes('.mov') ? (
+            {isVideoFile(selectedImage) ? (
               <video
-                src={selectedImage}
+                key={selectedImage}
+                className="w-full h-auto rounded-lg bg-black"
                 controls
-                className="w-full h-auto rounded-lg"
-              />
+                playsInline
+                muted={false}
+                preload="metadata"
+                onError={(e) => {
+                  console.error(
+                    'Video playback error in viewer:',
+                    e
+                  );
+                  const video = e.currentTarget;
+                  video.load();
+                }}
+              >
+                <source src={selectedImage} type="video/mp4" />
+                <source src={selectedImage} type="video/webm" />
+                <source src={selectedImage} type="video/ogg" />
+                <source src={selectedImage} />
+                Seu navegador não suporta a reprodução de vídeos.
+              </video>
             ) : (
               <img
                 src={selectedImage}
@@ -1038,12 +1431,14 @@ export function TicketModal({ ticketId, isOpen, onClose, onUpdate }: TicketModal
               variant="outline"
               size="sm"
               className="absolute top-2 right-2"
-              onClick={() => window.open(selectedImage, '_blank')}
+              onClick={() =>
+                window.open(selectedImage, '_blank')
+              }
             >
               <Download className="mr-2 h-4 w-4" />
               Abrir Original
             </Button>
-            
+
             {/* Navigation Arrows */}
             {allImages.length > 1 && (
               <>
