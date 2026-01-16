@@ -41,7 +41,8 @@ class StorageService {
 
       if (error) throw error;
 
-      return this.getImageUrl(fileName);
+      // Return signed URL for private bucket
+      return await this.getImageUrl(fileName);
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;
@@ -111,7 +112,8 @@ class StorageService {
 
       if (error) throw error;
 
-      return this.getImageUrl(fileName);
+      // Return signed URL for private bucket
+      return await this.getImageUrl(fileName);
     } catch (error) {
       console.error('Error uploading video:', error);
       throw error;
@@ -147,12 +149,31 @@ class StorageService {
     }
   }
 
-  getImageUrl(path: string): string {
-    const { data: { publicUrl } } = supabase.storage
+  async getImageUrl(path: string): Promise<string> {
+    // Use signed URLs for private bucket (1 hour expiry)
+    const { data, error } = await supabase.storage
       .from(this.bucketName)
-      .getPublicUrl(path);
+      .createSignedUrl(path, 3600);
     
-    return publicUrl;
+    if (error) {
+      console.error('Error creating signed URL:', error);
+      return '';
+    }
+    
+    return data?.signedUrl || '';
+  }
+
+  async getSignedUrl(path: string, expiresIn: number = 3600): Promise<string> {
+    const { data, error } = await supabase.storage
+      .from(this.bucketName)
+      .createSignedUrl(path, expiresIn);
+    
+    if (error) {
+      console.error('Error creating signed URL:', error);
+      throw error;
+    }
+    
+    return data.signedUrl;
   }
 }
 

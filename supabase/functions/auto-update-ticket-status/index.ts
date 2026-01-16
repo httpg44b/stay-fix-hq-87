@@ -15,7 +15,44 @@ Deno.serve(async (req) => {
     console.log('Starting automatic ticket status update...');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    // Validate authorization header - only allow authenticated requests
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing or invalid Authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized: Missing authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    // Verify the token is valid by checking with Supabase auth
+    const token = authHeader.replace('Bearer ', '');
+    
+    // For cron jobs using anon key, validate by checking if it matches the anon key
+    // For user requests, validate the JWT
+    if (token !== supabaseAnonKey) {
+      // Try to validate as a user JWT
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      
+      const { data: { user }, error: authError } = await authClient.auth.getUser();
+      
+      if (authError || !user) {
+        console.error('Invalid token - not a valid user JWT or anon key');
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized: Invalid token' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        );
+      }
+      
+      console.log(`Request authenticated as user: ${user.id}`);
+    } else {
+      console.log('Request authenticated with anon key (cron job)');
+    }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
