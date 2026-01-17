@@ -41,8 +41,12 @@ class StorageService {
 
       if (error) throw error;
 
-      // Return signed URL for private bucket
-      return await this.getImageUrl(fileName);
+      // Return signed URL for private bucket (MUST use signed URLs, not public URLs)
+      const signedUrl = await this.getImageUrl(data.path);
+      if (!signedUrl) {
+        throw new Error('Failed to create signed URL for uploaded image');
+      }
+      return signedUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;
@@ -112,8 +116,12 @@ class StorageService {
 
       if (error) throw error;
 
-      // Return signed URL for private bucket
-      return await this.getImageUrl(fileName);
+      // Return signed URL for private bucket (MUST use signed URLs, not public URLs)
+      const signedUrl = await this.getImageUrl(data.path);
+      if (!signedUrl) {
+        throw new Error('Failed to create signed URL for uploaded video');
+      }
+      return signedUrl;
     } catch (error) {
       console.error('Error uploading video:', error);
       throw error;
@@ -176,8 +184,9 @@ class StorageService {
     return data.signedUrl;
   }
 
-  // Check if URL is a public storage URL (no signing needed)
-  isPublicUrl(url: string): boolean {
+  // Check if URL is a public storage URL pattern (these don't work for private buckets!)
+  // We need to detect these and regenerate proper signed URLs
+  isPublicUrlPattern(url: string): boolean {
     return url.includes('/object/public/');
   }
 
@@ -213,23 +222,24 @@ class StorageService {
   }
 
   // Refresh signed URLs for an array of image URLs
-  // Public URLs are returned as-is, signed URLs are regenerated
+  // All URLs need valid signed URLs since the bucket is private
   async refreshSignedUrls(urls: string[]): Promise<string[]> {
     const refreshedUrls = await Promise.all(
       urls.map(async (url) => {
         try {
-          // Public URLs don't need refreshing
-          if (this.isPublicUrl(url)) {
-            return url;
-          }
-          
+          // Always extract path and generate fresh signed URL
+          // Public URLs patterns stored in DB won't work for private bucket
           const path = this.extractPathFromUrl(url);
           if (path) {
             const newUrl = await this.getImageUrl(path);
             // Only use new URL if it's valid (not empty)
-            return newUrl || url;
+            if (newUrl) {
+              return newUrl;
+            }
           }
-          return url; // Return original if can't extract path
+          // If we can't refresh, return original (will likely fail to load)
+          console.warn('Could not refresh URL, returning original:', url);
+          return url;
         } catch (error) {
           console.error('Error refreshing signed URL:', error);
           return url; // Return original on error
