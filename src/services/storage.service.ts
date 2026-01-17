@@ -176,27 +176,34 @@ class StorageService {
     return data.signedUrl;
   }
 
+  // Check if URL is a public storage URL (no signing needed)
+  isPublicUrl(url: string): boolean {
+    return url.includes('/object/public/');
+  }
+
   // Extract file path from a signed URL or storage URL
   extractPathFromUrl(url: string): string | null {
     try {
-      // Handle signed URLs with token parameter
       const urlObj = new URL(url);
       const pathname = urlObj.pathname;
       
-      // Find the bucket name in the path and extract everything after it
-      const bucketIndex = pathname.indexOf(`/${this.bucketName}/`);
-      if (bucketIndex !== -1) {
-        return pathname.substring(bucketIndex + this.bucketName.length + 2);
+      // Handle public URLs: /storage/v1/object/public/bucket-name/path
+      const publicMatch = pathname.match(/\/object\/public\/[^/]+\/(.+)/);
+      if (publicMatch) {
+        return publicMatch[1];
       }
       
-      // Also handle object/sign paths
-      const signIndex = pathname.indexOf('/object/sign/');
-      if (signIndex !== -1) {
-        const afterSign = pathname.substring(signIndex + 13); // '/object/sign/' length
-        const bucketPart = afterSign.indexOf(`${this.bucketName}/`);
-        if (bucketPart !== -1) {
-          return afterSign.substring(bucketPart + this.bucketName.length + 1);
-        }
+      // Handle signed URLs: /storage/v1/object/sign/bucket-name/path
+      const signMatch = pathname.match(/\/object\/sign\/[^/]+\/(.+)/);
+      if (signMatch) {
+        return signMatch[1];
+      }
+      
+      // Fallback: find bucket name directly in path
+      const bucketPattern = new RegExp(`/${this.bucketName}/(.+)`);
+      const bucketMatch = pathname.match(bucketPattern);
+      if (bucketMatch) {
+        return bucketMatch[1];
       }
       
       return null;
@@ -206,13 +213,21 @@ class StorageService {
   }
 
   // Refresh signed URLs for an array of image URLs
+  // Public URLs are returned as-is, signed URLs are regenerated
   async refreshSignedUrls(urls: string[]): Promise<string[]> {
     const refreshedUrls = await Promise.all(
       urls.map(async (url) => {
         try {
+          // Public URLs don't need refreshing
+          if (this.isPublicUrl(url)) {
+            return url;
+          }
+          
           const path = this.extractPathFromUrl(url);
           if (path) {
-            return await this.getImageUrl(path);
+            const newUrl = await this.getImageUrl(path);
+            // Only use new URL if it's valid (not empty)
+            return newUrl || url;
           }
           return url; // Return original if can't extract path
         } catch (error) {
