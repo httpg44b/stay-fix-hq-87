@@ -446,7 +446,6 @@ export default function TicketList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
                   <TableHead>{t('ticket.room')}</TableHead>
                   <TableHead>{t('ticket.title')}</TableHead>
                   <TableHead>{t('tickets.hotel')}</TableHead>
@@ -460,7 +459,7 @@ export default function TicketList() {
               <TableBody>
                 {filteredTickets.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       {t('tickets.noTickets')}
                     </TableCell>
                   </TableRow>
@@ -473,9 +472,6 @@ export default function TicketList() {
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => handleTicketClick(ticket.id)}
                       >
-                        <TableCell className="font-mono text-xs text-muted-foreground">
-                          {ticket.id.slice(0, 8)}...
-                        </TableCell>
                         <TableCell className="font-medium">
                           {ticket.room_number}
                         </TableCell>

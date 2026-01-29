@@ -681,6 +681,14 @@ export function TicketModal({
 
               <ScrollArea className="max-h-[65vh] pr-4">
                 <div className="space-y-6">
+                  {/* Ticket ID */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">ID:</span>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      {ticket.id}
+                    </code>
+                  </div>
+
                   {/* Ticket Details */}
                   <div className="space-y-4">
                     {/* Mobile layout for ticket details */}
