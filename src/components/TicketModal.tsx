@@ -551,8 +551,18 @@ export function TicketModal({
   };
 
   // Helper to determine if current media is a video
-  const isVideoFile = (url: string) => {
-    return url.match(/\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i);
+  // NOTE: Supabase signed URLs include query params (?token=...), so we must
+  // check the pathname (or strip querystring) rather than matching the string end.
+  const isVideoFile = (ref: string): boolean => {
+    const candidate = (() => {
+      try {
+        return new URL(ref).pathname;
+      } catch {
+        return ref.split('?')[0];
+      }
+    })();
+
+    return /\.(mp4|webm|ogg|mov|m4v|avi|wmv|flv|mkv|3gp)$/i.test(candidate);
   };
 
   // Helper to determine if current image is in "before" or "after" section
