@@ -28,6 +28,30 @@ interface CalendarTicket {
   priority: TicketPriority;
 }
 
+// Helper functions for French labels with first letter uppercase
+const getCategoryLabel = (category: TicketCategory): string => {
+  const labels: Record<TicketCategory, string> = {
+    [TicketCategory.PLUMBING]: 'Plomberie & joints',
+    [TicketCategory.ELECTRICAL]: 'Électricité',
+    [TicketCategory.PAINTING]: 'Peinture & finitions',
+    [TicketCategory.CARPENTRY]: 'Menuiserie',
+    [TicketCategory.FLOORING]: 'Moquette & revêtements',
+    [TicketCategory.FIRE_SAFETY]: 'Sécurité incendie',
+    [TicketCategory.OTHER]: 'Autres',
+  };
+  return labels[category] || category;
+};
+
+const getPriorityLabel = (priority: TicketPriority): string => {
+  const labels: Record<TicketPriority, string> = {
+    [TicketPriority.LOW]: 'Basse',
+    [TicketPriority.MEDIUM]: 'Moyenne',
+    [TicketPriority.HIGH]: 'Haute',
+    [TicketPriority.URGENT]: 'Urgente',
+  };
+  return labels[priority] || priority;
+};
+
 export default function Calendar() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -252,9 +276,9 @@ export default function Calendar() {
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Agendar Novo Chamado</DialogTitle>
+                  <DialogTitle>Planifier un nouveau ticket</DialogTitle>
                   <DialogDescription>
-                    Créez un nouveau chamado agendado pour une date spécifique.
+                    Créez un nouveau ticket planifié pour une date spécifique.
                   </DialogDescription>
                 </DialogHeader>
                 
@@ -276,7 +300,7 @@ export default function Calendar() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="scheduled_date">Date Agendada</Label>
+                    <Label htmlFor="scheduled_date">Date planifiée</Label>
                     <Input
                       type="date"
                       value={newTicket.scheduled_date}
@@ -289,12 +313,12 @@ export default function Calendar() {
                     <Input
                       value={newTicket.title}
                       onChange={(e) => setNewTicket({...newTicket, title: e.target.value})}
-                      placeholder="Titre du chamado"
+                      placeholder="Titre du ticket"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="room_number">Numéro de Chambre</Label>
+                    <Label htmlFor="room_number">Numéro de chambre</Label>
                     <Input
                       value={newTicket.room_number}
                       onChange={(e) => setNewTicket({...newTicket, room_number: e.target.value})}
@@ -306,12 +330,14 @@ export default function Calendar() {
                     <Label htmlFor="category">Catégorie</Label>
                     <Select value={newTicket.category} onValueChange={(value) => setNewTicket({...newTicket, category: value as TicketCategory})}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue>
+                          {newTicket.category ? getCategoryLabel(newTicket.category) : 'Sélectionner'}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {Object.values(TicketCategory).map(cat => (
                           <SelectItem key={cat} value={cat}>
-                            {cat}
+                            {getCategoryLabel(cat)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -322,12 +348,14 @@ export default function Calendar() {
                     <Label htmlFor="priority">Priorité</Label>
                     <Select value={newTicket.priority} onValueChange={(value) => setNewTicket({...newTicket, priority: value as TicketPriority})}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue>
+                          {newTicket.priority ? getPriorityLabel(newTicket.priority) : 'Sélectionner'}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {Object.values(TicketPriority).map(priority => (
                           <SelectItem key={priority} value={priority}>
-                            {priority}
+                            {getPriorityLabel(priority)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -349,7 +377,7 @@ export default function Calendar() {
                     disabled={!newTicket.title || !newTicket.hotel_id || !newTicket.scheduled_date}
                     className="w-full"
                   >
-                    Créer Chamado Agendado
+                    Créer le ticket planifié
                   </Button>
                 </div>
               </DialogContent>
