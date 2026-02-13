@@ -42,13 +42,13 @@ const App = () => (
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             <Route path="/dashboard" element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'TECNICO']}>
+              <ProtectedRoute allowedRoles={['ADMIN']}>
                 <Dashboard />
               </ProtectedRoute>
             } />
             
             <Route path="/simple-dashboard" element={
-              <ProtectedRoute allowedRoles={['RECEPCAO']}>
+              <ProtectedRoute allowedRoles={['RECEPCAO', 'TECNICO']}>
                 <SimpleDashboard />
               </ProtectedRoute>
             } />

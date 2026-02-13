@@ -18,8 +18,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    // Redirect RECEPCAO to simple dashboard, others to tickets
-    const redirectPath = user.role === 'RECEPCAO' ? '/simple-dashboard' : '/tickets';
+    // Redirect RECEPCAO and TECNICO to simple dashboard, ADMIN to dashboard
+    const redirectPath = (user.role === 'RECEPCAO' || user.role === 'TECNICO') ? '/simple-dashboard' : '/dashboard';
     return <Navigate to={redirectPath} replace />;
   }
 

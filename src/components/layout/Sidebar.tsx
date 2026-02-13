@@ -32,7 +32,7 @@ export const Sidebar = () => {
   const navigation = [
     {
       key: 'nav.dashboard',
-      href: user.role === 'RECEPCAO' ? '/simple-dashboard' : '/dashboard',
+      href: user.role === 'ADMIN' ? '/dashboard' : '/simple-dashboard',
       icon: LayoutDashboard,
       roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
     },
