@@ -464,6 +464,7 @@ export type Database = {
       }
       get_user_display_name: { Args: { _user_id: string }; Returns: string }
       is_admin: { Args: never; Returns: boolean }
+      is_recepcao: { Args: { _user_id: string }; Returns: boolean }
       setup_auth_for_admin: { Args: never; Returns: Json }
       user_has_hotel_access: {
         Args: { check_hotel_id: string }
