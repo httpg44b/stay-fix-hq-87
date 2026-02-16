@@ -35,7 +35,7 @@ import { TicketModal } from '@/components/TicketModal';
 import { TechnicianName } from '@/components/TechnicianName';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
@@ -191,26 +191,71 @@ export default function TicketList() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case TicketStatus.COMPLETED: return '228B22'; // green
+      case TicketStatus.IN_PROGRESS: return '1E90FF'; // blue
+      case TicketStatus.WAITING_PARTS: return 'FF8C00'; // orange
+      case TicketStatus.NEW: return '8B0000'; // dark red
+      case TicketStatus.SCHEDULED: return '9370DB'; // purple
+      default: return '000000';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case TicketPriority.URGENT: return 'FF0000'; // red
+      case TicketPriority.HIGH: return 'FF8C00'; // orange
+      case TicketPriority.MEDIUM: return 'DAA520'; // goldenrod
+      case TicketPriority.LOW: return '228B22'; // green
+      default: return '000000';
+    }
+  };
+
   const exportToCSV = () => {
     try {
       // Prepare data for export
       const exportData = filteredTickets.map(ticket => ({
-        'Chamado': ticket.title || '',
-        'Quarto': ticket.room_number || '',
-        'Hotel': hotels.find(h => h.id === ticket.hotel_id)?.name || '',
-        'Categoria': categoryLabels[ticket.category as TicketCategory] || ticket.category,
-        'Prioridade': priorityLabels[ticket.priority as TicketPriority] || ticket.priority,
-        'Status': statusLabels[ticket.status as TicketStatus] || ticket.status,
-        'Técnico': ticket.assignee_id || 'Não atribuído',
-        'Descrição': ticket.description || '',
-        'Solução': ticket.solution || '',
-        'Data de Criação': ticket.created_at ? format(new Date(ticket.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
-        'Data de Conclusão': ticket.closed_at ? format(new Date(ticket.closed_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
+        'Chambre': ticket.room_number || '',
+        'Titre': ticket.title || '',
+        'Hôtel': hotels.find(h => h.id === ticket.hotel_id)?.name || '',
+        'Catégorie': categoryLabels[ticket.category as TicketCategory] || ticket.category,
+        'Statut': statusLabels[ticket.status as TicketStatus] || ticket.status,
+        'Priorité': priorityLabels[ticket.priority as TicketPriority] || ticket.priority,
+        'Technicien': ticket.assignee_id || 'Non attribué',
+        'Description': ticket.description || '',
+        'Solution': ticket.solution || '',
+        'Créé le': ticket.created_at ? format(new Date(ticket.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
+        'Terminé le': ticket.closed_at ? format(new Date(ticket.closed_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
       }));
 
       // Create worksheet
       const ws = XLSX.utils.json_to_sheet(exportData);
-      
+
+      // Apply colors to Status (col E, index 4) and Priority (col F, index 5)
+      const statusColIndex = 4; // 'Statut'
+      const priorityColIndex = 5; // 'Priorité'
+
+      filteredTickets.forEach((ticket, rowIdx) => {
+        const row = rowIdx + 1; // +1 for header
+
+        // Status cell
+        const statusCell = XLSX.utils.encode_cell({ r: row, c: statusColIndex });
+        if (ws[statusCell]) {
+          ws[statusCell].s = {
+            font: { color: { rgb: getStatusColor(ticket.status) }, bold: true },
+          };
+        }
+
+        // Priority cell
+        const priorityCell = XLSX.utils.encode_cell({ r: row, c: priorityColIndex });
+        if (ws[priorityCell]) {
+          ws[priorityCell].s = {
+            font: { color: { rgb: getPriorityColor(ticket.priority) }, bold: true },
+          };
+        }
+      });
+
       // Create workbook
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Chamados');
