@@ -74,13 +74,8 @@ export default function TicketList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) loadData();
-  }, [user]);
-
-  if (!user) return null;
-
   const loadData = async () => {
+    if (!user) return;
     try {
       setLoading(true);
       
@@ -123,6 +118,12 @@ export default function TicketList() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) loadData();
+  }, [user]);
+
+  if (!user) return null;
 
   // Apply filters
   const filteredTickets = tickets.filter(ticket => {
