@@ -74,11 +74,11 @@ export default function TicketList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
 
-  if (!user) return null;
-
   useEffect(() => {
-    loadData();
+    if (user) loadData();
   }, [user]);
+
+  if (!user) return null;
 
   const loadData = async () => {
     try {
