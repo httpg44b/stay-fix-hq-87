@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ticketsService } from '@/services/tickets.service';
+import { hotelsService } from '@/services/hotels.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Ticket, Clock, CheckCircle2 } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
@@ -19,6 +20,7 @@ export default function SimpleDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [tickets, setTickets] = useState<TicketType[]>([]);
+  const [hotels, setHotels] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,8 +32,14 @@ export default function SimpleDashboard() {
       setLoading(true);
       if (!user) return;
 
-      const data = await ticketsService.getAll();
-      setTickets(data);
+      const [ticketsData, hotelsData] = await Promise.all([
+        ticketsService.getAll(),
+        hotelsService.getAll(),
+      ]);
+      setTickets(ticketsData);
+      const map: Record<string, string> = {};
+      hotelsData.forEach(h => { map[h.id] = h.name; });
+      setHotels(map);
     } catch (error) {
       console.error('Error loading tickets:', error);
     } finally {
@@ -133,6 +141,8 @@ export default function SimpleDashboard() {
                     </h3>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                       <span>{ticket.room_number ? `Chambre ${ticket.room_number}` : 'Sans chambre'}</span>
+                      <span>•</span>
+                      <span>{hotels[ticket.hotel_id] || 'Hôtel inconnu'}</span>
                       <span>•</span>
                       <span>{format(new Date(ticket.created_at), 'dd/MM/yyyy')}</span>
                       {ticket.assignee_id && (
