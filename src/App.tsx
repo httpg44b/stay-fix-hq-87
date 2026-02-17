@@ -20,13 +20,28 @@ import { ForgotPassword } from "./pages/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword";
 import { SupabaseSetup } from "./pages/SupabaseSetup";
 import { Checklists } from "./pages/Checklists";
-import React from "react";
+import React, { useEffect } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const Calendar = React.lazy(() => import("./pages/Calendar"));
 
 const queryClient = new QueryClient();
 
+const UnhandledRejectionHandler = ({ children }: { children: React.ReactNode }) => {
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      console.error("Unhandled promise rejection:", event.reason);
+      event.preventDefault();
+    };
+    window.addEventListener("unhandledrejection", handler);
+    return () => window.removeEventListener("unhandledrejection", handler);
+  }, []);
+  return <>{children}</>;
+};
+
 const App = () => (
+  <ErrorBoundary>
+  <UnhandledRejectionHandler>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -109,6 +124,8 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </UnhandledRejectionHandler>
+  </ErrorBoundary>
 );
 
 export default App;

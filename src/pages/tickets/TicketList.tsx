@@ -394,7 +394,7 @@ export default function TicketList() {
 
               <div className="space-y-2">
                 <Label>{t('tickets.dateFrom')}</Label>
-                <Popover>
+                <Popover modal={false}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -412,7 +412,7 @@ export default function TicketList() {
                       mode="single"
                       selected={dateFrom}
                       onSelect={setDateFrom}
-                      initialFocus
+                      initialFocus={false}
                       locale={fr}
                       className="pointer-events-auto"
                     />
@@ -422,7 +422,7 @@ export default function TicketList() {
 
               <div className="space-y-2">
                 <Label>{t('tickets.dateTo')}</Label>
-                <Popover>
+                <Popover modal={false}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -441,7 +441,7 @@ export default function TicketList() {
                       selected={dateTo}
                       onSelect={setDateTo}
                       disabled={(date) => dateFrom ? date < dateFrom : false}
-                      initialFocus
+                      initialFocus={false}
                       locale={fr}
                       className="pointer-events-auto"
                     />
