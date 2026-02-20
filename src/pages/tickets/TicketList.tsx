@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon, Trash2 } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { statusLabels, priorityLabels, categoryLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
@@ -73,6 +73,8 @@ export default function TicketList() {
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<string>('created_at');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const loadData = async () => {
     if (!user) return;
@@ -148,6 +150,48 @@ export default function TicketList() {
     const matchesDateTo = !dateTo || ticketDate <= new Date(dateTo.getTime() + 86400000 - 1); // Include entire day
 
     return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesHotel && matchesDateFrom && matchesDateTo;
+  });
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortColumn !== column) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />;
+    return sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />;
+  };
+
+  const sortedTickets = [...filteredTickets].sort((a, b) => {
+    const dir = sortDirection === 'asc' ? 1 : -1;
+    switch (sortColumn) {
+      case 'room_number':
+        return dir * (a.room_number || '').localeCompare(b.room_number || '');
+      case 'title':
+        return dir * (a.title || '').localeCompare(b.title || '');
+      case 'hotel':
+        const hotelA = hotels.find(h => h.id === a.hotel_id)?.name || '';
+        const hotelB = hotels.find(h => h.id === b.hotel_id)?.name || '';
+        return dir * hotelA.localeCompare(hotelB);
+      case 'status':
+        return dir * (a.status || '').localeCompare(b.status || '');
+      case 'priority': {
+        const order = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+        return dir * ((order[a.priority as keyof typeof order] ?? 4) - (order[b.priority as keyof typeof order] ?? 4));
+      }
+      case 'created_at':
+        return dir * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      case 'closed_at':
+        const dateA = a.closed_at ? new Date(a.closed_at).getTime() : 0;
+        const dateB = b.closed_at ? new Date(b.closed_at).getTime() : 0;
+        return dir * (dateA - dateB);
+      default:
+        return 0;
+    }
   });
 
   const handleTicketClick = (ticketId: string) => {
@@ -498,25 +542,40 @@ export default function TicketList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t('ticket.room')}</TableHead>
-                  <TableHead>{t('ticket.title')}</TableHead>
-                  <TableHead>{t('tickets.hotel')}</TableHead>
-                  <TableHead>{t('tickets.status')}</TableHead>
-                  <TableHead>{t('tickets.priority')}</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('room_number')}>
+                    <span className="flex items-center">{t('ticket.room')}<SortIcon column="room_number" /></span>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('title')}>
+                    <span className="flex items-center">{t('ticket.title')}<SortIcon column="title" /></span>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('hotel')}>
+                    <span className="flex items-center">{t('tickets.hotel')}<SortIcon column="hotel" /></span>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('status')}>
+                    <span className="flex items-center">{t('tickets.status')}<SortIcon column="status" /></span>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('priority')}>
+                    <span className="flex items-center">{t('tickets.priority')}<SortIcon column="priority" /></span>
+                  </TableHead>
                   <TableHead>{t('tickets.technician')}</TableHead>
-                  <TableHead>{t('tickets.createdAt')}</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('created_at')}>
+                    <span className="flex items-center">{t('tickets.createdAt')}<SortIcon column="created_at" /></span>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('closed_at')}>
+                    <span className="flex items-center">Date clôture<SortIcon column="closed_at" /></span>
+                  </TableHead>
                   <TableHead>{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTickets.length === 0 ? (
+                {sortedTickets.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       {t('tickets.noTickets')}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredTickets.map((ticket: any) => {
+                  sortedTickets.map((ticket: any) => {
                     const hotelName = hotels.find(h => h.id === ticket.hotel_id)?.name || '-';
                     return (
                       <TableRow 
@@ -539,7 +598,10 @@ export default function TicketList() {
                           <TechnicianName assigneeId={ticket.assignee_id} />
                         </TableCell>
                         <TableCell>
-                          {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
+                          {new Date(ticket.created_at).toLocaleDateString('fr-FR')}
+                        </TableCell>
+                        <TableCell>
+                          {ticket.closed_at ? new Date(ticket.closed_at).toLocaleDateString('fr-FR') : '-'}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
