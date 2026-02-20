@@ -314,12 +314,10 @@ export default function TicketList() {
                 {t('tickets.newTicket')}
               </Button>
             )}
-            {user.role === UserRole.ADMIN && (
-              <Button variant="outline" onClick={exportDailyReport}>
-                <Download className="mr-2 h-4 w-4" />
-                Rapport du jour
-              </Button>
-            )}
+            <Button variant="outline" onClick={exportDailyReport}>
+              <Download className="mr-2 h-4 w-4" />
+              Rapport du jour
+            </Button>
           </div>
         </div>
 
