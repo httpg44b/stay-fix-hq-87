@@ -213,10 +213,28 @@ export default function TicketList() {
     }
   };
 
-  const exportToCSV = () => {
+  const exportDailyReport = () => {
     try {
-      // Prepare data for export
-      const exportData = filteredTickets.map(ticket => ({
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(startOfDay.getTime() + 86400000 - 1);
+
+      const completedToday = tickets.filter(ticket => {
+        if (ticket.status !== TicketStatus.COMPLETED) return false;
+        const closedAt = ticket.closed_at ? new Date(ticket.closed_at) : null;
+        if (!closedAt) return false;
+        return closedAt >= startOfDay && closedAt <= endOfDay;
+      });
+
+      if (completedToday.length === 0) {
+        toast({
+          title: 'Aucun ticket terminé aujourd\'hui',
+          description: 'Il n\'y a aucun ticket terminé pour la date d\'aujourd\'hui.',
+        });
+        return;
+      }
+
+      const exportData = completedToday.map(ticket => ({
         'Chambre': ticket.room_number || '',
         'Titre': ticket.title || '',
         'Hôtel': hotels.find(h => h.id === ticket.hotel_id)?.name || '',
@@ -230,25 +248,19 @@ export default function TicketList() {
         'Terminé le': ticket.closed_at ? format(new Date(ticket.closed_at), 'dd/MM/yyyy HH:mm', { locale: fr }) : '',
       }));
 
-      // Create worksheet
       const ws = XLSX.utils.json_to_sheet(exportData);
 
-      // Apply colors to Status (col E, index 4) and Priority (col F, index 5)
-      const statusColIndex = 4; // 'Statut'
-      const priorityColIndex = 5; // 'Priorité'
+      const statusColIndex = 4;
+      const priorityColIndex = 5;
 
-      filteredTickets.forEach((ticket, rowIdx) => {
-        const row = rowIdx + 1; // +1 for header
-
-        // Status cell
+      completedToday.forEach((ticket, rowIdx) => {
+        const row = rowIdx + 1;
         const statusCell = XLSX.utils.encode_cell({ r: row, c: statusColIndex });
         if (ws[statusCell]) {
           ws[statusCell].s = {
             font: { color: { rgb: getStatusColor(ticket.status) }, bold: true },
           };
         }
-
-        // Priority cell
         const priorityCell = XLSX.utils.encode_cell({ r: row, c: priorityColIndex });
         if (ws[priorityCell]) {
           ws[priorityCell].s = {
@@ -257,25 +269,21 @@ export default function TicketList() {
         }
       });
 
-      // Create workbook
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Chamados');
-      
-      // Generate filename with current date
-      const filename = `chamados_${format(new Date(), 'dd-MM-yyyy_HH-mm')}.xlsx`;
-      
-      // Save file
+      XLSX.utils.book_append_sheet(wb, ws, 'Rapport du jour');
+
+      const filename = `rapport_du_jour_${format(new Date(), 'dd-MM-yyyy')}.xlsx`;
       XLSX.writeFile(wb, filename);
-      
+
       toast({
-        title: 'Exportação concluída',
-        description: `${filteredTickets.length} chamado(s) exportado(s) com sucesso.`,
+        title: 'Rapport exporté',
+        description: `${completedToday.length} ticket(s) terminé(s) aujourd'hui exporté(s) avec succès.`,
       });
     } catch (error: any) {
-      console.error('Error exporting to Excel:', error);
+      console.error('Error exporting daily report:', error);
       toast({
-        title: 'Erro ao exportar',
-        description: error.message || 'Não foi possível exportar os dados.',
+        title: 'Erreur lors de l\'exportation',
+        description: error.message || 'Impossible d\'exporter le rapport.',
         variant: 'destructive',
       });
     }
@@ -307,9 +315,9 @@ export default function TicketList() {
               </Button>
             )}
             {user.role === UserRole.ADMIN && (
-              <Button variant="outline" onClick={exportToCSV}>
+              <Button variant="outline" onClick={exportDailyReport}>
                 <Download className="mr-2 h-4 w-4" />
-                {t('tickets.exportCSV')}
+                Rapport du jour
               </Button>
             )}
           </div>
