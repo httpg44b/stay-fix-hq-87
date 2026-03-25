@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { statusLabels, priorityLabels, categoryLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
@@ -58,10 +58,17 @@ export default function TicketList() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('not_completed');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('status') || 'not_completed';
+  });
+  const [priorityFilter, setPriorityFilter] = useState<string>(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('priority') || 'all';
+  });
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [hotelFilter, setHotelFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -134,11 +141,13 @@ export default function TicketList() {
       (ticket.room_number?.includes(searchTerm) || false) ||
       (ticket.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
-    const matchesStatus = 
-      statusFilter === 'all' 
-        ? true 
-        : statusFilter === 'not_completed' 
-        ? ticket.status !== TicketStatus.COMPLETED 
+    const matchesStatus =
+      statusFilter === 'all'
+        ? true
+        : statusFilter === 'not_completed'
+        ? ticket.status !== TicketStatus.COMPLETED
+        : statusFilter === 'a_planifier'
+        ? ticket.status === TicketStatus.SCHEDULED || ticket.status === TicketStatus.WAITING_PARTS
         : ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
     const matchesCategory = categoryFilter === 'all' || ticket.category === categoryFilter;

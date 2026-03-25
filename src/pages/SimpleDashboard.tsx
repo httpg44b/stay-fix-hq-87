@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ticketsService } from '@/services/tickets.service';
 import { hotelsService } from '@/services/hotels.service';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Ticket, Clock, CheckCircle2 } from 'lucide-react';
+import { UserRole } from '@/lib/constants';
+import { Loader2, Ticket, Clock, CheckCircle2, Flame, Wrench } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 import { StatusBadge } from '@/components/StatusBadge';
 import { PriorityBadge } from '@/components/PriorityBadge';
@@ -47,11 +48,19 @@ export default function SimpleDashboard() {
     }
   };
 
+  const isTecnico = user?.role === UserRole.TECNICO;
+
   const totalTickets = tickets.length;
-  const inProgressTickets = tickets.filter(t => 
+  const inProgressTickets = tickets.filter(t =>
     t.status === 'IN_PROGRESS' || t.status === 'WAITING_PARTS'
   ).length;
   const completedTickets = tickets.filter(t => t.status === 'COMPLETED').length;
+
+  // Technician-specific counts
+  const urgentTickets = tickets.filter(t => t.priority === 'URGENT').length;
+  const aPlanifierTickets = tickets.filter(t =>
+    t.status === 'SCHEDULED' || t.status === 'WAITING_PARTS'
+  ).length;
   
   // Get 5 most recent tickets, excluding completed ones
   const recentTickets = tickets
@@ -77,50 +86,110 @@ export default function SimpleDashboard() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total des Appels
-            </CardTitle>
-            <Ticket className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{totalTickets}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              1 nouveaux aujourd'hui
-            </p>
-          </CardContent>
-        </Card>
+        {isTecnico ? (
+          <>
+            <Card
+              className="bg-card border-border hover:border-red-500/50 transition-colors cursor-pointer"
+              onClick={() => navigate('/tickets?priority=URGENT&status=all')}
+            >
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Urgent
+                </CardTitle>
+                <Flame className="h-4 w-4 text-red-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{urgentTickets}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Priorité urgente
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              En Cours
-            </CardTitle>
-            <Clock className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{inProgressTickets}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              14 en attente de pièces
-            </p>
-          </CardContent>
-        </Card>
+            <Card
+              className="bg-card border-border hover:border-orange-500/50 transition-colors cursor-pointer"
+              onClick={() => navigate('/tickets?status=a_planifier')}
+            >
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  À Planifier
+                </CardTitle>
+                <Wrench className="h-4 w-4 text-orange-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{aPlanifierTickets}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  À planifier · En attente de livraison
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Terminés
-            </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-foreground">{completedTickets}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Ce mois-ci
-            </p>
-          </CardContent>
-        </Card>
+            <Card
+              className="bg-card border-border hover:border-green-500/50 transition-colors cursor-pointer"
+              onClick={() => navigate('/tickets?status=COMPLETED')}
+            >
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Terminés
+                </CardTitle>
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{completedTickets}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ce mois-ci
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card className="bg-card border-border">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total des Appels
+                </CardTitle>
+                <Ticket className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{totalTickets}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  1 nouveaux aujourd'hui
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  En Cours
+                </CardTitle>
+                <Clock className="h-4 w-4 text-orange-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{inProgressTickets}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  14 en attente de pièces
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Terminés
+                </CardTitle>
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-foreground">{completedTickets}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ce mois-ci
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Recent Tickets Section */}
