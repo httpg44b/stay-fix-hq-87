@@ -235,6 +235,42 @@ class ChecklistsService {
     if (error) throw error;
     return (data || []) as ChecklistRoomStatus[];
   }
+
+  async initializeRoomStatuses(checklistId: string, hotelId: string): Promise<void> {
+    // Get all rooms for the hotel
+    const { data: rooms, error: roomsError } = await supabase
+      .from('rooms')
+      .select('id')
+      .eq('hotel_id', hotelId);
+
+    if (roomsError) throw roomsError;
+    if (!rooms || rooms.length === 0) return;
+
+    // Get existing statuses
+    const { data: existing, error: existingError } = await supabase
+      .from('checklist_room_status')
+      .select('room_id')
+      .eq('checklist_id', checklistId);
+
+    if (existingError) throw existingError;
+
+    const existingRoomIds = new Set((existing || []).map(e => e.room_id));
+    const missingRooms = rooms.filter(r => !existingRoomIds.has(r.id));
+
+    if (missingRooms.length === 0) return;
+
+    const inserts = missingRooms.map(room => ({
+      checklist_id: checklistId,
+      room_id: room.id,
+      status: 'not_verified',
+    }));
+
+    const { error: insertError } = await supabase
+      .from('checklist_room_status')
+      .insert(inserts);
+
+    if (insertError) throw insertError;
+  }
 }
 
 export const checklistsService = new ChecklistsService();
