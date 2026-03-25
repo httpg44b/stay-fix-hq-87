@@ -1318,7 +1318,7 @@ export function TicketModal({
                 </div>
               </ScrollArea>
 
-              {canEdit && (
+              {(canEdit || canChangePriority) && (
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   {user?.role === UserRole.ADMIN && editMode && (
                     <Button
