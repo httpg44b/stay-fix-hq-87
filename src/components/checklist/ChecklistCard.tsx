@@ -32,6 +32,10 @@ export const ChecklistCard = ({ checklist, hotel, onEdit, onDelete, onUpdate }: 
 
   const loadRoomStatuses = async () => {
     try {
+      // Auto-initialize missing room statuses for this checklist
+      if (checklist.hotel_id) {
+        await checklistsService.initializeRoomStatuses(checklist.id, checklist.hotel_id);
+      }
       const statuses = await checklistsService.getRoomStatuses(checklist.id);
       const statusMap: Record<string, RoomStatus> = {};
       statuses.forEach(status => {
