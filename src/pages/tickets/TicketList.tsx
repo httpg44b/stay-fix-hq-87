@@ -499,7 +499,7 @@ export default function TicketList() {
                 </Popover>
               </div>
 
-              {(user.role === UserRole.ADMIN || user.hotels.length > 1) && (
+              {hotels.length > 1 && (
                 <div className="space-y-2">
                   <Label>{t('tickets.hotel')}</Label>
                   <Select value={hotelFilter} onValueChange={setHotelFilter}>
