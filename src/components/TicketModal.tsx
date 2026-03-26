@@ -455,10 +455,11 @@ export function TicketModal({
         }),
       };
 
-      // Admin and Reception can change priority
+      // Admin, Reception and Technician can change priority
       if (
         (user?.role === UserRole.ADMIN ||
-          user?.role === UserRole.RECEPCAO) &&
+          user?.role === UserRole.RECEPCAO ||
+          user?.role === UserRole.TECNICO) &&
         priority !== ticket.priority
       ) {
         updateData.priority = priority;
@@ -583,7 +584,9 @@ export function TicketModal({
   const canChangeTechnician = user?.role === UserRole.ADMIN;
 
   const canChangePriority =
-    user?.role === UserRole.ADMIN || user?.role === UserRole.RECEPCAO;
+    user?.role === UserRole.ADMIN ||
+    user?.role === UserRole.RECEPCAO ||
+    user?.role === UserRole.TECNICO;
 
   return (
     <>
