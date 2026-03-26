@@ -170,17 +170,17 @@ export default function Calendar() {
     const end = endOfMonth(currentMonth);
     const days = eachDayOfInterval({ start, end });
     
-    // Add padding days from previous month
-    const startDay = getDay(start);
+    // Add padding days from previous month (week starts on Monday)
+    const startDay = (getDay(start) + 6) % 7; // 0=Mon ... 6=Sun
     const paddingDays = [];
     for (let i = startDay - 1; i >= 0; i--) {
       const day = new Date(start);
       day.setDate(day.getDate() - i - 1);
       paddingDays.push(day);
     }
-    
+
     // Add padding days from next month
-    const endDay = getDay(end);
+    const endDay = (getDay(end) + 6) % 7; // 0=Mon ... 6=Sun
     const remainingDays = [];
     for (let i = 1; i <= (6 - endDay); i++) {
       const day = new Date(end);
