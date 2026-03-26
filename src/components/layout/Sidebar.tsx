@@ -48,12 +48,13 @@ export const Sidebar = () => {
       icon: Ticket,
       roles: [UserRole.ADMIN, UserRole.TECNICO, UserRole.RECEPCAO]
     },
-    {
-      key: 'nav.myTickets',
-      href: '/my-tickets',
-      icon: ClipboardList,
-      roles: [UserRole.TECNICO]
-    },
+    // nav.myTickets desativado para TECNICO temporariamente
+    // {
+    //   key: 'nav.myTickets',
+    //   href: '/my-tickets',
+    //   icon: ClipboardList,
+    //   roles: [UserRole.TECNICO]
+    // },
     {
       key: 'nav.calendar',
       href: '/calendar',
