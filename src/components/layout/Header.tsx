@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { UserRole } from '@/lib/constants';
-import { Bell, User, Sun, Moon, Monitor } from 'lucide-react';
+import { Bell, User, Sun, Moon, Monitor, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,7 +19,12 @@ import { useEffect, useState } from 'react';
 import { hotelsService } from '@/services/hotels.service';
 import { NotificationCenter } from '@/components/NotificationCenter';
 
-export const Header = () => {
+interface HeaderProps {
+  onToggleSidebar?: () => void;
+  sidebarCollapsed?: boolean;
+}
+
+export const Header = ({ onToggleSidebar, sidebarCollapsed }: HeaderProps) => {
   const { user, logout } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { t } = useLanguage();
@@ -54,6 +59,15 @@ export const Header = () => {
     <header className="h-16 border-b border-border bg-card px-4 md:px-6">
       <div className="flex h-full items-center justify-between">
         <div className="flex items-center gap-4 md:ml-0 ml-12">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleSidebar}
+            className="hidden md:flex"
+            title={sidebarCollapsed ? 'Mostrar sidebar' : 'Ocultar sidebar'}
+          >
+            <PanelLeft className="h-5 w-5" />
+          </Button>
           <h2 className="text-lg font-semibold text-foreground">
             {user.hotels.length > 0 ? user.hotels[0].name : 'MAJ DESK'}
           </h2>

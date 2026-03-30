@@ -21,7 +21,11 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
-export const Sidebar = () => {
+interface SidebarProps {
+  isDesktopCollapsed?: boolean;
+}
+
+export const Sidebar = ({ isDesktopCollapsed = false }: SidebarProps) => {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
@@ -105,8 +109,11 @@ export const Sidebar = () => {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed md:static inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-200 ease-in-out shadow-xl",
-        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        "fixed md:static inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 border-r border-gray-200 dark:border-gray-800 transform transition-all duration-200 ease-in-out shadow-xl",
+        isOpen ? "translate-x-0" : "-translate-x-full",
+        isDesktopCollapsed
+          ? "md:w-0 md:overflow-hidden md:translate-x-0 md:border-r-0 md:shadow-none"
+          : "md:translate-x-0"
       )}>
         <div className="flex h-full flex-col">
           <div className="flex h-24 items-center justify-center bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
