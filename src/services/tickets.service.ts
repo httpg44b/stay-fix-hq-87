@@ -27,6 +27,7 @@ export interface UpdateTicketInput {
   category?: TicketCategory;
   room_number?: string;
   hotel_id?: string;
+  hidden_from_recepcao?: boolean;
 }
 
 class TicketsService {
@@ -134,6 +135,18 @@ class TicketsService {
 
     if (error) throw error;
     return data as any;
+  }
+
+  async setHiddenFromRecepcao(id: string, hidden: boolean) {
+    const { data, error } = await supabase
+      .from('tickets')
+      .update({ hidden_from_recepcao: hidden })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   async delete(id: string) {

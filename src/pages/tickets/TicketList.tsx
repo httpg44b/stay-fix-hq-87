@@ -25,7 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Filter, Plus, Eye, Download, Loader2, CalendarIcon, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Filter, Plus, Eye, EyeOff, Download, Loader2, CalendarIcon, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { statusLabels, priorityLabels, categoryLabels } from '@/lib/constants';
 import { ticketsService } from '@/services/tickets.service';
@@ -82,6 +82,7 @@ export default function TicketList() {
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<string>('created_at');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [showHidden, setShowHidden] = useState(false);
 
   const loadData = async () => {
     if (!user) return;
@@ -158,7 +159,9 @@ export default function TicketList() {
     const matchesDateFrom = !dateFrom || ticketDate >= dateFrom;
     const matchesDateTo = !dateTo || ticketDate <= new Date(dateTo.getTime() + 86400000 - 1); // Include entire day
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesHotel && matchesDateFrom && matchesDateTo;
+    const matchesHiddenFilter = user.role !== UserRole.ADMIN || showHidden || !ticket.hidden_from_recepcao;
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesHotel && matchesDateFrom && matchesDateTo && matchesHiddenFilter;
   });
 
   const handleSort = (column: string) => {
@@ -220,6 +223,24 @@ export default function TicketList() {
   const handleDeleteClick = (ticketId: string) => {
     setTicketToDelete(ticketId);
     setDeleteDialogOpen(true);
+  };
+
+  const handleToggleHidden = async (e: React.MouseEvent, ticketId: string, currentHidden: boolean) => {
+    e.stopPropagation();
+    try {
+      await ticketsService.setHiddenFromRecepcao(ticketId, !currentHidden);
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, hidden_from_recepcao: !currentHidden } : t));
+      toast({
+        title: currentHidden ? t('ticket.visibleToast') : t('ticket.hiddenToast'),
+        description: currentHidden ? t('ticket.visibleToastDesc') : t('ticket.hiddenToastDesc'),
+      });
+    } catch (error: any) {
+      toast({
+        title: t('errors.toggleVisibility'),
+        description: error.message || t('errors.toggleVisibilityDesc'),
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -365,6 +386,15 @@ export default function TicketList() {
               <Button onClick={() => navigate('/tickets/new')}>
                 <Plus className="mr-2 h-4 w-4" />
                 {t('tickets.newTicket')}
+              </Button>
+            )}
+            {user.role === UserRole.ADMIN && (
+              <Button
+                variant={showHidden ? 'secondary' : 'outline'}
+                onClick={() => setShowHidden(prev => !prev)}
+              >
+                {showHidden ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
+                {showHidden ? t('tickets.hideHidden') : t('tickets.showHidden')}
               </Button>
             )}
             <Button variant="outline" onClick={exportDailyReport}>
@@ -586,10 +616,11 @@ export default function TicketList() {
                 ) : (
                   sortedTickets.map((ticket: any) => {
                     const hotelName = hotels.find(h => h.id === ticket.hotel_id)?.name || '-';
+                    const isHidden = !!ticket.hidden_from_recepcao;
                     return (
-                      <TableRow 
-                        key={ticket.id} 
-                        className="cursor-pointer hover:bg-muted/50"
+                      <TableRow
+                        key={ticket.id}
+                        className={cn("cursor-pointer hover:bg-muted/50", isHidden && "opacity-50")}
                         onClick={() => handleTicketClick(ticket.id)}
                       >
                         <TableCell className="font-medium">
@@ -624,6 +655,17 @@ export default function TicketList() {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
+                            {user.role === UserRole.ADMIN && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => handleToggleHidden(e, ticket.id, isHidden)}
+                                title={isHidden ? t('ticket.showToRecepcao') : t('ticket.hideFromRecepcao')}
+                                className={isHidden ? 'text-amber-500 hover:text-amber-600' : 'text-muted-foreground hover:text-foreground'}
+                              >
+                                {isHidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                              </Button>
+                            )}
                             {user.role === UserRole.ADMIN && (
                               <Button
                                 variant="ghost"

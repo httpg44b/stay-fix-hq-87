@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(grep -l \"RLS\\\\|row level\\\\|policy\\\\|recepcao\\\\|tecnico\" /d/majdesk/stay-fix-hq-87/supabase/migrations/*.sql)",
+      "Bash(supabase db:*)",
+      "Bash(npx supabase:*)"
+    ]
+  }
+}
